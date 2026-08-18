@@ -1,0 +1,204 @@
+import QRCode from 'qrcode';
+
+/**
+ * Generate a high-resolution base64 data URL for a given QR Token.
+ */
+export async function generateQRCodeDataUrl(
+  text: string,
+  options: { width?: number; margin?: number; color?: { dark: string; light: string } } = {}
+): Promise<string> {
+  const { width = 400, margin = 2, color = { dark: '#080C15', light: '#FFFFFF' } } = options;
+  return QRCode.toDataURL(text, {
+    width,
+    margin,
+    color,
+    errorCorrectionLevel: 'H',
+  });
+}
+
+/**
+ * Download the raw QR Code as a high-resolution PNG image.
+ */
+export async function downloadQRCodePNG(
+  qrToken: string,
+  filename = 'EvoXis26-QR-Code.png'
+): Promise<void> {
+  const dataUrl = await generateQRCodeDataUrl(qrToken, { width: 800, margin: 3 });
+  const link = document.createElement('a');
+  link.href = dataUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+/**
+ * Generate a customized, high-definition digital attendee pass card with cyber styling and download it as PNG.
+ */
+export async function downloadAttendeePass(params: {
+  registrationId: string;
+  participantName: string;
+  collegeName: string;
+  department: string;
+  eventsList: string[];
+  qrToken: string;
+}): Promise<void> {
+  const { registrationId, participantName, collegeName, department, eventsList, qrToken } = params;
+
+  // Create high-res canvas (800x1200 @ 2x pixel ratio for retina sharpness)
+  const canvas = document.createElement('canvas');
+  canvas.width = 800;
+  canvas.height = 1200;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  // 1. Background gradient
+  const bgGrad = ctx.createLinearGradient(0, 0, 800, 1200);
+  bgGrad.addColorStop(0, '#080C15');
+  bgGrad.addColorStop(0.5, '#0D1322');
+  bgGrad.addColorStop(1, '#080C15');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, 800, 1200);
+
+  // 2. Cyan & Purple Glow Accents
+  const cyanGlow = ctx.createRadialGradient(200, 100, 10, 200, 100, 300);
+  cyanGlow.addColorStop(0, 'rgba(0, 242, 254, 0.25)');
+  cyanGlow.addColorStop(1, 'transparent');
+  ctx.fillStyle = cyanGlow;
+  ctx.fillRect(0, 0, 800, 400);
+
+  const purpleGlow = ctx.createRadialGradient(650, 1100, 10, 650, 1100, 350);
+  purpleGlow.addColorStop(0, 'rgba(147, 51, 234, 0.2)');
+  purpleGlow.addColorStop(1, 'transparent');
+  ctx.fillStyle = purpleGlow;
+  ctx.fillRect(0, 800, 800, 400);
+
+  // 3. Cyber Borders
+  ctx.strokeStyle = 'rgba(0, 242, 254, 0.4)';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(30, 30, 740, 1140);
+
+  ctx.strokeStyle = 'rgba(147, 51, 234, 0.6)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(40, 40, 720, 1120);
+
+  // 4. Header Badge
+  ctx.fillStyle = '#00F2FE';
+  ctx.font = 'bold 16px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('NATIONAL LEVEL TECHNICAL SYMPOSIUM', 400, 80);
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '900 48px sans-serif';
+  ctx.fillText('EVOXIS\'26', 400, 135);
+
+  ctx.fillStyle = '#94A3B8';
+  ctx.font = '500 18px sans-serif';
+  ctx.fillText('Sriram Engineering College • September 26, 2026', 400, 170);
+
+  // Divider line
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(80, 200);
+  ctx.lineTo(720, 200);
+  ctx.stroke();
+
+  // 5. Participant Info Card Box
+  ctx.fillStyle = 'rgba(18, 27, 48, 0.85)';
+  ctx.fillRect(60, 230, 680, 230);
+  ctx.strokeStyle = 'rgba(0, 242, 254, 0.2)';
+  ctx.strokeRect(60, 230, 680, 230);
+
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#00F2FE';
+  ctx.font = 'bold 14px monospace';
+  ctx.fillText('OFFICIAL REGISTRATION ID', 90, 265);
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 28px monospace';
+  ctx.fillText(registrationId, 90, 305);
+
+  ctx.fillStyle = '#94A3B8';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.fillText('PARTICIPANT NAME', 90, 350);
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 22px sans-serif';
+  ctx.fillText(participantName, 90, 380);
+
+  ctx.fillStyle = '#94A3B8';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.fillText('COLLEGE / INSTITUTION', 420, 350);
+
+  ctx.fillStyle = '#38BDF8';
+  ctx.font = 'bold 18px sans-serif';
+  // Truncate long college name
+  const dispCollege = collegeName.length > 25 ? collegeName.substring(0, 24) + '...' : collegeName;
+  ctx.fillText(dispCollege, 420, 380);
+
+  ctx.fillStyle = '#94A3B8';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.fillText('DEPARTMENT / YEAR', 90, 420);
+
+  ctx.fillStyle = '#E2E8F0';
+  ctx.font = '16px sans-serif';
+  ctx.fillText(department, 90, 445);
+
+  // 6. Registered Events Tags Box
+  ctx.fillStyle = 'rgba(18, 27, 48, 0.6)';
+  ctx.fillRect(60, 480, 680, 160);
+  ctx.strokeStyle = 'rgba(147, 51, 234, 0.2)';
+  ctx.strokeRect(60, 480, 680, 160);
+
+  ctx.fillStyle = '#A855F7';
+  ctx.font = 'bold 14px monospace';
+  ctx.fillText('REGISTERED EVENTS (' + eventsList.length + ')', 90, 515);
+
+  let eventY = 550;
+  eventsList.forEach((evt, idx) => {
+    if (idx < 4) {
+      ctx.fillStyle = '#00F2FE';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.fillText('• ' + evt, 90, eventY);
+      eventY += 28;
+    }
+  });
+
+  // 7. QR Code Area
+  const qrDataUrl = await generateQRCodeDataUrl(qrToken, { width: 340, margin: 2 });
+  const qrImg = new Image();
+  await new Promise<void>((resolve) => {
+    qrImg.onload = () => resolve();
+    qrImg.src = qrDataUrl;
+  });
+
+  // White rounded background container for QR
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(240, 670, 320, 320);
+
+  ctx.drawImage(qrImg, 250, 680, 300, 300);
+
+  // 8. Footer Instructions
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#00F2FE';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('SCAN THIS QR CODE AT RECEPTION & EVENT DESKS', 400, 1030);
+
+  ctx.fillStyle = '#64748B';
+  ctx.font = '13px monospace';
+  ctx.fillText('Token: ' + qrToken, 400, 1060);
+
+  ctx.fillStyle = '#94A3B8';
+  ctx.font = '13px sans-serif';
+  ctx.fillText('Carry college ID card • Valid for all 16 symposium event entries', 400, 1100);
+
+  // Download
+  const passUrl = canvas.toDataURL('image/png');
+  const link = document.createElement('a');
+  link.href = passUrl;
+  link.download = `EvoXis26-Pass-${registrationId}.png`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
