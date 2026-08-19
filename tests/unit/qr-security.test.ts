@@ -6,7 +6,7 @@ describe('AC6 & AC11: QR Token Security & Tamper Rejection', () => {
     const regId = 'EVOXIS26-00042';
     const qrString = generateQRString(regId);
 
-    expect(qrString).toMatch(/^EVOXIS26:[a-f0-9]{15,30}$/);
+    expect(qrString).toMatch(/^EVOXIS26:[a-f0-9]{6,12}:[0-9]{1,10}$/);
     expect(qrString.startsWith('EVOXIS26:')).toBe(true);
   });
 
