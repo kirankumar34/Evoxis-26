@@ -464,7 +464,7 @@ export const api = {
     message?: string;
   }> {
     // 1. Supabase Lookup
-    if (isSupabaseConfigured()) {
+    if (this.getBackendType() === 'SUPABASE') {
       try {
         let req = supabase.from('overall_registrations').select('*');
         if (query.registrationId) req = req.eq('registration_id', query.registrationId.trim().toUpperCase());
@@ -532,7 +532,7 @@ export const api = {
     }
 
     // 2. Google Apps Script
-    if (APPS_SCRIPT_URL && APPS_SCRIPT_URL.trim() !== '') {
+    if (this.getBackendType() === 'GOOGLE_SHEETS') {
       try {
         const response = await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
@@ -595,7 +595,7 @@ export const api = {
    */
   async validateQRCode(qrToken: string): Promise<QRValidationResponse> {
     // 1. Supabase Validation
-    if (isSupabaseConfigured()) {
+    if (this.getBackendType() === 'SUPABASE') {
       try {
         const { data: records, error } = await supabase
           .from('overall_registrations')
@@ -714,7 +714,7 @@ export const api = {
    */
   async checkEventRegistration(qrToken: string, eventId: EventId): Promise<EventDeskValidationResponse> {
     // 1. Supabase Check
-    if (isSupabaseConfigured()) {
+    if (this.getBackendType() === 'SUPABASE') {
       try {
         const { data: records, error } = await supabase
           .from('overall_registrations')
@@ -765,7 +765,7 @@ export const api = {
     }
 
     // 2. Google Apps Script
-    if (APPS_SCRIPT_URL && APPS_SCRIPT_URL.trim() !== '') {
+    if (this.getBackendType() === 'GOOGLE_SHEETS') {
       try {
         const response = await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
@@ -839,7 +839,7 @@ export const api = {
     const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
 
     // 1. Supabase Check-in
-    if (isSupabaseConfigured()) {
+    if (this.getBackendType() === 'SUPABASE') {
       try {
         const { data: records, error: fetchErr } = await supabase
           .from('overall_registrations')
@@ -895,7 +895,7 @@ export const api = {
     }
 
     // 2. Google Apps Script
-    if (APPS_SCRIPT_URL && APPS_SCRIPT_URL.trim() !== '') {
+    if (this.getBackendType() === 'GOOGLE_SHEETS') {
       try {
         const response = await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
@@ -974,7 +974,7 @@ export const api = {
     const eventName = evt ? evt.title : eventId;
 
     // 1. Supabase Event Attendance
-    if (isSupabaseConfigured()) {
+    if (this.getBackendType() === 'SUPABASE') {
       try {
         const { data: records, error: fetchErr } = await supabase
           .from('overall_registrations')
@@ -1030,7 +1030,7 @@ export const api = {
     }
 
     // 2. Google Apps Script
-    if (APPS_SCRIPT_URL && APPS_SCRIPT_URL.trim() !== '') {
+    if (this.getBackendType() === 'GOOGLE_SHEETS') {
       try {
         const response = await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
@@ -1097,7 +1097,7 @@ export const api = {
     eventId: EventId,
     status: ParticipationStatus
   ): Promise<{ success: boolean; message?: string }> {
-    if (isSupabaseConfigured()) {
+    if (this.getBackendType() === 'SUPABASE') {
       try {
         await supabase
           .from('event_registrations')
@@ -1110,7 +1110,7 @@ export const api = {
       }
     }
 
-    if (APPS_SCRIPT_URL && APPS_SCRIPT_URL.trim() !== '') {
+    if (this.getBackendType() === 'GOOGLE_SHEETS') {
       try {
         const response = await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
@@ -1140,7 +1140,7 @@ export const api = {
    * Get all registrations for Master Table
    */
   async getAllRegistrations(): Promise<OverallRegistrationRecord[]> {
-    if (isSupabaseConfigured()) {
+    if (this.getBackendType() === 'SUPABASE') {
       try {
         const { data, error } = await supabase
           .from('overall_registrations')
@@ -1179,7 +1179,7 @@ export const api = {
       }
     }
 
-    if (APPS_SCRIPT_URL && APPS_SCRIPT_URL.trim() !== '') {
+    if (this.getBackendType() === 'GOOGLE_SHEETS') {
       try {
         const response = await fetch(`${APPS_SCRIPT_URL}?action=getDashboardStats`);
         const result = await response.json();
@@ -1199,7 +1199,7 @@ export const api = {
    * Get attendance logs for audit table
    */
   async getAttendanceLogs(): Promise<AttendanceLogRecord[]> {
-    if (isSupabaseConfigured()) {
+    if (this.getBackendType() === 'SUPABASE') {
       try {
         const { data, error } = await supabase
           .from('attendance_logs')
