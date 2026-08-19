@@ -12,7 +12,7 @@ import {
 import { EVENTS } from '@/data/events';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
-const APPS_SCRIPT_URL = import.meta.env.VITE_APPS_SCRIPT_URL || '';
+const APPS_SCRIPT_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_APPS_SCRIPT_URL) || '';
 
 /**
  * Local Storage Keys for offline / demo simulation

@@ -1,6 +1,54 @@
 import QRCode from 'qrcode';
 
 /**
+ * Generate standard QR token string following EVOXIS26 schema
+ */
+export function generateQRString(registrationId: string): string {
+  let hash = 0;
+  for (let i = 0; i < registrationId.length; i++) {
+    hash = (hash << 5) - hash + registrationId.charCodeAt(i);
+    hash |= 0;
+  }
+  const hex = Math.abs(hash).toString(16).padStart(8, '0');
+  const numericPart = registrationId.replace(/[^0-9]/g, '');
+  return `EVOXIS26:${hex}${numericPart}`;
+}
+
+/**
+ * Validate if a given string follows the EVOXIS26 token format
+ */
+export function isValidQRToken(token: string): boolean {
+  if (!token || typeof token !== 'string') return false;
+  return /^EVOXIS26:[a-f0-9]{15,35}$/i.test(token.trim());
+}
+
+/**
+ * Parse QR string and extract metadata
+ */
+export function parseQRString(qrString: string): { valid: boolean; token: string; registrationId?: string } {
+  if (!isValidQRToken(qrString)) {
+    return { valid: false, token: qrString };
+  }
+  const token = qrString.trim();
+  const numericMatch = token.match(/\d+$/);
+  const numeric = numericMatch ? numericMatch[0] : '';
+  const padded = numeric ? numeric.padStart(5, '0') : '';
+  return {
+    valid: true,
+    token,
+    registrationId: padded ? `EVOXIS26-${padded}` : undefined,
+  };
+}
+
+/**
+ * Extract Registration ID from a valid QR token
+ */
+export function getRegistrationIdFromToken(token: string): string | undefined {
+  const parsed = parseQRString(token);
+  return parsed.registrationId;
+}
+
+/**
  * Generate a high-resolution base64 data URL for a given QR Token.
  */
 export async function generateQRCodeDataUrl(
