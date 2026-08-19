@@ -10,8 +10,10 @@ export function generateQRString(registrationId: string): string {
     hash |= 0;
   }
   const hex = Math.abs(hash).toString(16).padStart(8, '0');
-  const numericPart = registrationId.replace(/[^0-9]/g, '');
-  return `EVOXIS26:${hex}${numericPart}`;
+  const numericPart = registrationId.includes('-')
+    ? registrationId.split('-')[1]
+    : registrationId.replace(/[^0-9]/g, '');
+  return `EVOXIS26:${hex}:${numericPart}`;
 }
 
 /**
@@ -19,7 +21,8 @@ export function generateQRString(registrationId: string): string {
  */
 export function isValidQRToken(token: string): boolean {
   if (!token || typeof token !== 'string') return false;
-  return /^EVOXIS26:[a-f0-9]{15,35}$/i.test(token.trim());
+  const clean = token.trim();
+  return /^EVOXIS26:[a-f0-9]{6,16}:[0-9]{1,10}$/i.test(clean) || /^EVOXIS26:[a-f0-9]{15,35}$/i.test(clean);
 }
 
 /**
@@ -30,14 +33,17 @@ export function parseQRString(qrString: string): { valid: boolean; token: string
     return { valid: false, token: qrString };
   }
   const token = qrString.trim();
-  const numericMatch = token.match(/\d+$/);
-  const numeric = numericMatch ? numericMatch[0] : '';
-  const padded = numeric ? numeric.padStart(5, '0') : '';
-  return {
-    valid: true,
-    token,
-    registrationId: padded ? `EVOXIS26-${padded}` : undefined,
-  };
+  if (token.includes(':')) {
+    const parts = token.split(':');
+    const numeric = parts.length >= 3 ? parts[2] : parts[1].replace(/[^0-9]/g, '');
+    const padded = numeric ? numeric.padStart(5, '0') : '';
+    return {
+      valid: true,
+      token,
+      registrationId: padded ? `EVOXIS26-${padded}` : undefined,
+    };
+  }
+  return { valid: false, token: qrString };
 }
 
 /**

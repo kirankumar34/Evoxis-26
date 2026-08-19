@@ -161,7 +161,7 @@ export const api = {
     const cleanPhone = payload.phone.trim();
 
     // 1. SUPABASE DATABASE WRITE
-    if (isSupabaseConfigured()) {
+    if (this.getBackendType() === 'SUPABASE') {
       console.log('[EvoXis26 API] 🚀 Submitting registration to Supabase PostgreSQL Database:', payload);
       try {
         // A. Check duplicate in overall_registrations
@@ -313,7 +313,7 @@ export const api = {
     }
 
     // 2. LIVE GOOGLE APPS SCRIPT POST
-    if (APPS_SCRIPT_URL && APPS_SCRIPT_URL.trim() !== '') {
+    if (this.getBackendType() === 'GOOGLE_SHEETS') {
       console.log(`[EvoXis26 API] 🚀 Submitting registration to Google Apps Script backend: ${APPS_SCRIPT_URL}`, payload);
       try {
         const response = await fetch(APPS_SCRIPT_URL, {
