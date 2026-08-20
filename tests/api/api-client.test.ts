@@ -301,5 +301,16 @@ describe('AC3, AC4, AC6, AC7, AC8: Full API Client & Database Service Layer', ()
     expect(lookup.success).toBe(true);
     expect(lookup.data?.teamName).toBe('Code Warriors');
     expect(lookup.data?.teamMembers?.length).toBe(4);
+
+    // Verify each team member is individually queryable by email
+    const memberLookupByEmail = await api.getRegistration({ email: 'kumar.v@example.com' });
+    expect(memberLookupByEmail.success).toBe(true);
+    expect(memberLookupByEmail.data?.participantName).toBe('Kumar V');
+    expect(memberLookupByEmail.data?.events.length).toBe(2);
+
+    // Verify query by member-specific registration ID
+    const memberLookupById = await api.getRegistration({ registrationId: `${regId}-M1` });
+    expect(memberLookupById.success).toBe(true);
+    expect(memberLookupById.data?.participantName).toBe('Kumar V');
   });
 });

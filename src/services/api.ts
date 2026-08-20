@@ -303,61 +303,86 @@ export const api = {
         assignedRegId = `EVOXIS26-${String(nextSeq).padStart(5, '0')}`;
         assignedQrToken = generateMockQRToken(assignedRegId);
 
-        // 3. Insert Master Record with full team roster JSON
-        const newMasterRecord = {
-          registration_id: assignedRegId,
-          registration_date: regDate,
-          registration_time: regTime,
-          participant_name: payload.fullName.trim(),
-          email: cleanEmail,
-          mobile_number: cleanPhone,
-          college_institution: payload.collegeName.trim(),
-          department: payload.department.trim(),
-          year: payload.yearOfStudy || '3rd Year',
-          gender: payload.gender || 'Not Specified',
-          registration_type: isTeam ? 'Team' : 'Individual',
-          selected_events: payload.selectedEventIds.join(', '),
-          total_events: payload.selectedEventIds.length,
-          total_amount: 0,
-          payment_status: 'Free',
-          qr_token: assignedQrToken,
-          qr_status: 'Active',
-          email_status: 'Sent',
-          sms_status: 'Sent',
-          whatsapp_status: 'Sent',
-          overall_attendance_status: 'Pending',
-          registration_status: 'Confirmed',
-          team_name: safeTeamName || null,
-          team_members: allParticipants,
-        };
+        // 3. Assemble Master Records for ALL Participants in the Registration
+        const masterRows = allParticipants.map((p, idx) => {
+          const memberRegId = idx === 0 ? assignedRegId : `${assignedRegId}-M${idx}`;
+          const memberQrToken = idx === 0 ? assignedQrToken : `${assignedQrToken}-M${idx}`;
+          return {
+            registration_id: memberRegId,
+            registration_date: regDate,
+            registration_time: regTime,
+            participant_name: p.name,
+            email: p.email,
+            mobile_number: p.phone,
+            college_institution: p.college,
+            department: p.department,
+            year: p.year || payload.yearOfStudy || '3rd Year',
+            gender: p.gender || 'Not Specified',
+            registration_type: isTeam ? 'Team' : 'Individual',
+            selected_events: payload.selectedEventIds.join(', '),
+            total_events: payload.selectedEventIds.length,
+            total_amount: 0,
+            payment_status: 'Free',
+            qr_token: memberQrToken,
+            qr_status: 'Active',
+            email_status: 'Sent',
+            sms_status: 'Sent',
+            whatsapp_status: 'Sent',
+            overall_attendance_status: 'Pending',
+            registration_status: 'Confirmed',
+            team_name: safeTeamName || null,
+            team_members: allParticipants,
+          };
+        });
 
         const { error: insertMasterErr } = await supabase
           .from('overall_registrations')
-          .insert([newMasterRecord]);
+          .insert(masterRows);
 
         if (insertMasterErr) {
           console.error('[EvoXis26 API] Supabase insert master error:', insertMasterErr);
           throw insertMasterErr;
         }
 
-        // 4. Insert Per-event records for all participants
-        const eventRows = payload.selectedEventIds.map((evtId) => {
-          const meta = EVENTS.find((e) => e.eventId === evtId);
-          return {
-            registration_id: assignedRegId,
-            participant_name: payload.fullName.trim(),
-            email: cleanEmail,
-            mobile: cleanPhone,
-            college: payload.collegeName.trim(),
-            department: payload.department.trim(),
-            event_id: evtId,
-            event_name: meta ? meta.title : evtId,
-            category: meta ? meta.category : 'Technical',
-            registration_date: regDate,
-            qr_token: assignedQrToken,
-            attendance_status: 'Pending',
-            participation_status: 'Registered',
-          };
+        // 4. Insert Individual Per-Event records for ALL Participants
+        const eventRows: Array<{
+          registration_id: string;
+          participant_name: string;
+          email: string;
+          mobile: string;
+          college: string;
+          department: string;
+          event_id: string;
+          event_name: string;
+          category: string;
+          registration_date: string;
+          qr_token: string;
+          attendance_status: string;
+          participation_status: string;
+        }> = [];
+
+        allParticipants.forEach((p, pIdx) => {
+          const pRegId = pIdx === 0 ? assignedRegId : `${assignedRegId}-M${pIdx}`;
+          const pQrToken = pIdx === 0 ? assignedQrToken : `${assignedQrToken}-M${pIdx}`;
+
+          payload.selectedEventIds.forEach((evtId) => {
+            const meta = EVENTS.find((e) => e.eventId === evtId);
+            eventRows.push({
+              registration_id: pRegId,
+              participant_name: p.name,
+              email: p.email,
+              mobile: p.phone,
+              college: p.college,
+              department: p.department,
+              event_id: evtId,
+              event_name: meta ? meta.title : evtId,
+              category: meta ? meta.category : 'Technical',
+              registration_date: regDate,
+              qr_token: pQrToken,
+              attendance_status: 'Pending',
+              participation_status: 'Registered',
+            });
+          });
         });
 
         const { error: insertEventsErr } = await supabase
@@ -369,7 +394,7 @@ export const api = {
         }
 
         databaseSuccess = true;
-        console.log('[EvoXis26 API] ✅ Supabase registration successfully persisted:', assignedRegId);
+        console.log(`[EvoXis26 API] ✅ Supabase persisted ${masterRows.length} participant record(s) and ${eventRows.length} event record(s) for ${assignedRegId}`);
       } catch (err: any) {
         console.error('[EvoXis26 API] ❌ Supabase live write failed:', err);
         // If Supabase failed and no Apps Script is available, return failure
@@ -488,34 +513,38 @@ export const api = {
         assignedQrToken = generateMockQRToken(assignedRegId);
       }
 
-      const newRecord: OverallRegistrationRecord = {
-        registrationId: assignedRegId,
-        registrationDate: regDate,
-        registrationTime: regTime,
-        participantName: payload.fullName.trim(),
-        email: cleanEmail,
-        mobileNumber: cleanPhone,
-        collegeInstitution: payload.collegeName.trim(),
-        department: payload.department.trim(),
-        year: payload.yearOfStudy || '3rd Year',
-        gender: payload.gender || 'Not Specified',
-        registrationType: isTeam ? 'Team' : 'Individual',
-        selectedEvents: payload.selectedEventIds.join(', '),
-        totalEvents: payload.selectedEventIds.length,
-        totalAmount: 0,
-        paymentStatus: 'Free',
-        qrToken: assignedQrToken,
-        qrStatus: 'Active',
-        emailStatus: 'Sent',
-        smsStatus: 'Sent',
-        whatsappStatus: 'Sent',
-        overallAttendanceStatus: 'Pending',
-        registrationStatus: 'Confirmed',
-        teamName: safeTeamName || undefined,
-        teamMembers: allParticipants,
-      };
+      const mockRecordsToInsert: OverallRegistrationRecord[] = allParticipants.map((p, idx) => {
+        const memberRegId = idx === 0 ? assignedRegId : `${assignedRegId}-M${idx}`;
+        const memberQrToken = idx === 0 ? assignedQrToken : `${assignedQrToken}-M${idx}`;
+        return {
+          registrationId: memberRegId,
+          registrationDate: regDate,
+          registrationTime: regTime,
+          participantName: p.name,
+          email: p.email,
+          mobileNumber: p.phone,
+          collegeInstitution: p.college,
+          department: p.department,
+          year: p.year || payload.yearOfStudy || '3rd Year',
+          gender: p.gender || 'Not Specified',
+          registrationType: isTeam ? 'Team' : 'Individual',
+          selectedEvents: payload.selectedEventIds.join(', '),
+          totalEvents: payload.selectedEventIds.length,
+          totalAmount: 0,
+          paymentStatus: 'Free',
+          qrToken: memberQrToken,
+          qrStatus: 'Active',
+          emailStatus: 'Sent',
+          smsStatus: 'Sent',
+          whatsappStatus: 'Sent',
+          overallAttendanceStatus: 'Pending',
+          registrationStatus: 'Confirmed',
+          teamName: safeTeamName || undefined,
+          teamMembers: allParticipants,
+        };
+      });
 
-      records.unshift(newRecord);
+      records.unshift(...mockRecordsToInsert);
       localStorage.setItem(STORAGE_KEYS.REGISTRATIONS, JSON.stringify(records));
       databaseSuccess = true;
       sheetsSyncSuccess = true;
