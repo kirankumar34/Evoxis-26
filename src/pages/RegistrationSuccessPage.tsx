@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import {
   CheckCircle2,
@@ -12,6 +12,8 @@ import {
   Copy,
   Check,
   Search,
+  Eye,
+  X,
 } from 'lucide-react';
 import { generateQRCodeDataUrl, downloadQRCodePNG, downloadAttendeePass } from '@/lib/qr';
 import { EVENTS } from '@/data/events';
@@ -36,6 +38,7 @@ export const RegistrationSuccessPage: React.FC = () => {
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const [isDownloadingPass, setIsDownloadingPass] = useState(false);
+  const [isViewQROpen, setIsViewQROpen] = useState(false);
 
   const registrationId = regState?.registrationId || 'EVOXIS26-00001';
   const qrToken = regState?.qrToken || `EVOXIS26:${registrationId}`;
@@ -57,7 +60,7 @@ export const RegistrationSuccessPage: React.FC = () => {
   // Generate QR Code image
   useEffect(() => {
     if (qrToken) {
-      generateQRCodeDataUrl(qrToken, { width: 320, margin: 2 }).then((url) => {
+      generateQRCodeDataUrl(qrToken, { width: 400, margin: 2 }).then((url) => {
         setQrDataUrl(url);
       });
     }
@@ -114,7 +117,7 @@ export const RegistrationSuccessPage: React.FC = () => {
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-display font-black text-white mb-2">
-            You're All Set for <span className="text-cyan-400">EvoXis'26</span>!
+            Registration <span className="text-cyan-400">Successful</span>
           </h1>
           <p className="text-slate-400 text-sm max-w-xl mx-auto">
             Your official registration record has been committed to the master database. Keep your check-in QR pass handy.
@@ -130,7 +133,7 @@ export const RegistrationSuccessPage: React.FC = () => {
               <div className="p-4 rounded-xl bg-slate-900/90 border border-cyan-500/30 flex items-center justify-between">
                 <div>
                   <span className="text-[11px] font-mono text-cyan-400 font-semibold tracking-wider block uppercase">
-                    Official Registration ID
+                    Registration ID
                   </span>
                   <span className="text-2xl font-mono font-black text-white tracking-tight">
                     {registrationId}
@@ -160,9 +163,9 @@ export const RegistrationSuccessPage: React.FC = () => {
                   <span className="font-medium text-slate-300">{department}</span>
                 </div>
                 <div>
-                  <span className="text-xs text-slate-400 block mb-0.5">Event Date & Venue</span>
+                  <span className="text-xs text-slate-400 block mb-0.5">Event Date</span>
                   <span className="font-medium text-cyan-300 flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" /> Sept 26, 2026
+                    <Calendar className="w-3.5 h-3.5" /> September 26, 2026
                   </span>
                 </div>
               </div>
@@ -203,12 +206,13 @@ export const RegistrationSuccessPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Important Reception Notice */}
+            {/* Important Reception Notice as mandated in Section 5 */}
             <div className="p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-slate-200 text-xs leading-relaxed flex items-start gap-3">
               <Sparkles className="w-5 h-5 flex-shrink-0 text-cyan-400 mt-0.5" />
               <div>
-                <strong className="text-cyan-300 block mb-0.5">Please keep this QR Code ready:</strong>
-                Present this QR code on your mobile or as a printout at the <strong>Reception Desk</strong> upon arrival on campus. The same QR will be scanned at each of your event desks.
+                <p className="text-cyan-200 font-medium leading-relaxed">
+                  "Please keep this QR code safe. The same QR will be used for reception and event verification."
+                </p>
               </div>
             </div>
           </div>
@@ -221,41 +225,56 @@ export const RegistrationSuccessPage: React.FC = () => {
               </span>
 
               {/* QR Image Frame */}
-              <div className="relative inline-block p-4 rounded-2xl bg-white shadow-2xl mx-auto mb-4">
+              <div className="relative inline-block p-4 rounded-2xl bg-white shadow-2xl mx-auto mb-4 cursor-pointer group" onClick={() => setIsViewQROpen(true)}>
                 {qrDataUrl ? (
                   <img
                     src={qrDataUrl}
                     alt="EvoXis'26 Check-in QR"
-                    className="w-52 h-52 sm:w-60 sm:h-60 rounded-lg mx-auto"
+                    className="w-52 h-52 sm:w-60 sm:h-60 rounded-lg mx-auto transition-transform group-hover:scale-105"
                   />
                 ) : (
                   <div className="w-52 h-52 flex items-center justify-center bg-slate-100 rounded-lg">
                     <QrCode className="w-12 h-12 text-slate-400 animate-pulse" />
                   </div>
                 )}
+                <div className="absolute inset-0 bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                  <span className="text-xs font-mono font-bold text-white bg-black/70 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+                    <Eye className="w-3.5 h-3.5" /> Click to Enlarge
+                  </span>
+                </div>
               </div>
 
               <p className="text-[11px] font-mono text-slate-400 break-all px-2 mb-6">
                 Token: <span className="text-slate-300">{qrToken}</span>
               </p>
 
-              {/* Download Buttons */}
-              <div className="space-y-3">
+              {/* Action Buttons matching Section 5 Contract: [View QR] [Download QR] [Download Registration Details] */}
+              <div className="space-y-2.5">
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setIsViewQROpen(true)}
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-semibold text-xs text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-cyan-500/40 transition-colors"
+                  >
+                    <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>View QR</span>
+                  </button>
+
+                  <button
+                    onClick={handleDownloadQR}
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-semibold text-xs text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-cyan-500/40 transition-colors"
+                  >
+                    <QrCode className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Download QR</span>
+                  </button>
+                </div>
+
                 <button
                   onClick={handleDownloadPass}
                   disabled={isDownloadingPass}
                   className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-display font-bold text-sm text-black bg-gradient-to-r from-cyan-400 to-sky-400 hover:from-cyan-300 hover:to-sky-300 shadow-glow-cyan transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <Download className="w-4 h-4" />
-                  <span>{isDownloadingPass ? 'Generating High-Def Pass...' : 'Download Official Badge / Pass (PNG)'}</span>
-                </button>
-
-                <button
-                  onClick={handleDownloadQR}
-                  className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-xs text-slate-200 bg-slate-800/80 hover:bg-slate-800 border border-slate-700 hover:border-cyan-500/40 transition-colors"
-                >
-                  <QrCode className="w-4 h-4 text-cyan-400" />
-                  <span>Download Standalone QR Code</span>
+                  <span>{isDownloadingPass ? 'Generating Details...' : 'Download Registration Details'}</span>
                 </button>
               </div>
             </div>
@@ -277,6 +296,65 @@ export const RegistrationSuccessPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Full-Screen View QR Modal */}
+      <AnimatePresence>
+        {isViewQROpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsViewQROpen(false)}
+              className="fixed inset-0 bg-black/80 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative bg-[#0F172A] border border-cyan-500/30 rounded-3xl p-8 max-w-sm w-full text-center z-10 shadow-2xl"
+            >
+              <button
+                onClick={() => setIsViewQROpen(false)}
+                className="absolute top-4 right-4 p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <h3 className="font-display font-black text-xl text-white mb-2">
+                Check-In QR Code
+              </h3>
+              <p className="text-xs text-cyan-400 font-mono mb-4">
+                {registrationId}
+              </p>
+
+              <div className="p-4 bg-white rounded-2xl inline-block shadow-inner mb-4">
+                <img
+                  src={qrDataUrl}
+                  alt={`QR code for ${registrationId}`}
+                  className="w-64 h-64 mx-auto"
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDownloadQR}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs text-black bg-cyan-400 hover:bg-cyan-300 shadow-glow-cyan"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download PNG</span>
+                </button>
+                <button
+                  onClick={() => setIsViewQROpen(false)}
+                  className="px-4 py-2.5 rounded-xl font-semibold text-xs text-slate-300 bg-slate-800 hover:bg-slate-700"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -104,18 +104,18 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   <Link
-                    to="/my-registration"
+                    to="/events"
                     onClick={onClose}
                     className="p-2.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-xs font-medium text-cyan-300 text-center hover:bg-cyan-500/20"
                   >
-                    🎫 My Pass & QR
+                    🏆 16 Events
                   </Link>
                   <Link
-                    to="/committee/login"
+                    to="/my-registration"
                     onClick={onClose}
                     className="p-2.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-xs font-medium text-purple-300 text-center hover:bg-purple-500/20"
                   >
-                    🛡️ Committee Login
+                    🎫 My Pass & QR
                   </Link>
                 </div>
               </div>

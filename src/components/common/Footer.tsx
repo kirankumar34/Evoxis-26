@@ -108,23 +108,23 @@ export const Footer: React.FC = () => {
                 </a>
               </li>
               <li>
+                <a href="/events" className="hover:text-cyan-400 text-cyan-300 font-semibold transition-colors">
+                  🏆 16 Symposium Events
+                </a>
+              </li>
+              <li>
                 <a href="/my-registration" className="hover:text-cyan-400 transition-colors">
                   🎫 My Pass & Check-In QR
                 </a>
               </li>
               <li>
-                <a href="/committee/login" className="hover:text-purple-400 transition-colors">
-                  🛡️ Committee Login
+                <a href="/#schedule" className="hover:text-white transition-colors">
+                  📅 Symposium Schedule
                 </a>
               </li>
               <li>
-                <a href="#events" className="hover:text-white transition-colors">
-                  16 Flagship Events
-                </a>
-              </li>
-              <li>
-                <a href="#schedule" className="hover:text-white transition-colors">
-                  Symposium Schedule
+                <a href="/#venue" className="hover:text-white transition-colors">
+                  📍 Campus Venue & Transit
                 </a>
               </li>
             </ul>

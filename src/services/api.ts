@@ -648,7 +648,7 @@ export const api = {
     }
 
     // 2. Google Apps Script
-    if (APPS_SCRIPT_URL && APPS_SCRIPT_URL.trim() !== '') {
+    if (this.getBackendType() === 'GOOGLE_SHEETS') {
       try {
         const response = await fetch(APPS_SCRIPT_URL, {
           method: 'POST',

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, Sparkles, Calendar, MapPin, Award, Layers, QrCode, ShieldCheck } from 'lucide-react';
+import { Menu, Sparkles, Calendar, MapPin, Award, Layers, QrCode } from 'lucide-react';
 import { MobileDrawer } from './MobileDrawer';
 
 export const Navbar: React.FC = () => {
@@ -19,12 +19,11 @@ export const Navbar: React.FC = () => {
   }, []);
 
   const navLinks = [
-    { name: '16 Events', href: isHomePage ? '#events' : '/#events', icon: Award, badge: '16' },
+    { name: '16 Events', href: isHomePage ? '#events' : '/events', icon: Award, badge: '16', isRoute: !isHomePage },
     { name: 'Departments', href: isHomePage ? '#departments' : '/#departments', icon: Layers },
     { name: 'Schedule', href: isHomePage ? '#schedule' : '/#schedule', icon: Calendar },
     { name: 'Venue', href: isHomePage ? '#venue' : '/#venue', icon: MapPin },
     { name: 'My Pass / QR', href: '/my-registration', icon: QrCode, isRoute: true },
-    { name: 'Committee Portal', href: '/committee/login', icon: ShieldCheck, isRoute: true },
   ];
 
   return (

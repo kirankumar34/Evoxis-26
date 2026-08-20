@@ -39,26 +39,37 @@ export const MyRegistrationPage: React.FC = () => {
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [copied, setCopied] = useState(false);
 
-  // Auto-search if token or regId is in URL query
+  // Auto-search if token is in URL query
   useEffect(() => {
     if (tokenParam) {
       handleLookup({ qrToken: tokenParam });
-    } else if (regIdParam) {
-      handleLookup({ registrationId: regIdParam });
     }
-  }, [tokenParam, regIdParam]);
+  }, [tokenParam]);
 
   const handleLookup = async (queryOverride?: { registrationId?: string; email?: string; mobile?: string; qrToken?: string }) => {
     setError(null);
+
+    const query = queryOverride || {
+      registrationId: registrationId.trim() || undefined,
+      email: emailOrPhone.includes('@') ? emailOrPhone.trim().toLowerCase() : undefined,
+      mobile: !emailOrPhone.includes('@') && emailOrPhone.trim() ? emailOrPhone.trim() : undefined,
+    };
+
+    // Security Guard: Prevent bare Registration ID enumeration
+    if (!query.qrToken) {
+      if (query.registrationId && !query.email && !query.mobile) {
+        setError('For security, please enter your registered Email or Mobile number along with your Registration ID.');
+        return;
+      }
+      if (!query.registrationId && !query.email && !query.mobile) {
+        setError('Please enter your Registration ID along with your registered Email or Mobile number.');
+        return;
+      }
+    }
+
     setIsLoading(true);
 
     try {
-      const query = queryOverride || {
-        registrationId: registrationId.trim(),
-        email: emailOrPhone.includes('@') ? emailOrPhone.trim() : undefined,
-        mobile: !emailOrPhone.includes('@') && emailOrPhone.trim() ? emailOrPhone.trim() : undefined,
-      };
-
       const result = await api.getRegistration(query);
 
       if (result.success && result.data) {

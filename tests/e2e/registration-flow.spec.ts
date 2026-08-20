@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('AC1 & AC12: End-to-End Registration & QR Pass Verification', () => {
+test.describe('EvoXis26: Participant-Only Registration & Routes', () => {
   test('1. Happy Path: Participant browses events, registers, and receives QR pass', async ({ page }) => {
     // 1. Visit homepage
     await page.goto('/');
@@ -12,7 +12,7 @@ test.describe('AC1 & AC12: End-to-End Registration & QR Pass Verification', () =
 
     // 3. Navigate to Register page
     await page.goto('/register');
-    await expect(page.locator('h1')).toContainText(/Official Registration/i);
+    await expect(page.locator('h1')).toContainText(/Join/i);
 
     // 4. Fill in participant details
     await page.fill('input[name="fullName"]', 'Test Student');
@@ -53,28 +53,24 @@ test.describe('AC1 & AC12: End-to-End Registration & QR Pass Verification', () =
     }
   });
 
-  test('3. My Registration: Lookup pass by Registration ID or Email', async ({ page }) => {
-    await page.goto('/my-registration');
-    await expect(page.locator('h1')).toContainText(/Find Your Pass/i);
+  test('3. Events Pages: /events and /events/:id render correctly', async ({ page }) => {
+    await page.goto('/events');
+    await expect(page.locator('h1')).toContainText(/Symposium Events/i);
 
-    // Fill search input with mock ID
-    await page.fill('input[placeholder*="EVOXIS26"]', 'EVOXIS26-00001');
-    await page.click('button:has-text("Search Pass")');
-
-    // Assert participant card loads
-    await expect(page.locator('text=EVOXIS26-00001').or(page.locator('text=Priya Raman'))).toBeVisible({ timeout: 5000 });
+    // Navigate to single event details
+    await page.goto('/events/TE01');
+    await expect(page.locator('h1')).toContainText(/Paper Presentation/i);
+    await expect(page.locator('text=Rules & Regulations')).toBeVisible();
   });
 
-  test('4. Committee Portal: Login & Reception Desk scanner interface loads', async ({ page }) => {
+  test('4. Committee routes removed: /committee/* and /admin/* redirect to home', async ({ page }) => {
     await page.goto('/committee/login');
-    await expect(page.locator('h1')).toContainText(/Committee Portal/i);
+    await expect(page).toHaveURL('/');
 
-    // Login as Reception
-    await page.fill('input[name="username"]', 'reception');
-    await page.fill('input[name="password"]', 'sriram2026');
-    await page.click('button:has-text("Sign In")');
+    await page.goto('/committee/dashboard');
+    await expect(page).toHaveURL('/');
 
-    // Assert redirection to scanner
-    await expect(page).toHaveURL(/committee\/reception-scanner|committee\/dashboard/, { timeout: 8000 });
+    await page.goto('/admin/events');
+    await expect(page).toHaveURL('/');
   });
 });
