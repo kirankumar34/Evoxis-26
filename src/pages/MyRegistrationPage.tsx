@@ -271,6 +271,34 @@ export const MyRegistrationPage: React.FC = () => {
                         <span className="text-slate-300 font-mono">{registrationData.mobileNumber}</span>
                       </div>
                     </div>
+
+                    {/* Team Roster details if team registration */}
+                    {registrationData.teamName && (
+                      <div className="pt-3 border-t border-slate-800/80">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-mono font-bold text-cyan-400 uppercase">
+                            Team: <span className="text-white font-sans font-bold ml-1">{registrationData.teamName}</span>
+                          </span>
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+                            {1 + (registrationData.teamMembers?.length || 0)} Members
+                          </span>
+                        </div>
+
+                        {registrationData.teamMembers && registrationData.teamMembers.length > 0 && (
+                          <div className="space-y-1.5 mt-2">
+                            {registrationData.teamMembers.map((tm: any, idx: number) => (
+                              <div
+                                key={idx}
+                                className="px-3 py-1.5 rounded-lg bg-slate-900/60 border border-slate-800 flex items-center justify-between text-xs"
+                              >
+                                <span className="text-slate-300">{tm.name || tm.fullName}</span>
+                                <span className="text-[10px] font-mono text-slate-500">{tm.role || 'TEAM_MEMBER'}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Registered Events with Live Attendance Status */}

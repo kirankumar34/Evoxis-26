@@ -86,7 +86,16 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
         ...prev,
         teamMembers: [
           ...(prev.teamMembers || []),
-          { name: '', email: '', phone: '', department: '' },
+          {
+            name: '',
+            email: '',
+            phone: '',
+            college: prev.collegeName || '',
+            department: prev.department || '',
+            year: prev.yearOfStudy || '3rd Year',
+            gender: 'Male',
+            role: 'TEAM_MEMBER',
+          },
         ],
       }));
     }
@@ -104,9 +113,11 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
     field: keyof TeamMember,
     value: string
   ) => {
-    const updated = [...(formData.teamMembers || [])];
-    updated[index][field] = value;
-    setFormData((prev) => ({ ...prev, teamMembers: updated }));
+    setFormData((prev) => {
+      const updated = [...(prev.teamMembers || [])];
+      updated[index] = { ...updated[index], [field]: value };
+      return { ...prev, teamMembers: updated };
+    });
   };
 
   const validateForm = () => {

@@ -106,7 +106,11 @@ export interface TeamMember {
   name: string;
   email: string;
   phone: string;
+  college?: string;
   department: string;
+  year?: string;
+  gender?: string;
+  role?: 'TEAM_HEAD' | 'TEAM_MEMBER' | 'INDIVIDUAL';
 }
 
 export interface RegistrationFormData {

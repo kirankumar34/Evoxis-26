@@ -33,6 +33,27 @@ export const RegistrationSuccessPage: React.FC = () => {
     department?: string;
     selectedEvents?: EventId[];
     isDuplicate?: boolean;
+    teamName?: string;
+    teamMembers?: Array<{
+      name: string;
+      email?: string;
+      phone?: string;
+      department?: string;
+      college?: string;
+      year?: string;
+      gender?: string;
+      role?: string;
+    }>;
+    participants?: Array<{
+      name: string;
+      email?: string;
+      phone?: string;
+      department?: string;
+      college?: string;
+      year?: string;
+      gender?: string;
+      role?: string;
+    }>;
   } | null;
 
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
@@ -46,6 +67,8 @@ export const RegistrationSuccessPage: React.FC = () => {
   const college = regState?.college || 'Sriram Engineering College';
   const department = regState?.department || 'Department of Computing';
   const selectedEvents = regState?.selectedEvents || (['TE01', 'NT05', 'SP02'] as EventId[]);
+  const teamName = regState?.teamName;
+  const teamMembers = regState?.teamMembers || [];
 
   // Trigger celebration confetti
   useEffect(() => {
@@ -169,6 +192,42 @@ export const RegistrationSuccessPage: React.FC = () => {
                   </span>
                 </div>
               </div>
+
+              {/* Team Roster Details (if team registration) */}
+              {teamName && (
+                <div className="pt-4 border-t border-slate-800">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider">
+                      Team Roster: <span className="text-white normal-case font-sans font-bold ml-1">{teamName}</span>
+                    </h3>
+                    <span className="px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-[11px] font-mono">
+                      {1 + teamMembers.length} Members
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="p-2.5 rounded-lg bg-slate-900/80 border border-cyan-500/30 flex items-center justify-between text-xs">
+                      <div>
+                        <span className="font-bold text-white block">{participantName}</span>
+                        <span className="text-slate-400 text-[11px]">{department}</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono text-[10px] font-bold">
+                        TEAM_HEAD
+                      </span>
+                    </div>
+                    {teamMembers.map((tm, i) => (
+                      <div key={i} className="p-2.5 rounded-lg bg-slate-900/50 border border-slate-800 flex items-center justify-between text-xs">
+                        <div>
+                          <span className="font-semibold text-slate-200 block">{tm.name}</span>
+                          <span className="text-slate-400 text-[11px]">{tm.department || department}</span>
+                        </div>
+                        <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-mono text-[10px]">
+                          TEAM_MEMBER
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Registered Events List */}
               <div className="pt-4 border-t border-slate-800">

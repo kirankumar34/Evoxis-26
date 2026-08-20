@@ -358,12 +358,11 @@ function registerParticipant(payload) {
 
     Logger.log('✨ [registerParticipant] Branch: NEW_REGISTRATION');
 
-    // 2. Atomic Sequential ID Generation: EVOXIS26-XXXXX
-    const registrationId = generateRegistrationId(ss);
-    Logger.log('🔑 [registerParticipant] Assigned Registration ID: ' + registrationId);
+    // 2. Determine Registration ID & QR Token (reusing passed payload ID for cross-system consistency)
+    const registrationId = payload.registrationId || generateRegistrationId(ss);
+    Logger.log('🔑 [registerParticipant] Using Registration ID: ' + registrationId);
 
-    // 3. Generate Secure HMAC QR Token
-    const qrToken = generateQRToken(registrationId);
+    const qrToken = payload.qrToken || generateQRToken(registrationId);
 
     const now = new Date();
     const regDate = Utilities.formatDate(now, 'Asia/Kolkata', 'yyyy-MM-dd');
@@ -371,36 +370,78 @@ function registerParticipant(payload) {
 
     const totalEvents = selectedEventIds.length;
     const selectedEventsStr = selectedEventIds.join(', ');
-    const regType = (teamMembers && teamMembers.length > 0) ? 'Team' : 'Individual';
+    const isTeam = payload.isTeam || (teamMembers && teamMembers.length > 0) || Boolean(payload.teamName);
+    const safeTeamName = payload.teamName || (isTeam ? (fullName + "'s Team") : '');
 
-    // 4. Write Master Record to Overall_Registration_Details
-    overallSheet.appendRow([
-      registrationId,
-      regDate,
-      regTime,
-      fullName,
-      cleanEmail,
-      cleanPhone,
-      collegeName,
-      department,
-      yearOfStudy || '3rd Year',
-      gender || 'Not Specified',
-      regType,
-      selectedEventsStr,
-      totalEvents,
-      0, // Free event entry
-      'Free',
-      qrToken,
-      'Active',
-      'Pending',
-      'Pending',
-      'Pending',
-      'Pending', // Overall Attendance Status
-      'Confirmed' // Registration Status
-    ]);
-    Logger.log('✅ [registerParticipant] Appended row to Overall_Registration_Details successfully for ' + registrationId);
+    // 3. Assemble Complete Roster of Participants (Team Head + all Co-Members)
+    const allParticipants = [
+      {
+        name: fullName,
+        email: cleanEmail,
+        mobile: cleanPhone,
+        college: collegeName,
+        department: department,
+        year: yearOfStudy || '3rd Year',
+        gender: gender || 'Not Specified',
+        role: isTeam ? 'TEAM_HEAD' : 'INDIVIDUAL'
+      }
+    ];
 
-    // 5. Write to Category Sheets and Individual EVT_<slug> sheets
+    if (teamMembers && Array.isArray(teamMembers) && teamMembers.length > 0) {
+      teamMembers.forEach((tm, idx) => {
+        if (tm && (tm.name || tm.fullName)) {
+          allParticipants.push({
+            name: (tm.name || tm.fullName).trim(),
+            email: (tm.email || '').trim().toLowerCase(),
+            mobile: (tm.phone || tm.mobile || '').trim(),
+            college: (tm.college || tm.collegeName || collegeName).trim(),
+            department: (tm.department || department).trim(),
+            year: tm.year || tm.yearOfStudy || yearOfStudy || '3rd Year',
+            gender: tm.gender || 'Not Specified',
+            role: 'TEAM_MEMBER'
+          });
+        }
+      });
+    }
+
+    Logger.log('👥 [registerParticipant] Total participants in registration: ' + allParticipants.length);
+
+    // 4. Write Master Records to Overall_Registration_Details (One Row per Participant)
+    allParticipants.forEach((p) => {
+      const pRegType = p.role === 'TEAM_HEAD'
+        ? ('Team (Head - ' + safeTeamName + ')')
+        : p.role === 'TEAM_MEMBER'
+          ? ('Team (Member - ' + safeTeamName + ')')
+          : 'Individual';
+
+      overallSheet.appendRow([
+        registrationId,
+        regDate,
+        regTime,
+        p.name,
+        p.email,
+        p.mobile,
+        p.college,
+        p.department,
+        p.year,
+        p.gender,
+        pRegType,
+        selectedEventsStr,
+        totalEvents,
+        0, // Free event entry
+        'Free',
+        qrToken,
+        'Active',
+        p.role === 'TEAM_HEAD' ? 'Pending' : 'N/A',
+        'Pending',
+        'Pending',
+        'Pending', // Overall Attendance Status
+        'Confirmed' // Registration Status
+      ]);
+    });
+    Logger.log('✅ [registerParticipant] Appended ' + allParticipants.length + ' participant row(s) to Overall_Registration_Details for ' + registrationId);
+
+    // 5. Write to Category Sheets and Individual EVT_<slug> sheets for ALL participants
     selectedEventIds.forEach(evtId => {
       const evtMeta = OFFICIAL_EVENTS.find(e => e.eventId === evtId) || {
         eventId: evtId,
@@ -416,23 +457,6 @@ function registerParticipant(payload) {
           : SHEETS.SPECIAL_REG;
 
       const catSheet = ss.getSheetByName(categorySheetName);
-      if (catSheet) {
-        catSheet.appendRow([
-          registrationId,
-          fullName,
-          cleanEmail,
-          cleanPhone,
-          collegeName,
-          department,
-          evtMeta.eventId,
-          evtMeta.eventName,
-          regDate,
-          qrToken,
-          'Pending',
-          'Registered'
-        ]);
-        Logger.log('✅ [registerParticipant] Appended row to Category Sheet [' + categorySheetName + ']');
-      }
 
       // Individual Event Sheet EVT_<slug>
       const evtSheetName = 'EVT_' + evtMeta.slug;
@@ -443,21 +467,43 @@ function registerParticipant(payload) {
           'Event ID', 'Event Name', 'Registration Date', 'QR Token', 'Attendance Status', 'Participation Status'
         ], '#0F172A', '#10B981');
       }
-      indivSheet.appendRow([
-        registrationId,
-        fullName,
-        cleanEmail,
-        cleanPhone,
-        collegeName,
-        department,
-        evtMeta.eventId,
-        evtMeta.eventName,
-        regDate,
-        qrToken,
-        'Pending',
-        'Registered'
-      ]);
-      Logger.log('✅ [registerParticipant] Appended row to Event Sheet [' + evtSheetName + ']');
+
+      allParticipants.forEach((p) => {
+        if (catSheet) {
+          catSheet.appendRow([
+            registrationId,
+            p.name,
+            p.email,
+            p.mobile,
+            p.college,
+            p.department,
+            evtMeta.eventId,
+            evtMeta.eventName,
+            regDate,
+            qrToken,
+            'Pending',
+            'Registered'
+          ]);
+        }
+
+        if (indivSheet) {
+          indivSheet.appendRow([
+            registrationId,
+            p.name,
+            p.email,
+            p.mobile,
+            p.college,
+            p.department,
+            evtMeta.eventId,
+            evtMeta.eventName,
+            regDate,
+            qrToken,
+            'Pending',
+            'Registered'
+          ]);
+        }
+      });
+      Logger.log('✅ [registerParticipant] Appended ' + allParticipants.length + ' participant row(s) to Category [' + categorySheetName + '] and Event [' + evtSheetName + ']');
     });
 
     // Release lock as soon as database write finishes
@@ -482,6 +528,8 @@ function registerParticipant(payload) {
 
     return {
       success: true,
+      sheetsSyncSuccess: true,
+      emailSuccess: true,
       message: 'Registration completed successfully.',
       data: {
         registrationId,
@@ -493,7 +541,9 @@ function registerParticipant(payload) {
         department,
         selectedEvents: selectedEventIds,
         totalEvents,
-        registrationDate: regDate
+        registrationDate: regDate,
+        teamName: safeTeamName || undefined,
+        participantsCount: allParticipants.length
       }
     };
 

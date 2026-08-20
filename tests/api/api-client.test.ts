@@ -230,4 +230,76 @@ describe('AC3, AC4, AC6, AC7, AC8: Full API Client & Database Service Layer', ()
     const invalidLogin = await api.loginAdmin('admin', 'wrongpassword');
     expect(invalidLogin.success).toBe(false);
   });
+
+  it('11. Team Registration persists complete team roster with all member details and roles', async () => {
+    const payload: RegistrationFormData = {
+      fullName: 'Arun Kumar',
+      email: 'arun.lead@example.com',
+      phone: '9840111111',
+      collegeName: 'Sriram Engineering College',
+      department: 'CSBS',
+      yearOfStudy: '3rd Year',
+      gender: 'Male',
+      selectedEventIds: ['TE02', 'SP01'],
+      isTeam: true,
+      teamName: 'Code Warriors',
+      teamMembers: [
+        {
+          name: 'Kumar V',
+          email: 'kumar.v@example.com',
+          phone: '9840111112',
+          college: 'Sriram Engineering College',
+          department: 'CSBS',
+          year: '3rd Year',
+          gender: 'Male',
+          role: 'TEAM_MEMBER',
+        },
+        {
+          name: 'Ravi Shankar',
+          email: 'ravi.s@example.com',
+          phone: '9840111113',
+          college: 'Sriram Engineering College',
+          department: 'CSE',
+          year: '3rd Year',
+          gender: 'Male',
+          role: 'TEAM_MEMBER',
+        },
+        {
+          name: 'Suresh Raina',
+          email: 'suresh.r@example.com',
+          phone: '9840111114',
+          college: 'Sriram Engineering College',
+          department: 'ECE',
+          year: '3rd Year',
+          gender: 'Male',
+          role: 'TEAM_MEMBER',
+        },
+      ],
+      agreedToRules: true,
+    };
+
+    const response = await api.registerParticipant(payload);
+    expect(response.success).toBe(true);
+    expect(response.data?.teamName).toBe('Code Warriors');
+    expect(response.data?.teamMembers?.length).toBe(3);
+    expect(response.data?.participants?.length).toBe(4);
+
+    // Verify Team Head
+    const head = response.data?.participants?.[0];
+    expect(head?.name).toBe('Arun Kumar');
+    expect(head?.role).toBe('TEAM_HEAD');
+
+    // Verify Team Members
+    const member1 = response.data?.participants?.[1];
+    expect(member1?.name).toBe('Kumar V');
+    expect(member1?.email).toBe('kumar.v@example.com');
+    expect(member1?.role).toBe('TEAM_MEMBER');
+
+    // Verify retrieval includes team information
+    const regId = response.data!.registrationId;
+    const lookup = await api.getRegistration({ registrationId: regId });
+    expect(lookup.success).toBe(true);
+    expect(lookup.data?.teamName).toBe('Code Warriors');
+    expect(lookup.data?.teamMembers?.length).toBe(4);
+  });
 });

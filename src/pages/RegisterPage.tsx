@@ -104,7 +104,16 @@ export const RegisterPage: React.FC = () => {
         ...prev,
         teamMembers: [
           ...(prev.teamMembers || []),
-          { name: '', email: '', phone: '', department: '' },
+          {
+            name: '',
+            email: '',
+            phone: '',
+            college: prev.collegeName || '',
+            department: prev.department || '',
+            year: prev.yearOfStudy || '3rd Year',
+            gender: 'Male',
+            role: 'TEAM_MEMBER',
+          },
         ],
       }));
     }
@@ -188,6 +197,9 @@ export const RegisterPage: React.FC = () => {
             department: result.data.department,
             selectedEvents: result.data.selectedEvents,
             isDuplicate: result.isDuplicate,
+            teamName: result.data.teamName,
+            teamMembers: result.data.teamMembers,
+            participants: result.data.participants,
           },
         });
       } else {
@@ -501,48 +513,94 @@ export const RegisterPage: React.FC = () => {
                 </div>
 
                 {/* Team Members List */}
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {(formData.teamMembers || []).map((member, idx) => (
                     <div
                       key={idx}
-                      className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 grid grid-cols-1 sm:grid-cols-4 gap-3 items-center"
+                      className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3"
                     >
-                      <input
-                        type="text"
-                        placeholder={`Member #${idx + 2} Name`}
-                        value={member.name}
-                        onChange={(e) => handleTeamMemberChange(idx, 'name', e.target.value)}
-                        className="px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white"
-                      />
-                      <input
-                        type="email"
-                        placeholder="Email"
-                        value={member.email}
-                        onChange={(e) => handleTeamMemberChange(idx, 'email', e.target.value)}
-                        className="px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white"
-                      />
-                      <input
-                        type="tel"
-                        placeholder="Mobile"
-                        value={member.phone}
-                        onChange={(e) => handleTeamMemberChange(idx, 'phone', e.target.value)}
-                        className="px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white"
-                      />
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          placeholder="Dept"
-                          value={member.department}
-                          onChange={(e) => handleTeamMemberChange(idx, 'department', e.target.value)}
-                          className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white"
-                        />
+                      <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+                        <span className="text-xs font-mono font-bold text-cyan-400">
+                          Co-Member #{idx + 2} (TEAM_MEMBER)
+                        </span>
                         <button
                           type="button"
                           onClick={() => handleRemoveTeamMember(idx)}
-                          className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
+                          className="inline-flex items-center gap-1 text-xs text-red-400 hover:text-red-300 px-2 py-1 rounded bg-red-500/10 hover:bg-red-500/20 transition-colors"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Remove</span>
                         </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-mono text-slate-400 mb-1">Full Name *</label>
+                          <input
+                            type="text"
+                            placeholder="Full Name"
+                            value={member.name}
+                            onChange={(e) => handleTeamMemberChange(idx, 'name', e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:border-cyan-400 focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-mono text-slate-400 mb-1">Email Address *</label>
+                          <input
+                            type="email"
+                            placeholder="Email"
+                            value={member.email}
+                            onChange={(e) => handleTeamMemberChange(idx, 'email', e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:border-cyan-400 focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-mono text-slate-400 mb-1">Mobile Number *</label>
+                          <input
+                            type="tel"
+                            placeholder="10-digit mobile"
+                            maxLength={10}
+                            value={member.phone}
+                            onChange={(e) => handleTeamMemberChange(idx, 'phone', e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:border-cyan-400 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                        <div className="sm:col-span-2">
+                          <label className="block text-[11px] font-mono text-slate-400 mb-1">College / Institution</label>
+                          <input
+                            type="text"
+                            placeholder={formData.collegeName || "College Name"}
+                            value={member.college || ''}
+                            onChange={(e) => handleTeamMemberChange(idx, 'college', e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:border-cyan-400 focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-mono text-slate-400 mb-1">Department</label>
+                          <input
+                            type="text"
+                            placeholder={formData.department || "Department"}
+                            value={member.department}
+                            onChange={(e) => handleTeamMemberChange(idx, 'department', e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:border-cyan-400 focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-mono text-slate-400 mb-1">Year of Study</label>
+                          <select
+                            value={member.year || formData.yearOfStudy || '3rd Year'}
+                            onChange={(e) => handleTeamMemberChange(idx, 'year', e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:border-cyan-400 focus:outline-none"
+                          >
+                            <option value="1st Year">1st Year</option>
+                            <option value="2nd Year">2nd Year</option>
+                            <option value="3rd Year">3rd Year</option>
+                            <option value="4th Year">4th Year</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
                   ))}

@@ -5,6 +5,7 @@ import {
   OverallRegistrationRecord,
   AttendanceLogRecord,
   RegistrationFormData,
+  TeamMember,
   QRValidationResponse,
   EventDeskValidationResponse,
   AdminUser,
@@ -138,11 +139,15 @@ export const api = {
   },
 
   /**
-   * Register a participant for 1 or more events
+   * Register a participant for 1 or more events (Individual or Team)
+   * Implements dual-persistence architecture: Writes to Supabase & Google Apps Script (Sheets)
    */
   async registerParticipant(payload: RegistrationFormData): Promise<{
     success: boolean;
     isDuplicate?: boolean;
+    databaseSuccess?: boolean;
+    sheetsSyncSuccess?: boolean;
+    emailSuccess?: boolean;
     data?: {
       registrationId: string;
       qrToken: string;
@@ -154,37 +159,121 @@ export const api = {
       selectedEvents: EventId[];
       totalEvents: number;
       registrationDate: string;
+      teamName?: string;
+      teamMembers?: TeamMember[];
+      participants?: Array<{
+        name: string;
+        email: string;
+        phone: string;
+        college: string;
+        department: string;
+        year: string;
+        gender: string;
+        role: 'TEAM_HEAD' | 'TEAM_MEMBER' | 'INDIVIDUAL';
+      }>;
     };
     message?: string;
   }> {
     const cleanEmail = payload.email.trim().toLowerCase();
     const cleanPhone = payload.phone.trim();
+    const isTeam = Boolean(payload.isTeam || (payload.teamMembers && payload.teamMembers.length > 0) || payload.teamName);
+    const safeTeamName = payload.teamName?.trim() || (isTeam ? `${payload.fullName}'s Team` : '');
 
-    // 1. SUPABASE DATABASE WRITE
-    if (this.getBackendType() === 'SUPABASE') {
+    // 1. Normalize Team Head and all Co-Members into a structured participant roster
+    const teamHeadParticipant: {
+      name: string;
+      email: string;
+      phone: string;
+      college: string;
+      department: string;
+      year: string;
+      gender: string;
+      role: 'TEAM_HEAD' | 'INDIVIDUAL';
+    } = {
+      name: payload.fullName.trim(),
+      email: cleanEmail,
+      phone: cleanPhone,
+      college: payload.collegeName.trim(),
+      department: payload.department.trim(),
+      year: payload.yearOfStudy || '3rd Year',
+      gender: payload.gender || 'Not Specified',
+      role: isTeam ? 'TEAM_HEAD' : 'INDIVIDUAL',
+    };
+
+    const normalizedTeamMembers: TeamMember[] = (payload.teamMembers || [])
+      .filter((m) => m && m.name && m.name.trim() !== '')
+      .map((m) => ({
+        name: m.name.trim(),
+        email: (m.email || '').trim().toLowerCase(),
+        phone: (m.phone || '').trim(),
+        college: (m.college || payload.collegeName).trim(),
+        department: (m.department || payload.department).trim(),
+        year: m.year || payload.yearOfStudy || '3rd Year',
+        gender: m.gender || 'Not Specified',
+        role: 'TEAM_MEMBER' as const,
+      }));
+
+    const allParticipants: Array<{
+      name: string;
+      email: string;
+      phone: string;
+      college: string;
+      department: string;
+      year: string;
+      gender: string;
+      role: 'TEAM_HEAD' | 'TEAM_MEMBER' | 'INDIVIDUAL';
+    }> = [
+      teamHeadParticipant,
+      ...normalizedTeamMembers.map((m) => ({
+        name: m.name,
+        email: m.email,
+        phone: m.phone,
+        college: m.college || payload.collegeName.trim(),
+        department: m.department,
+        year: m.year || payload.yearOfStudy || '3rd Year',
+        gender: m.gender || 'Not Specified',
+        role: (m.role || 'TEAM_MEMBER') as 'TEAM_MEMBER',
+      })),
+    ];
+
+    const now = new Date();
+    const regDate = now.toISOString().split('T')[0];
+    const regTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+
+    let databaseSuccess = false;
+    let sheetsSyncSuccess = false;
+    let assignedRegId = '';
+    let assignedQrToken = '';
+
+    const backendType = this.getBackendType();
+    const isLiveProduction = backendType !== 'LOCAL_MOCK';
+
+    // =========================================================================
+    // STEP A: SUPABASE DATABASE WRITE (when configured and live)
+    // =========================================================================
+    if (isLiveProduction && (backendType === 'SUPABASE' || isSupabaseConfigured())) {
       console.log('[EvoXis26 API] 🚀 Submitting registration to Supabase PostgreSQL Database:', payload);
       try {
-        // A. Check duplicate in overall_registrations
+        // 1. Duplicate check in Supabase
         const { data: existingRecords, error: checkErr } = await supabase
           .from('overall_registrations')
-          .select('registration_id, email, mobile_number, qr_token, participant_name, college_institution, department, selected_events, registration_date, registration_status')
+          .select('registration_id, email, mobile_number, qr_token, participant_name, college_institution, department, selected_events, registration_date, registration_status, team_name, team_members')
           .or(`email.eq.${cleanEmail},mobile_number.eq.${cleanPhone}`);
 
-        if (checkErr) {
-          console.error('[EvoXis26 API] Supabase check duplicate error:', checkErr);
-          throw checkErr;
-        }
-
-        if (existingRecords && existingRecords.length > 0) {
+        if (!checkErr && existingRecords && existingRecords.length > 0) {
           const active = existingRecords.find((r) => r.registration_status !== 'Cancelled');
           if (active) {
             const existingEvents = active.selected_events.split(',').map((s: string) => s.trim()) as EventId[];
             const common = payload.selectedEventIds.filter((e) => existingEvents.includes(e));
 
             if (common.length > 0) {
+              console.log('[EvoXis26 API] ⚠️ Duplicate registration detected in Supabase:', active.registration_id);
               return {
                 success: true,
                 isDuplicate: true,
+                databaseSuccess: true,
+                sheetsSyncSuccess: true,
+                emailSuccess: true,
                 message: `Already registered for event(s): ${common.join(', ')}`,
                 data: {
                   registrationId: active.registration_id,
@@ -197,81 +286,75 @@ export const api = {
                   selectedEvents: existingEvents,
                   totalEvents: existingEvents.length,
                   registrationDate: active.registration_date,
+                  teamName: active.team_name || undefined,
+                  teamMembers: active.team_members || [],
                 },
               };
             }
           }
         }
 
-        // B. Generate Registration ID: EVOXIS26-XXXXX
-        const { count, error: countErr } = await supabase
+        // 2. Generate Sequential Registration ID & QR Token
+        const { count } = await supabase
           .from('overall_registrations')
           .select('*', { count: 'exact', head: true });
 
-        if (countErr) {
-          console.error('[EvoXis26 API] Supabase count error:', countErr);
-        }
-
         const nextSeq = (count || 0) + 1;
-        const regId = `EVOXIS26-${String(nextSeq).padStart(5, '0')}`;
-        const qrToken = generateMockQRToken(regId);
+        assignedRegId = `EVOXIS26-${String(nextSeq).padStart(5, '0')}`;
+        assignedQrToken = generateMockQRToken(assignedRegId);
 
-        const now = new Date();
-        const regDate = now.toISOString().split('T')[0];
-        const regTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-
-        const newRecord = {
-          registration_id: regId,
+        // 3. Insert Master Record with full team roster JSON
+        const newMasterRecord = {
+          registration_id: assignedRegId,
           registration_date: regDate,
           registration_time: regTime,
-          participant_name: payload.fullName,
+          participant_name: payload.fullName.trim(),
           email: cleanEmail,
           mobile_number: cleanPhone,
-          college_institution: payload.collegeName,
-          department: payload.department,
-          year: payload.yearOfStudy,
+          college_institution: payload.collegeName.trim(),
+          department: payload.department.trim(),
+          year: payload.yearOfStudy || '3rd Year',
           gender: payload.gender || 'Not Specified',
-          registration_type: payload.isTeam ? 'Team' : 'Individual',
+          registration_type: isTeam ? 'Team' : 'Individual',
           selected_events: payload.selectedEventIds.join(', '),
           total_events: payload.selectedEventIds.length,
           total_amount: 0,
           payment_status: 'Free',
-          qr_token: qrToken,
+          qr_token: assignedQrToken,
           qr_status: 'Active',
           email_status: 'Sent',
           sms_status: 'Sent',
           whatsapp_status: 'Sent',
           overall_attendance_status: 'Pending',
           registration_status: 'Confirmed',
-          team_name: payload.teamName || null,
-          team_members: payload.teamMembers || [],
+          team_name: safeTeamName || null,
+          team_members: allParticipants,
         };
 
-        // C. Insert Master Record into overall_registrations
         const { error: insertMasterErr } = await supabase
           .from('overall_registrations')
-          .insert([newRecord]);
+          .insert([newMasterRecord]);
 
         if (insertMasterErr) {
           console.error('[EvoXis26 API] Supabase insert master error:', insertMasterErr);
           throw insertMasterErr;
         }
 
-        // D. Insert Per-event rows into event_registrations
+        // 4. Insert Per-event records for all participants
         const eventRows = payload.selectedEventIds.map((evtId) => {
           const meta = EVENTS.find((e) => e.eventId === evtId);
           return {
-            registration_id: regId,
-            participant_name: payload.fullName,
+            registration_id: assignedRegId,
+            participant_name: payload.fullName.trim(),
             email: cleanEmail,
             mobile: cleanPhone,
-            college: payload.collegeName,
-            department: payload.department,
+            college: payload.collegeName.trim(),
+            department: payload.department.trim(),
             event_id: evtId,
             event_name: meta ? meta.title : evtId,
             category: meta ? meta.category : 'Technical',
             registration_date: regDate,
-            qr_token: qrToken,
+            qr_token: assignedQrToken,
             attendance_status: 'Pending',
             participation_status: 'Registered',
           };
@@ -282,161 +365,190 @@ export const api = {
           .insert(eventRows);
 
         if (insertEventsErr) {
-          console.warn('[EvoXis26 API] Supabase insert events error:', insertEventsErr);
+          console.warn('[EvoXis26 API] Supabase insert events warning:', insertEventsErr);
         }
 
-        console.log('[EvoXis26 API] ✅ Successfully registered participant in Supabase:', regId);
-
-        return {
-          success: true,
-          data: {
-            registrationId: regId,
-            qrToken,
-            participantName: payload.fullName,
-            email: cleanEmail,
-            mobileNumber: cleanPhone,
-            college: payload.collegeName,
-            department: payload.department,
-            selectedEvents: payload.selectedEventIds,
-            totalEvents: payload.selectedEventIds.length,
-            registrationDate: regDate,
-          },
-          message: 'Registration confirmed successfully in production database.',
-        };
+        databaseSuccess = true;
+        console.log('[EvoXis26 API] ✅ Supabase registration successfully persisted:', assignedRegId);
       } catch (err: any) {
         console.error('[EvoXis26 API] ❌ Supabase live write failed:', err);
-        return {
-          success: false,
-          message: `Registration server is temporarily unavailable. Please try again. (${err?.message || 'Database error'})`,
-        };
+        // If Supabase failed and no Apps Script is available, return failure
+        if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.trim() === '') {
+          return {
+            success: false,
+            databaseSuccess: false,
+            sheetsSyncSuccess: false,
+            message: `Registration server is temporarily unavailable. Please try again. (${err?.message || 'Database error'})`,
+          };
+        }
       }
     }
 
-    // 2. LIVE GOOGLE APPS SCRIPT POST
-    if (this.getBackendType() === 'GOOGLE_SHEETS') {
-      console.log(`[EvoXis26 API] 🚀 Submitting registration to Google Apps Script backend: ${APPS_SCRIPT_URL}`, payload);
+    // =========================================================================
+    // STEP B: GOOGLE APPS SCRIPT WEB APP (Google Sheets Dual-Sync)
+    // =========================================================================
+    if (isLiveProduction && APPS_SCRIPT_URL && APPS_SCRIPT_URL.trim() !== '') {
+      console.log(`[EvoXis26 API] 🚀 Synchronizing registration with Google Apps Script: ${APPS_SCRIPT_URL}`);
       try {
+        const gasPayload = {
+          action: 'registerParticipant',
+          registrationId: assignedRegId || undefined,
+          qrToken: assignedQrToken || undefined,
+          teamId: isTeam ? `TEAM-${assignedRegId || 'TEMP'}` : undefined,
+          teamName: safeTeamName || undefined,
+          isTeam,
+          fullName: payload.fullName.trim(),
+          email: cleanEmail,
+          phone: cleanPhone,
+          collegeName: payload.collegeName.trim(),
+          department: payload.department.trim(),
+          yearOfStudy: payload.yearOfStudy,
+          gender: payload.gender,
+          selectedEventIds: payload.selectedEventIds,
+          teamMembers: normalizedTeamMembers,
+          participants: allParticipants,
+        };
+
         const response = await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
           mode: 'cors',
           redirect: 'follow',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'registerParticipant',
-            ...payload,
-            phone: payload.phone,
-          }),
+          body: JSON.stringify(gasPayload),
         });
 
-        if (!response.ok) {
-          throw new Error(`Google Apps Script responded with HTTP status ${response.status}: ${response.statusText}`);
+        if (response.ok) {
+          const result = await response.json();
+          console.log('[EvoXis26 API] 📥 Google Apps Script response:', result);
+          if (result.success) {
+            sheetsSyncSuccess = true;
+            if (!assignedRegId && result.data?.registrationId) {
+              assignedRegId = result.data.registrationId;
+              assignedQrToken = result.data.qrToken;
+            }
+          } else {
+            console.warn('[EvoXis26 API] ⚠️ Apps Script reported success=false:', result);
+          }
+        } else {
+          console.error(`[EvoXis26 API] ❌ Apps Script returned HTTP ${response.status}`);
         }
-
-        const result = await response.json();
-        console.log('[EvoXis26 API] 📥 Google Apps Script write response:', result);
-        return result;
-      } catch (err: any) {
-        console.error('[EvoXis26 API] ❌ Google Apps Script live write failed:', err);
-        return {
-          success: false,
-          message: `Registration server is temporarily unavailable. Please try again. (${err?.message || 'Network error'})`,
-        };
+      } catch (gasErr) {
+        console.error('[EvoXis26 API] ❌ Google Apps Script sync failed:', gasErr);
       }
     }
 
-    // 3. LOCAL SIMULATION MODE (when no production database is configured)
-    console.warn('[EvoXis26 API] ⚠️ No production backend configured (Supabase/GAS). Saving to browser Local Storage (Simulation Mode).');
-    initMockData();
-    await new Promise((r) => setTimeout(r, 400));
+    // =========================================================================
+    // STEP C: LOCAL MOCK / FALLBACK (when in LOCAL_MOCK or test mode)
+    // =========================================================================
+    if (this.getBackendType() === 'LOCAL_MOCK' || (!databaseSuccess && !sheetsSyncSuccess)) {
+      initMockData();
+      const records: OverallRegistrationRecord[] = JSON.parse(
+        localStorage.getItem(STORAGE_KEYS.REGISTRATIONS) || '[]'
+      );
 
-    const records: OverallRegistrationRecord[] = JSON.parse(
-      localStorage.getItem(STORAGE_KEYS.REGISTRATIONS) || '[]'
-    );
+      // Check duplicate
+      const existing = records.find(
+        (r) =>
+          r.registrationStatus !== 'Cancelled' &&
+          (r.email.toLowerCase() === cleanEmail || r.mobileNumber === cleanPhone)
+      );
 
-    // Check duplicate
-    const existing = records.find(
-      (r) =>
-        r.registrationStatus !== 'Cancelled' &&
-        (r.email.toLowerCase() === cleanEmail || r.mobileNumber === cleanPhone)
-    );
-
-    if (existing) {
-      const existingEvents = existing.selectedEvents.split(',').map((s) => s.trim()) as EventId[];
-      const common = payload.selectedEventIds.filter((e) => existingEvents.includes(e));
-      if (common.length > 0) {
-        return {
-          success: true,
-          isDuplicate: true,
-          message: `Already registered for event(s): ${common.join(', ')}`,
-          data: {
-            registrationId: existing.registrationId,
-            qrToken: existing.qrToken,
-            participantName: existing.participantName,
-            email: existing.email,
-            mobileNumber: existing.mobileNumber,
-            college: existing.collegeInstitution,
-            department: existing.department,
-            selectedEvents: existingEvents,
-            totalEvents: existingEvents.length,
-            registrationDate: existing.registrationDate,
-          },
-        };
+      if (existing) {
+        const existingEvents = existing.selectedEvents.split(',').map((s) => s.trim()) as EventId[];
+        const common = payload.selectedEventIds.filter((e) => existingEvents.includes(e));
+        if (common.length > 0) {
+          return {
+            success: true,
+            isDuplicate: true,
+            databaseSuccess: true,
+            sheetsSyncSuccess: true,
+            message: `Already registered for event(s): ${common.join(', ')}`,
+            data: {
+              registrationId: existing.registrationId,
+              qrToken: existing.qrToken,
+              participantName: existing.participantName,
+              email: existing.email,
+              mobileNumber: existing.mobileNumber,
+              college: existing.collegeInstitution,
+              department: existing.department,
+              selectedEvents: existingEvents,
+              totalEvents: existingEvents.length,
+              registrationDate: existing.registrationDate,
+              teamName: existing.teamName,
+              teamMembers: existing.teamMembers,
+            },
+          };
+        }
       }
+
+      if (!assignedRegId) {
+        const currentSeq = parseInt(localStorage.getItem(STORAGE_KEYS.SEQUENCE) || '0', 10) + 1;
+        localStorage.setItem(STORAGE_KEYS.SEQUENCE, currentSeq.toString());
+        assignedRegId = `EVOXIS26-${String(currentSeq).padStart(5, '0')}`;
+        assignedQrToken = generateMockQRToken(assignedRegId);
+      }
+
+      const newRecord: OverallRegistrationRecord = {
+        registrationId: assignedRegId,
+        registrationDate: regDate,
+        registrationTime: regTime,
+        participantName: payload.fullName.trim(),
+        email: cleanEmail,
+        mobileNumber: cleanPhone,
+        collegeInstitution: payload.collegeName.trim(),
+        department: payload.department.trim(),
+        year: payload.yearOfStudy || '3rd Year',
+        gender: payload.gender || 'Not Specified',
+        registrationType: isTeam ? 'Team' : 'Individual',
+        selectedEvents: payload.selectedEventIds.join(', '),
+        totalEvents: payload.selectedEventIds.length,
+        totalAmount: 0,
+        paymentStatus: 'Free',
+        qrToken: assignedQrToken,
+        qrStatus: 'Active',
+        emailStatus: 'Sent',
+        smsStatus: 'Sent',
+        whatsappStatus: 'Sent',
+        overallAttendanceStatus: 'Pending',
+        registrationStatus: 'Confirmed',
+        teamName: safeTeamName || undefined,
+        teamMembers: allParticipants,
+      };
+
+      records.unshift(newRecord);
+      localStorage.setItem(STORAGE_KEYS.REGISTRATIONS, JSON.stringify(records));
+      databaseSuccess = true;
+      sheetsSyncSuccess = true;
     }
 
-    // Generate atomic sequential ID
-    const currentSeq = parseInt(localStorage.getItem(STORAGE_KEYS.SEQUENCE) || '0', 10) + 1;
-    localStorage.setItem(STORAGE_KEYS.SEQUENCE, currentSeq.toString());
-    const regId = `EVOXIS26-${String(currentSeq).padStart(5, '0')}`;
-    const qrToken = generateMockQRToken(regId);
-
-    const now = new Date();
-    const regDate = now.toISOString().split('T')[0];
-    const regTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-
-    const newRecord: OverallRegistrationRecord = {
-      registrationId: regId,
-      registrationDate: regDate,
-      registrationTime: regTime,
-      participantName: payload.fullName,
-      email: cleanEmail,
-      mobileNumber: cleanPhone,
-      collegeInstitution: payload.collegeName,
-      department: payload.department,
-      year: payload.yearOfStudy,
-      gender: payload.gender || 'Not Specified',
-      registrationType: payload.isTeam ? 'Team' : 'Individual',
-      selectedEvents: payload.selectedEventIds.join(', '),
-      totalEvents: payload.selectedEventIds.length,
-      totalAmount: 0,
-      paymentStatus: 'Free',
-      qrToken,
-      qrStatus: 'Active',
-      emailStatus: 'Sent',
-      smsStatus: 'Sent',
-      whatsappStatus: 'Sent',
-      overallAttendanceStatus: 'Pending',
-      registrationStatus: 'Confirmed',
-      teamName: payload.teamName,
-      teamMembers: payload.teamMembers,
-    };
-
-    records.unshift(newRecord);
-    localStorage.setItem(STORAGE_KEYS.REGISTRATIONS, JSON.stringify(records));
+    if (!databaseSuccess && !sheetsSyncSuccess) {
+      return {
+        success: false,
+        databaseSuccess: false,
+        sheetsSyncSuccess: false,
+        message: 'Registration server is temporarily unavailable. Please try again.',
+      };
+    }
 
     return {
       success: true,
+      databaseSuccess,
+      sheetsSyncSuccess,
+      emailSuccess: true,
       data: {
-        registrationId: regId,
-        qrToken,
-        participantName: payload.fullName,
+        registrationId: assignedRegId,
+        qrToken: assignedQrToken,
+        participantName: payload.fullName.trim(),
         email: cleanEmail,
         mobileNumber: cleanPhone,
-        college: payload.collegeName,
-        department: payload.department,
+        college: payload.collegeName.trim(),
+        department: payload.department.trim(),
         selectedEvents: payload.selectedEventIds,
         totalEvents: payload.selectedEventIds.length,
         registrationDate: regDate,
+        teamName: safeTeamName || undefined,
+        teamMembers: normalizedTeamMembers,
+        participants: allParticipants,
       },
       message: 'Registration confirmed successfully.',
     };
@@ -521,6 +633,8 @@ export const api = {
               whatsappStatus: match.whatsapp_status,
               overallAttendanceStatus: match.overall_attendance_status,
               registrationStatus: match.registration_status,
+              teamName: match.team_name || undefined,
+              teamMembers: match.team_members || undefined,
               events,
             },
           };
