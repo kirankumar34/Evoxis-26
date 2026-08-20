@@ -415,47 +415,56 @@ export const api = {
     if (isLiveProduction && APPS_SCRIPT_URL && APPS_SCRIPT_URL.trim() !== '') {
       console.log(`[EvoXis26 API] 🚀 Synchronizing registration with Google Apps Script: ${APPS_SCRIPT_URL}`);
       try {
-        const gasPayload = {
-          action: 'registerParticipant',
-          registrationId: assignedRegId || undefined,
-          qrToken: assignedQrToken || undefined,
-          teamId: isTeam ? `TEAM-${assignedRegId || 'TEMP'}` : undefined,
-          teamName: safeTeamName || undefined,
-          isTeam,
-          fullName: payload.fullName.trim(),
-          email: cleanEmail,
-          phone: cleanPhone,
-          collegeName: payload.collegeName.trim(),
-          department: payload.department.trim(),
-          yearOfStudy: payload.yearOfStudy,
-          gender: payload.gender,
-          selectedEventIds: payload.selectedEventIds,
-          teamMembers: normalizedTeamMembers,
-          participants: allParticipants,
-        };
+        let anySuccess = false;
 
-        const response = await fetch(APPS_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'cors',
-          redirect: 'follow',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(gasPayload),
-        });
+        // Synchronize every participant in the registration to Google Sheets
+        for (let pIdx = 0; pIdx < allParticipants.length; pIdx++) {
+          const p = allParticipants[pIdx];
+          const pRegId = pIdx === 0 ? assignedRegId : `${assignedRegId}-M${pIdx}`;
+          const pQrToken = pIdx === 0 ? assignedQrToken : `${assignedQrToken}-M${pIdx}`;
 
-        if (response.ok) {
-          const result = await response.json();
-          console.log('[EvoXis26 API] 📥 Google Apps Script response:', result);
-          if (result.success) {
-            sheetsSyncSuccess = true;
-            if (!assignedRegId && result.data?.registrationId) {
-              assignedRegId = result.data.registrationId;
-              assignedQrToken = result.data.qrToken;
+          const gasPayload = {
+            action: 'registerParticipant',
+            registrationId: pRegId || undefined,
+            qrToken: pQrToken || undefined,
+            teamId: isTeam ? `TEAM-${assignedRegId || 'TEMP'}` : undefined,
+            teamName: safeTeamName || undefined,
+            isTeam,
+            fullName: p.name,
+            email: p.email,
+            phone: p.phone,
+            collegeName: p.college,
+            department: p.department,
+            yearOfStudy: p.year,
+            gender: p.gender,
+            selectedEventIds: payload.selectedEventIds,
+            teamMembers: normalizedTeamMembers,
+            participants: allParticipants,
+          };
+
+          const response = await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'cors',
+            redirect: 'follow',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(gasPayload),
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            console.log(`[EvoXis26 API] 📥 Google Apps Script synced participant [${p.name}]:`, result.success);
+            if (result.success) {
+              anySuccess = true;
+              if (!assignedRegId && result.data?.registrationId) {
+                assignedRegId = result.data.registrationId;
+                assignedQrToken = result.data.qrToken;
+              }
             }
-          } else {
-            console.warn('[EvoXis26 API] ⚠️ Apps Script reported success=false:', result);
           }
-        } else {
-          console.error(`[EvoXis26 API] ❌ Apps Script returned HTTP ${response.status}`);
+        }
+
+        if (anySuccess) {
+          sheetsSyncSuccess = true;
         }
       } catch (gasErr) {
         console.error('[EvoXis26 API] ❌ Google Apps Script sync failed:', gasErr);
