@@ -6,15 +6,18 @@ interface AuthContextType {
   currentStation: string;
   assignedEventId?: string;
   soundEnabled: boolean;
+  portalMode: 'PRODUCTION' | 'TEST';
   login: (role: StaffRole, station?: string, eventId?: string, name?: string) => void;
   logout: () => void;
   setStation: (station: string) => void;
   setAssignedEventId: (eventId: string) => void;
   toggleSound: () => void;
+  setPortalMode: (mode: 'PRODUCTION' | 'TEST') => void;
   hasRole: (roles: StaffRole[]) => boolean;
 }
 
 const AUTH_STORAGE_KEY = 'evoxis_op_auth_session';
+const PORTAL_MODE_KEY = 'evoxis_op_portal_mode';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -37,6 +40,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+
+  const [portalMode, setPortalModeState] = useState<'PRODUCTION' | 'TEST'>(() => {
+    try {
+      const saved = localStorage.getItem(PORTAL_MODE_KEY);
+      return (saved === 'TEST' || saved === 'PRODUCTION') ? saved : 'PRODUCTION';
+    } catch {
+      return 'PRODUCTION';
+    }
+  });
+
+  const setPortalMode = (mode: 'PRODUCTION' | 'TEST') => {
+    setPortalModeState(mode);
+    try {
+      localStorage.setItem(PORTAL_MODE_KEY, mode);
+    } catch {}
+  };
 
   useEffect(() => {
     if (user) {
@@ -104,11 +123,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         currentStation,
         assignedEventId,
         soundEnabled,
+        portalMode,
         login,
         logout,
         setStation,
         setAssignedEventId,
         toggleSound,
+        setPortalMode,
         hasRole,
       }}
     >

@@ -81,6 +81,31 @@ export interface ParticipantProfile {
   foodStation?: string;
 }
 
+export type QrResolutionErrorCode =
+  | 'INVALID_QR_FORMAT'
+  | 'QR_NOT_FOUND'
+  | 'QR_NOT_ASSIGNED'
+  | 'QR_REVOKED'
+  | 'TEST_QR_IN_PRODUCTION_MODE'
+  | 'PRODUCTION_QR_IN_TEST_MODE'
+  | 'PARTICIPANT_NOT_FOUND'
+  | 'REGISTRATION_NOT_FOUND';
+
+export interface QrResolutionResult {
+  success: boolean;
+  errorCode?: QrResolutionErrorCode;
+  errorMessage?: string;
+  qrCode?: string;
+  qrType?: QrType;
+  environment?: QrEnvironment;
+  status?: QrStatus;
+  participantId?: string;
+  registrationId?: string;
+  participant?: ParticipantProfile;
+  registration?: any;
+  registeredEvents?: string[];
+}
+
 export type ScanResultState =
   | 'SUCCESS'
   | 'DUPLICATE_CAMPUS'
@@ -92,7 +117,10 @@ export type ScanResultState =
   | 'NOT_FOUND'
   | 'QR_CONFLICT'
   | 'TEST_QR_IN_PROD'
+  | 'PROD_QR_IN_TEST'
   | 'QR_REVOKED'
+  | 'QR_NOT_FOUND'
+  | 'VERIFICATION_FAILED'
   | 'OFFLINE_ERROR';
 
 export interface ScanOperationResponse {

@@ -10,7 +10,7 @@ import { audio } from '../services/audioService';
 import { QrCode, Search, RefreshCw, UserCheck, ShieldCheck } from 'lucide-react';
 
 export const ReceptionPage: React.FC = () => {
-  const { user, currentStation } = useAuth();
+  const { user, currentStation, portalMode } = useAuth();
 
   const [activeTab, setActiveTab] = useState<'SCAN' | 'SEARCH'>('SCAN');
   const [searchQuery, setSearchQuery] = useState('');
@@ -93,6 +93,7 @@ export const ReceptionPage: React.FC = () => {
         staffId: user.name || user.id,
         staffRole: user.role,
         station: currentStation,
+        portalMode,
       });
 
       setScanState(result.state);

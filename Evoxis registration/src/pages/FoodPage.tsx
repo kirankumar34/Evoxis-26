@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 export const FoodPage: React.FC = () => {
-  const { user, hasRole, currentStation } = useAuth();
+  const { user, hasRole, currentStation, portalMode } = useAuth();
 
   const [scanResult, setScanResult] = useState<ScanOperationResponse | null>(null);
   const [isPaused, setIsPaused] = useState(false);
@@ -48,6 +48,7 @@ export const FoodPage: React.FC = () => {
         physicalQrId,
         staffId: user?.name || 'Food Staff',
         station: currentStation || 'Food Counter',
+        portalMode,
         isAdminOverride: isSuperAdmin && isAdminOverride,
         overrideReason: isAdminOverride ? 'Coordinator manual food coupon reissue' : undefined,
       });

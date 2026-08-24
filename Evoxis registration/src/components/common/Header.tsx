@@ -8,7 +8,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
-  const { user, currentStation, soundEnabled, toggleSound, logout } = useAuth();
+  const { user, currentStation, soundEnabled, toggleSound, portalMode, setPortalMode, logout } = useAuth();
 
   const handleSoundToggle = () => {
     toggleSound();
@@ -16,6 +16,11 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
     if (!soundEnabled) {
       audio.playSuccess();
     }
+  };
+
+  const toggleMode = () => {
+    const nextMode = portalMode === 'PRODUCTION' ? 'TEST' : 'PRODUCTION';
+    setPortalMode(nextMode);
   };
 
   const getRoleBadge = (role?: string) => {
@@ -63,11 +68,26 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
           </div>
         </div>
 
-        {/* Center: Station Indicator */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs font-mono text-slate-300">
-          <MapPin className="w-3.5 h-3.5 text-cyan-400" />
-          <span>Station:</span>
-          <span className="font-bold text-cyan-300 truncate max-w-[200px]">{currentStation}</span>
+        {/* Center: Station & Mode Indicator */}
+        <div className="hidden md:flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs font-mono text-slate-300">
+            <MapPin className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Station:</span>
+            <span className="font-bold text-cyan-300 truncate max-w-[180px]">{currentStation}</span>
+          </div>
+
+          <button
+            onClick={toggleMode}
+            title="Click to toggle Portal Mode (Production vs Test Drill)"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-mono font-bold transition-all ${
+              portalMode === 'PRODUCTION'
+                ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-300 hover:bg-emerald-900/50'
+                : 'bg-amber-950/70 border-amber-500/60 text-amber-300 hover:bg-amber-900/60 animate-pulse'
+            }`}
+          >
+            <Shield className="w-3.5 h-3.5" />
+            <span>{portalMode === 'PRODUCTION' ? 'PRODUCTION MODE' : 'TEST DRILL MODE'}</span>
+          </button>
         </div>
 
         {/* Right: User Role & Action Controls */}

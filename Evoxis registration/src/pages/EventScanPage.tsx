@@ -20,7 +20,7 @@ import {
 
 export const EventScanPage: React.FC = () => {
   const { eventId = 'TE02' } = useParams<{ eventId: string }>();
-  const { user, hasRole, currentStation } = useAuth();
+  const { user, hasRole, currentStation, portalMode } = useAuth();
 
   const eventMeta = getEventById(eventId);
   const eventTitle = eventMeta ? eventMeta.title : eventId;
@@ -43,6 +43,7 @@ export const EventScanPage: React.FC = () => {
         eventId,
         staffId: user?.name || 'Event Coordinator',
         station: `${currentStation} (${eventId})`,
+        portalMode,
         isAdminOverride: isSuperAdmin && isAdminOverride,
         overrideReason: isAdminOverride ? overrideReason : undefined,
       });

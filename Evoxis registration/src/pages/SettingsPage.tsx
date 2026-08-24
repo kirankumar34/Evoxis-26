@@ -13,10 +13,11 @@ import {
   CheckCircle2,
   AlertCircle,
   Play,
+  Shield,
 } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
-  const { currentStation, setStation, soundEnabled, toggleSound, user } = useAuth();
+  const { currentStation, setStation, soundEnabled, toggleSound, portalMode, setPortalMode, user } = useAuth();
   const supabaseConnected = isSupabaseConfigured();
 
   return (
@@ -29,6 +30,57 @@ export const SettingsPage: React.FC = () => {
         <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
           Settings & Diagnostics
         </h1>
+      </div>
+
+      {/* Portal Environment Mode */}
+      <div className="p-6 rounded-3xl glass-panel border border-slate-800 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <Shield className="w-4 h-4 text-cyan-400" />
+              <span>Portal Environment Mode</span>
+            </h3>
+            <p className="text-xs font-mono text-slate-400 mt-1">
+              Production mode strictly rejects TEST QRs to prevent test wristbands on event day. Test mode allows pre-event drills.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+          <button
+            type="button"
+            onClick={() => setPortalMode('PRODUCTION')}
+            className={`p-4 rounded-2xl border text-left font-mono transition-all ${
+              portalMode === 'PRODUCTION'
+                ? 'bg-emerald-500/20 border-emerald-400 text-emerald-200 shadow-neon-emerald'
+                : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <div className="font-bold text-sm text-white mb-1 flex items-center justify-between">
+              <span>LIVE PRODUCTION</span>
+              {portalMode === 'PRODUCTION' && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
+            </div>
+            <div className="text-xs text-slate-300">Accepts EVX26-WB-XXXXXX wristbands only</div>
+            <div className="text-[11px] text-amber-400/80 mt-2">TEST QRs will be blocked with TEST QR DETECTED</div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setPortalMode('TEST')}
+            className={`p-4 rounded-2xl border text-left font-mono transition-all ${
+              portalMode === 'TEST'
+                ? 'bg-amber-500/20 border-amber-400 text-amber-200 shadow-neon-amber'
+                : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <div className="font-bold text-sm text-white mb-1 flex items-center justify-between">
+              <span>TEST / DRILL DRILL MODE</span>
+              {portalMode === 'TEST' && <CheckCircle2 className="w-4 h-4 text-amber-400" />}
+            </div>
+            <div className="text-xs text-slate-300">Accepts EVX26-TEST-XXXXXX test wristbands</div>
+            <div className="text-[11px] text-amber-300/80 mt-2">Use for rehearsals and scanner validation</div>
+          </button>
+        </div>
       </div>
 
       {/* Station Selector Card */}

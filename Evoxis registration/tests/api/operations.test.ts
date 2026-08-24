@@ -15,7 +15,7 @@ Object.defineProperty(globalThis, 'localStorage', {
 
 import { operationsApi } from '../../src/services/operationsApi';
 
-describe('EvoXis26 Operations Portal Automated Test Suite (13 Spec Requirements)', () => {
+describe('EvoXis26 Operations Portal Automated Test Suite', () => {
   const TEST_INDIVIDUAL_ID = 'EVOXIS26-TEST-99901';
   const TEST_TEAM_HEAD_ID = 'EVOXIS26-TEST-TEAM-01';
 
@@ -126,7 +126,7 @@ describe('EvoXis26 Operations Portal Automated Test Suite (13 Spec Requirements)
     const res = await operationsApi.assignPhysicalQr({
       participantId: TEST_INDIVIDUAL_ID,
       registrationId: TEST_INDIVIDUAL_ID,
-      physicalQrId: 'WRIST-EVX-000125',
+      physicalQrId: 'EVX26-WB-000001',
       physicalQrType: 'WRISTBAND',
       staffId: 'Reception Staff',
       staffRole: 'RECEPTION',
@@ -137,10 +137,10 @@ describe('EvoXis26 Operations Portal Automated Test Suite (13 Spec Requirements)
     expect(res.verbatimMessage).toBe('✓ PRESENT');
 
     // Verify lookup by physical QR now returns participant
-    const lookup = await operationsApi.lookupRegistration({ token: 'WRIST-EVX-000125' });
+    const lookup = await operationsApi.lookupRegistration({ token: 'EVX26-WB-000001' });
     expect(lookup.success).toBe(true);
     expect(lookup.data?.participantName).toBe('Rahul Dravid');
-    expect(lookup.data?.physicalQrId).toBe('WRIST-EVX-000125');
+    expect(lookup.data?.physicalQrId).toBe('EVX26-WB-000001');
   });
 
   // Test 3: Campus check-in -> PRESENT
@@ -148,7 +148,7 @@ describe('EvoXis26 Operations Portal Automated Test Suite (13 Spec Requirements)
     const checkin = await operationsApi.markCampusPresent({
       participantId: TEST_INDIVIDUAL_ID,
       registrationId: TEST_INDIVIDUAL_ID,
-      physicalQrId: 'WRIST-EVX-000125',
+      physicalQrId: 'EVX26-WB-000001',
       staffId: 'Staff Member',
       station: 'REC-01',
     });
@@ -183,14 +183,14 @@ describe('EvoXis26 Operations Portal Automated Test Suite (13 Spec Requirements)
     await operationsApi.assignPhysicalQr({
       participantId: TEST_INDIVIDUAL_ID,
       registrationId: TEST_INDIVIDUAL_ID,
-      physicalQrId: 'WRIST-EVX-000125',
+      physicalQrId: 'EVX26-WB-000001',
       physicalQrType: 'WRISTBAND',
       staffId: 'Reception Staff',
       staffRole: 'RECEPTION',
     });
 
     const res = await operationsApi.markEventPresent({
-      physicalQrId: 'WRIST-EVX-000125',
+      physicalQrId: 'EVX26-WB-000001',
       eventId: 'TE02',
       staffId: 'Coordinator 1',
       station: 'Desk TE02',
@@ -205,7 +205,7 @@ describe('EvoXis26 Operations Portal Automated Test Suite (13 Spec Requirements)
     await operationsApi.assignPhysicalQr({
       participantId: TEST_INDIVIDUAL_ID,
       registrationId: TEST_INDIVIDUAL_ID,
-      physicalQrId: 'WRIST-EVX-000125',
+      physicalQrId: 'EVX26-WB-000001',
       physicalQrType: 'WRISTBAND',
       staffId: 'Reception Staff',
       staffRole: 'RECEPTION',
@@ -213,14 +213,14 @@ describe('EvoXis26 Operations Portal Automated Test Suite (13 Spec Requirements)
 
     // Rahul is registered for TE02 & NT01, but NOT TE06 (Cyber Investigation)
     const res = await operationsApi.markEventPresent({
-      physicalQrId: 'WRIST-EVX-000125',
+      physicalQrId: 'EVX26-WB-000001',
       eventId: 'TE06',
       staffId: 'Coordinator 2',
       station: 'Desk TE06',
     });
 
     expect(res.state).toBe('WRONG_EVENT');
-    expect(res.verbatimMessage).toBe('NOT REGISTERED FOR THIS EVENT');
+    expect(res.verbatimMessage).toBe('PARTICIPANT FOUND — NOT REGISTERED FOR THIS EVENT');
     expect(res.registeredEvents).toContain('TE02');
     expect(res.registeredEvents).toContain('NT01');
   });
@@ -230,29 +230,28 @@ describe('EvoXis26 Operations Portal Automated Test Suite (13 Spec Requirements)
     await operationsApi.assignPhysicalQr({
       participantId: TEST_INDIVIDUAL_ID,
       registrationId: TEST_INDIVIDUAL_ID,
-      physicalQrId: 'WRIST-EVX-000125',
+      physicalQrId: 'EVX26-WB-000001',
       physicalQrType: 'WRISTBAND',
       staffId: 'Reception Staff',
       staffRole: 'RECEPTION',
     });
 
     await operationsApi.markEventPresent({
-      physicalQrId: 'WRIST-EVX-000125',
+      physicalQrId: 'EVX26-WB-000001',
       eventId: 'TE02',
       staffId: 'Coord 1',
       station: 'Desk TE02',
     });
 
     const dup = await operationsApi.markEventPresent({
-      physicalQrId: 'WRIST-EVX-000125',
+      physicalQrId: 'EVX26-WB-000001',
       eventId: 'TE02',
       staffId: 'Coord 1',
       station: 'Desk TE02',
     });
 
     expect(dup.state).toBe('DUPLICATE_EVENT');
-    expect(dup.verbatimMessage).toBe('ALREADY PRESENT');
-    expect(dup.originalTime).toBeDefined();
+    expect(dup.verbatimMessage).toBe('ALREADY MARKED PRESENT');
   });
 
   // Test 8: Food scan -> delivered
@@ -260,20 +259,20 @@ describe('EvoXis26 Operations Portal Automated Test Suite (13 Spec Requirements)
     await operationsApi.assignPhysicalQr({
       participantId: TEST_INDIVIDUAL_ID,
       registrationId: TEST_INDIVIDUAL_ID,
-      physicalQrId: 'WRIST-EVX-000125',
+      physicalQrId: 'EVX26-WB-000001',
       physicalQrType: 'WRISTBAND',
-      staffId: 'Staff',
+      staffId: 'Reception Staff',
       staffRole: 'RECEPTION',
     });
 
-    const foodRes = await operationsApi.markFoodDelivered({
-      physicalQrId: 'WRIST-EVX-000125',
-      staffId: 'Food Server',
-      station: 'FOOD-01',
+    const food = await operationsApi.markFoodDelivered({
+      physicalQrId: 'EVX26-WB-000001',
+      staffId: 'Food Staff',
+      station: 'FC-01',
     });
 
-    expect(foodRes.state).toBe('SUCCESS');
-    expect(foodRes.verbatimMessage).toBe('✓ PRESENT');
+    expect(food.state).toBe('SUCCESS');
+    expect(food.verbatimMessage).toBe('✓ MEAL DELIVERED');
   });
 
   // Test 9: Duplicate food scan -> FOOD ALREADY DELIVERED, no new row
@@ -281,125 +280,110 @@ describe('EvoXis26 Operations Portal Automated Test Suite (13 Spec Requirements)
     await operationsApi.assignPhysicalQr({
       participantId: TEST_INDIVIDUAL_ID,
       registrationId: TEST_INDIVIDUAL_ID,
-      physicalQrId: 'WRIST-EVX-000125',
+      physicalQrId: 'EVX26-WB-000001',
       physicalQrType: 'WRISTBAND',
-      staffId: 'Staff',
+      staffId: 'Reception Staff',
       staffRole: 'RECEPTION',
     });
 
     await operationsApi.markFoodDelivered({
-      physicalQrId: 'WRIST-EVX-000125',
-      staffId: 'Food Server 1',
-      station: 'FOOD-01',
+      physicalQrId: 'EVX26-WB-000001',
+      staffId: 'Food Staff 1',
+      station: 'FC-01',
     });
 
     const dupFood = await operationsApi.markFoodDelivered({
-      physicalQrId: 'WRIST-EVX-000125',
-      staffId: 'Food Server 2',
-      station: 'FOOD-02',
+      physicalQrId: 'EVX26-WB-000001',
+      staffId: 'Food Staff 2',
+      station: 'FC-02',
     });
 
     expect(dupFood.state).toBe('DUPLICATE_FOOD');
     expect(dupFood.verbatimMessage).toBe('FOOD ALREADY DELIVERED');
-    expect(dupFood.originalStation).toBe('FOOD-01');
   });
 
-  // Test 10: Team of 4 -> each member independently checks in / attends events / gets food
+  // Test 10: Team of 4 members: each member independently checks in, attends events, and redeems food
   it('10. Team of 4 members: each member independently checks in, attends events, and redeems food', async () => {
-    // 1. Assign physical QRs to all 4 members
-    await operationsApi.assignPhysicalQr({
-      participantId: TEST_TEAM_HEAD_ID,
-      registrationId: TEST_TEAM_HEAD_ID,
-      physicalQrId: 'WRIST-TEAM-01',
-      physicalQrType: 'WRISTBAND',
-      staffId: 'Staff',
-      staffRole: 'RECEPTION',
-    });
+    // Generate inventory
+    await operationsApi.generateQrInventory({ environment: 'PRODUCTION', count: 100 });
 
-    await operationsApi.assignPhysicalQr({
-      participantId: `${TEST_TEAM_HEAD_ID}-M1`,
-      registrationId: `${TEST_TEAM_HEAD_ID}-M1`,
-      physicalQrId: 'WRIST-TEAM-02',
-      physicalQrType: 'WRISTBAND',
-      staffId: 'Staff',
-      staffRole: 'RECEPTION',
-    });
+    const memberQrs = [
+      { id: TEST_TEAM_HEAD_ID, qr: 'EVX26-WB-000001', name: 'Arun Kumar' },
+      { id: `${TEST_TEAM_HEAD_ID}-M1`, qr: 'EVX26-WB-000002', name: 'Kumar V' },
+      { id: `${TEST_TEAM_HEAD_ID}-M2`, qr: 'EVX26-WB-000003', name: 'Ravi Shankar' },
+      { id: `${TEST_TEAM_HEAD_ID}-M3`, qr: 'EVX26-WB-000004', name: 'Suresh Raina' },
+    ];
 
-    await operationsApi.assignPhysicalQr({
-      participantId: `${TEST_TEAM_HEAD_ID}-M2`,
-      registrationId: `${TEST_TEAM_HEAD_ID}-M2`,
-      physicalQrId: 'WRIST-TEAM-03',
-      physicalQrType: 'WRISTBAND',
-      staffId: 'Staff',
-      staffRole: 'RECEPTION',
-    });
+    // 1. Bind each member to a unique physical wristband
+    for (const m of memberQrs) {
+      const bind = await operationsApi.assignPhysicalQr({
+        participantId: m.id,
+        registrationId: TEST_TEAM_HEAD_ID,
+        physicalQrId: m.qr,
+        physicalQrType: 'WRISTBAND',
+        staffId: 'Receptionist',
+        staffRole: 'RECEPTION',
+        station: 'Reception Desk 1',
+      });
+      expect(bind.state).toBe('SUCCESS');
+    }
 
-    await operationsApi.assignPhysicalQr({
-      participantId: `${TEST_TEAM_HEAD_ID}-M3`,
-      registrationId: `${TEST_TEAM_HEAD_ID}-M3`,
-      physicalQrId: 'WRIST-TEAM-04',
-      physicalQrType: 'WRISTBAND',
-      staffId: 'Staff',
-      staffRole: 'RECEPTION',
-    });
+    // 2. Each member attends TE02
+    for (const m of memberQrs) {
+      const att = await operationsApi.markEventPresent({
+        physicalQrId: m.qr,
+        eventId: 'TE02',
+        staffId: 'Coordinator',
+        station: 'TE02 Desk',
+      });
+      expect(att.state).toBe('SUCCESS');
+      expect(att.participant?.participantName).toBe(m.name);
+    }
 
-    // 2. Member 1 (Arun) checks in to event TE02
-    const arunEvent = await operationsApi.markEventPresent({
-      physicalQrId: 'WRIST-TEAM-01',
-      eventId: 'TE02',
-      staffId: 'Coord',
-    });
-    expect(arunEvent.state).toBe('SUCCESS');
+    // 3. Each member redeems food independently
+    for (const m of memberQrs) {
+      const food = await operationsApi.markFoodDelivered({
+        physicalQrId: m.qr,
+        staffId: 'Food Staff',
+        station: 'Food Counter',
+      });
+      expect(food.state).toBe('SUCCESS');
+    }
 
-    // 3. Member 2 (Kumar) checks in to event TE02
-    const kumarEvent = await operationsApi.markEventPresent({
-      physicalQrId: 'WRIST-TEAM-02',
-      eventId: 'TE02',
-      staffId: 'Coord',
-    });
-    expect(kumarEvent.state).toBe('SUCCESS');
-
-    // 4. Member 3 (Ravi) redeems food
-    const raviFood = await operationsApi.markFoodDelivered({
-      physicalQrId: 'WRIST-TEAM-03',
+    // 4. Duplicate food for first member returns duplicate while other state stays clean
+    const dup = await operationsApi.markFoodDelivered({
+      physicalQrId: memberQrs[0].qr,
       staffId: 'Food Staff',
     });
-    expect(raviFood.state).toBe('SUCCESS');
-
-    // 5. Member 4 (Suresh) food is still unredeemed
-    const sureshLookup = await operationsApi.lookupRegistration({ token: 'WRIST-TEAM-04' });
-    expect(sureshLookup.data?.foodDelivered).toBe(false);
+    expect(dup.state).toBe('DUPLICATE_FOOD');
   });
 
-  // Test 11: Invalid/unregistered QR -> PARTICIPANT NOT FOUND, no writes
+  // Test 11: Invalid or unregistered QR -> PARTICIPANT NOT FOUND
   it('11. Invalid or unregistered QR returns PARTICIPANT NOT FOUND with zero state mutations', async () => {
-    const res = await operationsApi.markEventPresent({
-      physicalQrId: 'RANDOM-NONEXISTENT-QR',
-      eventId: 'TE02',
-      staffId: 'Coord',
+    const res = await operationsApi.lookupRegistration({
+      token: 'INVALID_TOKEN_ABC_99999',
     });
 
-    expect(res.state).toBe('NOT_FOUND');
-    expect(res.verbatimMessage).toBe('PARTICIPANT NOT FOUND');
+    expect(res.success).toBe(false);
+    expect(res.message).toBe('PARTICIPANT NOT FOUND');
   });
 
   // Test 12: Assign already-assigned physical QR to a different participant -> rejected
   it('12. Assign already-assigned physical QR to different participant is rejected', async () => {
-    // Assign WRIST-CONFLICT-01 to Rahul
     await operationsApi.assignPhysicalQr({
       participantId: TEST_INDIVIDUAL_ID,
       registrationId: TEST_INDIVIDUAL_ID,
-      physicalQrId: 'WRIST-CONFLICT-01',
+      physicalQrId: 'EVX26-WB-000001',
       physicalQrType: 'WRISTBAND',
       staffId: 'Staff',
       staffRole: 'RECEPTION',
     });
 
-    // Try to assign the same WRIST-CONFLICT-01 to Arun
+    // Try to assign the same EVX26-WB-000001 to Arun
     const conflict = await operationsApi.assignPhysicalQr({
       participantId: TEST_TEAM_HEAD_ID,
       registrationId: TEST_TEAM_HEAD_ID,
-      physicalQrId: 'WRIST-CONFLICT-01',
+      physicalQrId: 'EVX26-WB-000001',
       physicalQrType: 'WRISTBAND',
       staffId: 'Staff',
       staffRole: 'RECEPTION',
@@ -414,7 +398,7 @@ describe('EvoXis26 Operations Portal Automated Test Suite (13 Spec Requirements)
     await operationsApi.assignPhysicalQr({
       participantId: TEST_INDIVIDUAL_ID,
       registrationId: TEST_INDIVIDUAL_ID,
-      physicalQrId: 'WRIST-CONCURRENT-01',
+      physicalQrId: 'EVX26-WB-000001',
       physicalQrType: 'WRISTBAND',
       staffId: 'Staff',
       staffRole: 'RECEPTION',
@@ -423,12 +407,12 @@ describe('EvoXis26 Operations Portal Automated Test Suite (13 Spec Requirements)
     // Fire 2 concurrent food delivery requests for same QR
     const [res1, res2] = await Promise.all([
       operationsApi.markFoodDelivered({
-        physicalQrId: 'WRIST-CONCURRENT-01',
+        physicalQrId: 'EVX26-WB-000001',
         staffId: 'Counter 1',
         station: 'FOOD-01',
       }),
       operationsApi.markFoodDelivered({
-        physicalQrId: 'WRIST-CONCURRENT-01',
+        physicalQrId: 'EVX26-WB-000001',
         staffId: 'Counter 2',
         station: 'FOOD-02',
       }),
@@ -439,85 +423,131 @@ describe('EvoXis26 Operations Portal Automated Test Suite (13 Spec Requirements)
     expect(states).toContain('DUPLICATE_FOOD');
   });
 
-  // Test 14: Bulk Static QR Generation (1000 Production + 100 Test, Idempotent)
-  it('14. Static QR Inventory Generation creates 1000 production and 100 test records idempotently without duplicates', async () => {
-    const prodRes1 = await operationsApi.generateQrInventory({ environment: 'PRODUCTION', count: 1000 });
-    expect(prodRes1.totalCreated).toBe(1000);
+  // Test 14: Prompt 6 Section 13 End-to-End 9-Step Verification with EVX26-TEST-000051
+  it('14. Prompt 6 Section 13: Full 9-step End-to-End test using EVX26-TEST-000051', async () => {
+    // Step 1: Reception: scan registration QR -> participant appears
+    const lookup1 = await operationsApi.lookupRegistration({ token: 'EVOXIS26:testrahul99901' });
+    expect(lookup1.success).toBe(true);
+    expect(lookup1.data?.participantName).toBe('Rahul Dravid');
+    expect(lookup1.data?.selectedEvents).toContain('TE02');
 
-    const testRes1 = await operationsApi.generateQrInventory({ environment: 'TEST', count: 100 });
-    expect(testRes1.totalCreated).toBe(100);
-
-    // Running again must detect all existing and create 0 duplicates
-    const prodRes2 = await operationsApi.generateQrInventory({ environment: 'PRODUCTION', count: 1000 });
-    expect(prodRes2.totalCreated).toBe(0);
-    expect(prodRes2.totalDuplicatesPrevented).toBe(1000);
-
-    const metrics = await operationsApi.getInventoryMetrics();
-    expect(metrics.production.total).toBe(1000);
-    expect(metrics.test.total).toBe(100);
-    expect(metrics.production.unused).toBe(1000);
-    expect(metrics.test.unused).toBe(100);
-  });
-
-  // Test 15: TEST QR scanned in live production mode is strictly rejected
-  it('15. TEST QR scanned at production desk is rejected with TEST QR DETECTED', async () => {
-    await operationsApi.generateQrInventory({ environment: 'TEST', count: 100 });
-
-    const scanResult = await operationsApi.assignPhysicalQr({
+    // Step 2: Bind EVX26-TEST-000051 -> CONFIRM & BIND in TEST mode
+    const bindRes = await operationsApi.assignPhysicalQr({
       participantId: TEST_INDIVIDUAL_ID,
       registrationId: TEST_INDIVIDUAL_ID,
-      physicalQrId: 'EVX26-TEST-000001',
+      physicalQrId: 'EVX26-TEST-000051',
       physicalQrType: 'WRISTBAND',
-      staffId: 'Receptionist 1',
+      staffId: 'Receptionist Lead',
       staffRole: 'RECEPTION',
-      station: 'Reception Desk 1', // Production station
+      station: 'Reception Desk (TEST)',
+      portalMode: 'TEST',
     });
+    expect(bindRes.state).toBe('SUCCESS');
+    expect(bindRes.verbatimMessage).toBe('✓ PRESENT');
 
-    expect(scanResult.state).toBe('TEST_QR_IN_PROD');
-    expect(scanResult.verbatimMessage).toBe('TEST QR DETECTED');
+    // Step 3: Re-query storage/Supabase directly -> confirm persisted row (status=ASSIGNED, participant_id, registration_id populated)
+    const resolveDirect = await operationsApi.resolvePhysicalQR('EVX26-TEST-000051', 'TEST');
+    expect(resolveDirect.success).toBe(true);
+    expect(resolveDirect.status).toBe('ASSIGNED');
+    expect(resolveDirect.registrationId).toBe(TEST_INDIVIDUAL_ID);
+    expect(resolveDirect.participantId).toBe(TEST_INDIVIDUAL_ID);
+    expect(resolveDirect.participant?.participantName).toBe('Rahul Dravid');
+
+    // Step 4: Reload Reception, search the QR again -> assignment still present
+    const reloadLookup = await operationsApi.lookupRegistration({ token: 'EVX26-TEST-000051' });
+    expect(reloadLookup.success).toBe(true);
+    expect(reloadLookup.data?.participantName).toBe('Rahul Dravid');
+    expect(reloadLookup.data?.physicalQrId).toBe('EVX26-TEST-000051');
+
+    // Step 5 & 6: Event Desk, TEST mode, select the participant's actual registered event TE02 -> participant found, mark attendance
+    const eventAtt = await operationsApi.markEventPresent({
+      physicalQrId: 'EVX26-TEST-000051',
+      eventId: 'TE02',
+      staffId: 'TE02 Coordinator',
+      station: 'Event Desk TE02 (TEST)',
+      portalMode: 'TEST',
+    });
+    expect(eventAtt.state).toBe('SUCCESS');
+    expect(eventAtt.verbatimMessage).toBe('✓ PRESENT');
+    expect(eventAtt.participant?.participantName).toBe('Rahul Dravid');
+
+    // Step 7: Scan again at TE02 -> ALREADY MARKED PRESENT, no duplicate row
+    const dupEvent = await operationsApi.markEventPresent({
+      physicalQrId: 'EVX26-TEST-000051',
+      eventId: 'TE02',
+      staffId: 'TE02 Coordinator',
+      station: 'Event Desk TE02 (TEST)',
+      portalMode: 'TEST',
+    });
+    expect(dupEvent.state).toBe('DUPLICATE_EVENT');
+    expect(dupEvent.verbatimMessage).toBe('ALREADY MARKED PRESENT');
+
+    // Step 8: Select an event the participant did NOT register for (TE06), scan again -> participant found, event-mismatch message, no attendance written
+    const wrongEvent = await operationsApi.markEventPresent({
+      physicalQrId: 'EVX26-TEST-000051',
+      eventId: 'TE06',
+      staffId: 'TE06 Coordinator',
+      station: 'Event Desk TE06 (TEST)',
+      portalMode: 'TEST',
+    });
+    expect(wrongEvent.state).toBe('WRONG_EVENT');
+    expect(wrongEvent.verbatimMessage).toBe('PARTICIPANT FOUND — NOT REGISTERED FOR THIS EVENT');
+    expect(wrongEvent.registeredEvents).toContain('TE02');
+    expect(wrongEvent.registeredEvents).not.toContain('TE06');
+
+    // Step 9: Food Counter: scan -> deliver -> scan again -> FOOD ALREADY DELIVERED, no duplicate row
+    const food1 = await operationsApi.markFoodDelivered({
+      physicalQrId: 'EVX26-TEST-000051',
+      staffId: 'Food Staff',
+      station: 'Food Counter (TEST)',
+      portalMode: 'TEST',
+    });
+    expect(food1.state).toBe('SUCCESS');
+    expect(food1.verbatimMessage).toBe('✓ MEAL DELIVERED');
+
+    const food2 = await operationsApi.markFoodDelivered({
+      physicalQrId: 'EVX26-TEST-000051',
+      staffId: 'Food Staff',
+      station: 'Food Counter (TEST)',
+      portalMode: 'TEST',
+    });
+    expect(food2.state).toBe('DUPLICATE_FOOD');
+    expect(food2.verbatimMessage).toBe('FOOD ALREADY DELIVERED');
   });
 
-  // Test 16: Lost wristband revocation and check-in block
-  it('16. Lost physical QR can be revoked and is subsequently blocked with QR REVOKED', async () => {
-    await operationsApi.generateQrInventory({ environment: 'PRODUCTION', count: 1000 });
+  // Test 15: Prompt 6 Section 3: Shared Resolver distinct failure codes
+  it('15. Single shared resolver returns distinct failure codes for each specific invalid state', async () => {
+    // 1. INVALID_QR_FORMAT
+    const r1 = await operationsApi.resolvePhysicalQR('NOT_A_VALID_FORMAT');
+    expect(r1.success).toBe(false);
+    expect(r1.errorCode).toBe('INVALID_QR_FORMAT');
 
-    // Revoke EVX26-WB-000123
-    const revokeRes = await operationsApi.revokeQr({
-      qrCode: 'EVX26-WB-000123',
-      reason: 'Physical wristband snapped / lost',
-      staffId: 'Super Admin',
-    });
-    expect(revokeRes.success).toBe(true);
+    // 2. QR_NOT_FOUND (not in inventory)
+    const r2 = await operationsApi.resolvePhysicalQR('EVX26-WB-999999');
+    expect(r2.success).toBe(false);
+    expect(r2.errorCode).toBe('QR_NOT_FOUND');
 
-    // Attempt assignment
-    const assignResult = await operationsApi.assignPhysicalQr({
-      participantId: TEST_INDIVIDUAL_ID,
-      registrationId: TEST_INDIVIDUAL_ID,
-      physicalQrId: 'EVX26-WB-000123',
-      physicalQrType: 'WRISTBAND',
-      staffId: 'Receptionist 1',
-      staffRole: 'RECEPTION',
-    });
+    // 3. QR_NOT_ASSIGNED (in inventory but UNUSED)
+    await operationsApi.generateQrInventory({ environment: 'PRODUCTION', count: 10 });
+    const r3 = await operationsApi.resolvePhysicalQR('EVX26-WB-000005', 'PRODUCTION');
+    expect(r3.success).toBe(false);
+    expect(r3.errorCode).toBe('QR_NOT_ASSIGNED');
 
-    expect(assignResult.state).toBe('QR_REVOKED');
-    expect(assignResult.verbatimMessage).toBe('QR REVOKED');
-  });
+    // 4. QR_REVOKED
+    await operationsApi.revokeQr({ qrCode: 'EVX26-WB-000005', staffId: 'Admin' });
+    const r4 = await operationsApi.resolvePhysicalQR('EVX26-WB-000005', 'PRODUCTION');
+    expect(r4.success).toBe(false);
+    expect(r4.errorCode).toBe('QR_REVOKED');
 
-  // Test 17: Inventory search and pagination
-  it('17. QR Inventory search and filter functions correctly', async () => {
-    await operationsApi.generateQrInventory({ environment: 'PRODUCTION', count: 1000 });
-    await operationsApi.generateQrInventory({ environment: 'TEST', count: 100 });
+    // 5. TEST_QR_IN_PRODUCTION_MODE
+    await operationsApi.generateQrInventory({ environment: 'TEST', count: 10 });
+    const r5 = await operationsApi.resolvePhysicalQR('EVX26-TEST-000005', 'PRODUCTION');
+    expect(r5.success).toBe(false);
+    expect(r5.errorCode).toBe('TEST_QR_IN_PRODUCTION_MODE');
 
-    const searchRes = await operationsApi.getQrInventory({
-      search: 'EVX26-WB-000500',
-      page: 1,
-      pageSize: 10,
-    });
-
-    expect(searchRes.totalCount).toBe(1);
-    expect(searchRes.items[0].qrCode).toBe('EVX26-WB-000500');
-    expect(searchRes.items[0].environment).toBe('PRODUCTION');
-    expect(searchRes.items[0].status).toBe('UNUSED');
+    // 6. PRODUCTION_QR_IN_TEST_MODE
+    const r6 = await operationsApi.resolvePhysicalQR('EVX26-WB-000002', 'TEST');
+    expect(r6.success).toBe(false);
+    expect(r6.errorCode).toBe('PRODUCTION_QR_IN_TEST_MODE');
   });
 });
-

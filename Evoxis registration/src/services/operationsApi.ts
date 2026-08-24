@@ -11,11 +11,14 @@ import {
   InventoryMetrics,
   QrEnvironment,
   QrType,
+  QrResolutionErrorCode,
+  QrResolutionResult,
+  ScanResultState,
 } from '../types';
 import { OFFICIAL_EVENTS } from '../config/events';
 import { syncToGoogleSheets } from './sheetsSync';
 
-// Mock storage keys for robust offline testing & fail-safe operation
+// Storage keys for local caching, atomic client-side state, and fail-safe offline resilience
 const STORAGE_KEYS = {
   ASSIGNMENTS: 'evoxis_op_qr_assignments',
   CAMPUS: 'evoxis_op_campus_attendance',
@@ -25,7 +28,7 @@ const STORAGE_KEYS = {
   QR_INVENTORY: 'evoxis_op_qr_inventory',
 };
 
-// Helper: in-memory / local storage fallback state for atomic client-side locks
+// Helper: safe local storage reader
 const getLocalArray = <T>(key: string): T[] => {
   try {
     const raw = localStorage.getItem(key);
@@ -35,6 +38,7 @@ const getLocalArray = <T>(key: string): T[] => {
   }
 };
 
+// Helper: safe local storage writer
 const saveLocalArray = <T>(key: string, arr: T[]) => {
   try {
     localStorage.setItem(key, JSON.stringify(arr));
@@ -59,7 +63,7 @@ export const operationsApi = {
     localLogs.unshift(log);
     saveLocalArray(STORAGE_KEYS.AUDIT, localLogs.slice(0, 500));
 
-    // 2. Supabase write if table exists
+    // 2. Supabase write if table exists (non-blocking)
     if (isSupabaseConfigured()) {
       try {
         Promise.resolve(
@@ -111,21 +115,27 @@ export const operationsApi = {
     }
 
     try {
-      // 1. Check if token is an assigned Physical QR ID (e.g. WRIST-EVX-000125)
-      const localAssignments = getLocalArray<{
-        physicalQrId: string;
-        participantId: string;
-        registrationId: string;
-        active: boolean;
-        physicalQrType: 'ID_CARD' | 'WRISTBAND';
-        assignedAt?: string;
-      }>(STORAGE_KEYS.ASSIGNMENTS);
+      // 1. Check if token is an assigned Physical QR ID (e.g. EVX26-TEST-000051, EVX26-WB-000001)
+      let lookupKey = rawQuery;
 
-      const matchedPhysical = localAssignments.find(
-        (a) => a.active && a.physicalQrId.toUpperCase() === rawQuery.toUpperCase()
-      );
-
-      const lookupKey = matchedPhysical ? matchedPhysical.registrationId : rawQuery;
+      const inventory = getLocalArray<PhysicalQrInventoryItem>(STORAGE_KEYS.QR_INVENTORY);
+      const matchedInv = inventory.find((i) => i.qrCode.toUpperCase() === rawQuery.toUpperCase());
+      if (matchedInv && (matchedInv.participantId || matchedInv.registrationId)) {
+        lookupKey = matchedInv.participantId || matchedInv.registrationId!;
+      } else {
+        const localAssignments = getLocalArray<{
+          physicalQrId: string;
+          participantId: string;
+          registrationId: string;
+          active: boolean;
+        }>(STORAGE_KEYS.ASSIGNMENTS);
+        const matchedPhysical = localAssignments.find(
+          (a) => a.active && a.physicalQrId.toUpperCase() === rawQuery.toUpperCase()
+        );
+        if (matchedPhysical) {
+          lookupKey = matchedPhysical.participantId || matchedPhysical.registrationId;
+        }
+      }
 
       // 2. Query Supabase overall_registrations
       let matchRecord: any = null;
@@ -141,12 +151,23 @@ export const operationsApi = {
 
         if (!error && records && records.length > 0) {
           matchRecord = records[0];
+        } else if (lookupKey.includes('-M')) {
+          const baseKey = lookupKey.split('-M')[0];
+          const { data: baseRecs } = await supabase
+            .from('overall_registrations')
+            .select('*')
+            .eq('registration_id', baseKey)
+            .limit(1);
+          if (baseRecs && baseRecs.length > 0) {
+            matchRecord = baseRecs[0];
+          }
         }
       }
 
       // If not found in Supabase, check local mock registrations
       if (!matchRecord) {
         const mockRegs = getLocalArray<any>('evoxis26_overall_registrations');
+        // Exact match first
         matchRecord = mockRegs.find(
           (r) =>
             (r.registrationId && r.registrationId.toUpperCase() === lookupKey.toUpperCase()) ||
@@ -159,6 +180,15 @@ export const operationsApi = {
             (r.participantName && r.participantName.toLowerCase().includes(lookupKey.toLowerCase())) ||
             (r.participant_name && r.participant_name.toLowerCase().includes(lookupKey.toLowerCase()))
         );
+
+        if (!matchRecord && lookupKey.includes('-M')) {
+          const baseKey = lookupKey.split('-M')[0];
+          matchRecord = mockRegs.find(
+            (r) =>
+              (r.registrationId && r.registrationId.toUpperCase() === baseKey.toUpperCase()) ||
+              (r.registration_id && r.registration_id.toUpperCase() === baseKey.toUpperCase())
+          );
+        }
       }
 
       if (!matchRecord) {
@@ -167,9 +197,9 @@ export const operationsApi = {
 
       // Normalize fields
       const regId = matchRecord.registration_id || matchRecord.registrationId;
-      const pName = matchRecord.participant_name || matchRecord.participantName;
-      const email = matchRecord.email;
-      const mobile = matchRecord.mobile_number || matchRecord.mobileNumber || '';
+      let pName = matchRecord.participant_name || matchRecord.participantName;
+      let email = matchRecord.email;
+      let mobile = matchRecord.mobile_number || matchRecord.mobileNumber || '';
       const college = matchRecord.college_institution || matchRecord.collegeInstitution || matchRecord.college || '';
       const department = matchRecord.department || '';
       const year = matchRecord.year || '3rd Year';
@@ -185,56 +215,6 @@ export const operationsApi = {
         .map((s: string) => s.trim().toUpperCase())
         .filter((s: string) => s.length > 0);
 
-      // Parse registered events
-      const registeredEvents: RegisteredEventInfo[] = selectedEventIds.map((evtId: string) => {
-        const meta = OFFICIAL_EVENTS.find((e) => e.eventId.toUpperCase() === evtId);
-        return {
-          eventId: evtId,
-          eventName: meta ? meta.title : evtId,
-          category: meta ? meta.category : 'Technical',
-          attendanceStatus: 'Pending',
-        };
-      });
-
-      // Retrieve live event attendance status from event_registrations or local state
-      const localEventAtt = getLocalArray<{
-        registrationId: string;
-        eventId: string;
-        attendanceStatus: 'Pending' | 'Present';
-        checkinTime?: string;
-      }>(STORAGE_KEYS.EVENT_ATTENDANCE);
-
-      registeredEvents.forEach((re) => {
-        const found = localEventAtt.find(
-          (la) => la.registrationId === regId && la.eventId.toUpperCase() === re.eventId.toUpperCase()
-        );
-        if (found) {
-          re.attendanceStatus = found.attendanceStatus;
-          re.checkinTime = found.checkinTime;
-        }
-      });
-
-      // Retrieve Campus Attendance Status
-      const localCampus = getLocalArray<{
-        registrationId: string;
-        checkinTime: string;
-        station: string;
-        checkinBy: string;
-      }>(STORAGE_KEYS.CAMPUS);
-      const campusCheck = localCampus.find((c) => c.registrationId === regId);
-
-      // Retrieve Food Status
-      const localFood = getLocalArray<{
-        registrationId: string;
-        deliveredTime: string;
-        station: string;
-        deliveredBy: string;
-      }>(STORAGE_KEYS.FOOD);
-      const foodCheck = localFood.find((f) => f.registrationId === regId);
-
-      // Retrieve Physical QR
-      const physicalAssignment = localAssignments.find((a) => a.active && a.registrationId === regId);
-
       const teamMembers: TeamMemberInfo[] = Array.isArray(teamMembersRaw)
         ? teamMembersRaw.map((tm: any) => ({
             name: tm.name || tm.fullName || '',
@@ -248,8 +228,98 @@ export const operationsApi = {
           }))
         : [];
 
+      // Check if querying a specific team member
+      let currentParticipantId = regId;
+      let currentRole: 'TEAM_HEAD' | 'TEAM_MEMBER' | 'INDIVIDUAL' =
+        matchRecord.role || (regType === 'Team' ? 'TEAM_HEAD' : 'INDIVIDUAL');
+
+      if (lookupKey.includes('-M')) {
+        currentParticipantId = lookupKey;
+        currentRole = 'TEAM_MEMBER';
+        if (regId.toUpperCase() !== lookupKey.toUpperCase()) {
+          const memberNum = parseInt(lookupKey.split('-M')[1], 10);
+          const nonHeadMembers = teamMembers.filter((tm) => tm.role === 'TEAM_MEMBER');
+          const targetMember =
+            nonHeadMembers[memberNum - 1] || teamMembers[memberNum] || teamMembers[memberNum - 1];
+          if (targetMember) {
+            pName = targetMember.name;
+            email = targetMember.email || email;
+            mobile = targetMember.phone || mobile;
+          }
+        }
+      }
+
+      // Parse registered events
+      const registeredEvents: RegisteredEventInfo[] = selectedEventIds.map((evtId: string) => {
+        const meta = OFFICIAL_EVENTS.find((e) => e.eventId.toUpperCase() === evtId);
+        return {
+          eventId: evtId,
+          eventName: meta ? meta.title : evtId,
+          category: meta ? meta.category : 'Technical',
+          attendanceStatus: 'Pending',
+        };
+      });
+
+      // Retrieve live event attendance status
+      const localEventAtt = getLocalArray<{
+        registrationId: string;
+        participantId?: string;
+        eventId: string;
+        attendanceStatus: 'Pending' | 'Present';
+        checkinTime?: string;
+      }>(STORAGE_KEYS.EVENT_ATTENDANCE);
+
+      registeredEvents.forEach((re) => {
+        const found = localEventAtt.find(
+          (la) =>
+            (la.participantId === currentParticipantId || la.registrationId === currentParticipantId || la.registrationId === regId) &&
+            la.eventId.toUpperCase() === re.eventId.toUpperCase()
+        );
+        if (found) {
+          re.attendanceStatus = found.attendanceStatus;
+          re.checkinTime = found.checkinTime;
+        }
+      });
+
+      // Retrieve Campus Attendance Status
+      const localCampus = getLocalArray<{
+        registrationId: string;
+        participantId?: string;
+        checkinTime: string;
+        station: string;
+        checkinBy: string;
+      }>(STORAGE_KEYS.CAMPUS);
+      const campusCheck = localCampus.find(
+        (c) => c.participantId === currentParticipantId || c.registrationId === currentParticipantId || c.registrationId === regId
+      );
+
+      // Retrieve Food Status
+      const localFood = getLocalArray<{
+        registrationId: string;
+        participantId?: string;
+        deliveredTime: string;
+        station: string;
+        deliveredBy: string;
+      }>(STORAGE_KEYS.FOOD);
+      const foodCheck = localFood.find(
+        (f) => f.participantId === currentParticipantId || f.registrationId === currentParticipantId || f.registrationId === regId
+      );
+
+      // Retrieve Physical QR Assignment
+      const localAssignments = getLocalArray<{
+        physicalQrId: string;
+        participantId: string;
+        registrationId: string;
+        active: boolean;
+        physicalQrType: 'ID_CARD' | 'WRISTBAND';
+        assignedAt?: string;
+      }>(STORAGE_KEYS.ASSIGNMENTS);
+      const physicalAssignment = localAssignments.find(
+        (a) => a.active && (a.participantId === currentParticipantId || a.registrationId === currentParticipantId || a.registrationId === regId)
+      );
+
       const profile: ParticipantProfile = {
-        id: regId,
+        id: currentParticipantId,
         registrationId: regId,
         participantName: pName,
         email,
@@ -259,7 +329,7 @@ export const operationsApi = {
         year,
         gender,
         registrationType: regType,
-        role: matchRecord.role || (regType === 'Team' && !regId.includes('-M') ? 'TEAM_HEAD' : 'INDIVIDUAL'),
+        role: currentRole,
         teamName,
         teamMembers,
         selectedEvents: selectedEventIds,
@@ -286,7 +356,179 @@ export const operationsApi = {
   },
 
   /**
-   * Assign physical QR (wristband/ID card) to participant
+   * Single Shared Physical QR Resolver
+   * Resolves physical QR codes (e.g. EVX26-TEST-000051, EVX26-WB-000001)
+   * into participant profiles and registered events.
+   */
+  async resolvePhysicalQR(
+    qrCode: string,
+    portalMode: 'TEST' | 'PRODUCTION' = 'PRODUCTION'
+  ): Promise<QrResolutionResult> {
+    const cleanQr = (qrCode || '').trim().toUpperCase();
+
+    // Step 0: Basic validation
+    if (!cleanQr) {
+      return {
+        success: false,
+        errorCode: 'INVALID_QR_FORMAT',
+        errorMessage: 'Physical QR code is required',
+      };
+    }
+
+    // Step 1: Format validation
+    const isStaticFormat = /^EVX26-(TEST|WB)-\d{1,6}$/i.test(cleanQr);
+    const isLegacyPhysical = /^(WRIST|IDC)-[A-Z0-9-]+$/i.test(cleanQr);
+    if (!isStaticFormat && !isLegacyPhysical && !cleanQr.startsWith('EVX26-')) {
+      return {
+        success: false,
+        errorCode: 'INVALID_QR_FORMAT',
+        errorMessage: `Invalid physical QR code format: ${cleanQr}`,
+        qrCode: cleanQr,
+      };
+    }
+
+    // Step 2: Query physical_qr_inventory
+    let inventory = getLocalArray<PhysicalQrInventoryItem>(STORAGE_KEYS.QR_INVENTORY);
+    let invItem = inventory.find((i) => i.qrCode.toUpperCase() === cleanQr);
+
+    // If item not yet in local inventory array, check assignments
+    if (!invItem) {
+      const assignments = getLocalArray<any>(STORAGE_KEYS.ASSIGNMENTS);
+      const matchedAssign = assignments.find(
+        (a) => a.active && a.physicalQrId.toUpperCase() === cleanQr
+      );
+      if (matchedAssign) {
+        invItem = {
+          id: matchedAssign.id || 'INV-' + cleanQr,
+          qrCode: cleanQr,
+          qrType: matchedAssign.physicalQrType || 'WRISTBAND',
+          environment: cleanQr.startsWith('EVX26-TEST-') ? 'TEST' : 'PRODUCTION',
+          status: 'ASSIGNED',
+          participantId: matchedAssign.participantId,
+          registrationId: matchedAssign.registrationId,
+          assignedAt: matchedAssign.assignedAt,
+          assignedBy: matchedAssign.assignedBy,
+          createdAt: matchedAssign.assignedAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        // Auto-seed into inventory
+        inventory.push(invItem);
+        saveLocalArray(STORAGE_KEYS.QR_INVENTORY, inventory);
+      }
+    }
+
+    if (!invItem) {
+      return {
+        success: false,
+        errorCode: 'QR_NOT_FOUND',
+        errorMessage: `Physical QR ${cleanQr} not found in inventory`,
+        qrCode: cleanQr,
+      };
+    }
+
+    // Step 3: Environment check against portalMode
+    if (portalMode === 'PRODUCTION' && (invItem.environment === 'TEST' || cleanQr.startsWith('EVX26-TEST-'))) {
+      return {
+        success: false,
+        errorCode: 'TEST_QR_IN_PRODUCTION_MODE',
+        errorMessage: 'TEST QR DETECTED: This QR is for testing only and cannot be used in Production mode.',
+        qrCode: cleanQr,
+        qrType: invItem.qrType,
+        environment: invItem.environment,
+        status: invItem.status,
+      };
+    }
+
+    if (portalMode === 'TEST' && (invItem.environment === 'PRODUCTION' || cleanQr.startsWith('EVX26-WB-'))) {
+      return {
+        success: false,
+        errorCode: 'PRODUCTION_QR_IN_TEST_MODE',
+        errorMessage: 'PRODUCTION QR IN TEST MODE: This QR belongs to Production event day inventory.',
+        qrCode: cleanQr,
+        qrType: invItem.qrType,
+        environment: invItem.environment,
+        status: invItem.status,
+      };
+    }
+
+    // Step 4: Status check
+    if (invItem.status === 'REVOKED') {
+      return {
+        success: false,
+        errorCode: 'QR_REVOKED',
+        errorMessage: `Physical QR ${cleanQr} is REVOKED: ${invItem.revocationReason || 'Lost or damaged wristband'}`,
+        qrCode: cleanQr,
+        qrType: invItem.qrType,
+        environment: invItem.environment,
+        status: invItem.status,
+      };
+    }
+
+    if (invItem.status !== 'ASSIGNED' && invItem.status !== 'ACTIVE') {
+      return {
+        success: false,
+        errorCode: 'QR_NOT_ASSIGNED',
+        errorMessage: `Physical QR ${cleanQr} is UNASSIGNED. Please visit Reception Desk to bind wristband.`,
+        qrCode: cleanQr,
+        qrType: invItem.qrType,
+        environment: invItem.environment,
+        status: invItem.status,
+      };
+    }
+
+    // Step 5: Foreign key & participant existence
+    const targetRegId = invItem.participantId || invItem.registrationId;
+    if (!targetRegId) {
+      return {
+        success: false,
+        errorCode: 'PARTICIPANT_NOT_FOUND',
+        errorMessage: `No participant linked to physical QR ${cleanQr}`,
+        qrCode: cleanQr,
+        qrType: invItem.qrType,
+        environment: invItem.environment,
+        status: invItem.status,
+      };
+    }
+
+    // Step 6: Fetch participant profile
+    const profileLookup = await this.lookupRegistration({ queryStr: targetRegId });
+    if (!profileLookup.success || !profileLookup.data) {
+      return {
+        success: false,
+        errorCode: 'PARTICIPANT_NOT_FOUND',
+        errorMessage: `Participant profile for registration ${targetRegId} not found`,
+        qrCode: cleanQr,
+        qrType: invItem.qrType,
+        environment: invItem.environment,
+        status: invItem.status,
+        registrationId: targetRegId,
+      };
+    }
+
+    const participant = profileLookup.data;
+
+    // Attach physical QR info
+    participant.physicalQrId = cleanQr;
+    participant.physicalQrType = invItem.qrType;
+    participant.physicalQrAssignedAt = invItem.assignedAt;
+
+    // Step 7: Return full resolved object
+    return {
+      success: true,
+      qrCode: cleanQr,
+      qrType: invItem.qrType,
+      environment: invItem.environment,
+      status: invItem.status,
+      participantId: participant.id,
+      registrationId: participant.registrationId,
+      participant,
+      registration: participant,
+      registeredEvents: participant.selectedEvents,
+    };
+  },
+
+  /**
+   * Assign physical QR (wristband/ID card) to participant with Atomic Write + Verification
    */
   async assignPhysicalQr(params: {
     participantId: string;
@@ -296,9 +538,12 @@ export const operationsApi = {
     staffId: string;
     staffRole: StaffRole;
     station?: string;
+    portalMode?: 'TEST' | 'PRODUCTION';
   }): Promise<ScanOperationResponse> {
     const cleanQrId = params.physicalQrId.trim().toUpperCase();
     const station = params.station || 'Reception Desk';
+    const portalMode =
+      params.portalMode || (station.toUpperCase().includes('TEST') ? 'TEST' : 'PRODUCTION');
 
     if (!cleanQrId) {
       return {
@@ -308,10 +553,9 @@ export const operationsApi = {
       };
     }
 
-    // Safety Rule A: TEST QR protection in Production Mode
+    // 1. Environment validation
     const isTestQr = cleanQrId.startsWith('EVX26-TEST-');
-    const isProdMode = !station.toUpperCase().includes('TEST');
-    if (isTestQr && isProdMode) {
+    if (isTestQr && portalMode === 'PRODUCTION') {
       await this.logAudit({
         staffUser: params.staffId,
         station,
@@ -329,9 +573,28 @@ export const operationsApi = {
       };
     }
 
-    // Safety Rule B: Check if QR is REVOKED in inventory
-    const inventory = getLocalArray<PhysicalQrInventoryItem>(STORAGE_KEYS.QR_INVENTORY);
-    const invItem = inventory.find((i) => i.qrCode.toUpperCase() === cleanQrId);
+    if (!isTestQr && portalMode === 'TEST' && cleanQrId.startsWith('EVX26-WB-')) {
+      await this.logAudit({
+        staffUser: params.staffId,
+        station,
+        operation: 'QR_ASSIGNMENT',
+        registrationId: params.registrationId,
+        physicalQrId: cleanQrId,
+        result: 'DENIED',
+        reason: 'Production QR scanned in test mode',
+      });
+
+      return {
+        state: 'PROD_QR_IN_TEST',
+        verbatimMessage: 'PRODUCTION QR IN TEST MODE',
+        details: 'This QR belongs to event day inventory and cannot be bound in test mode.',
+      };
+    }
+
+    // 2. Revocation check
+    let inventory = getLocalArray<PhysicalQrInventoryItem>(STORAGE_KEYS.QR_INVENTORY);
+    let invItem = inventory.find((i) => i.qrCode.toUpperCase() === cleanQrId);
+
     if (invItem && invItem.status === 'REVOKED') {
       await this.logAudit({
         staffUser: params.staffId,
@@ -350,11 +613,13 @@ export const operationsApi = {
       };
     }
 
+    // 3. Rule: Check if physical QR is already assigned to a DIFFERENT active participant
     const assignments = getLocalArray<any>(STORAGE_KEYS.ASSIGNMENTS);
-
-    // Rule 1: Check if physical QR is already assigned to a DIFFERENT active participant
     const existingOther = assignments.find(
-      (a) => a.active && a.physicalQrId.toUpperCase() === cleanQrId && a.registrationId !== params.registrationId
+      (a) =>
+        a.active &&
+        a.physicalQrId.toUpperCase() === cleanQrId &&
+        a.participantId !== params.participantId
     );
 
     if (existingOther) {
@@ -365,18 +630,22 @@ export const operationsApi = {
         registrationId: params.registrationId,
         physicalQrId: cleanQrId,
         result: 'DENIED',
-        reason: `QR already assigned to participant ${existingOther.registrationId}`,
+        reason: `QR already assigned to participant ${existingOther.participantId || existingOther.registrationId}`,
       });
 
       return {
         state: 'QR_CONFLICT',
         verbatimMessage: 'QR ASSIGNED TO ANOTHER PARTICIPANT',
-        details: `This physical QR is already active on registration ${existingOther.registrationId}`,
+        details: `This physical QR is already active on participant ${existingOther.participantId || existingOther.registrationId}`,
       };
     }
 
-    // Rule 2: Check if participant already has an active physical QR
-    const existingMine = assignments.find((a) => a.active && a.registrationId === params.registrationId);
+    // 4. Rule: Check if participant already has an active physical QR
+    const existingMine = assignments.find(
+      (a) =>
+        a.active &&
+        a.participantId === params.participantId
+    );
 
     if (existingMine && existingMine.physicalQrId.toUpperCase() !== cleanQrId) {
       if (params.staffRole !== 'SUPER_ADMIN') {
@@ -400,8 +669,39 @@ export const operationsApi = {
       existingMine.active = false;
     }
 
-    // Record new assignment
+    // 5. ATOMIC WRITE
     const now = new Date().toISOString();
+    const env: QrEnvironment = isTestQr ? 'TEST' : 'PRODUCTION';
+
+    // A) Update or insert in physical_qr_inventory
+    if (invItem) {
+      invItem.status = 'ASSIGNED';
+      invItem.participantId = params.participantId;
+      invItem.registrationId = params.registrationId;
+      invItem.qrType = params.physicalQrType;
+      invItem.environment = env;
+      invItem.assignedAt = now;
+      invItem.assignedBy = params.staffId;
+      invItem.updatedAt = now;
+    } else {
+      invItem = {
+        id: 'INV-' + cleanQrId,
+        qrCode: cleanQrId,
+        qrType: params.physicalQrType,
+        environment: env,
+        status: 'ASSIGNED',
+        participantId: params.participantId,
+        registrationId: params.registrationId,
+        assignedAt: now,
+        assignedBy: params.staffId,
+        createdAt: now,
+        updatedAt: now,
+      };
+      inventory.push(invItem);
+    }
+    saveLocalArray(STORAGE_KEYS.QR_INVENTORY, inventory);
+
+    // B) Update assignments array
     const newAssignment = {
       id: 'PQR-' + Math.random().toString(36).substring(2, 9),
       physicalQrId: cleanQrId,
@@ -412,9 +712,46 @@ export const operationsApi = {
       assignedBy: params.staffId,
       active: true,
     };
-
     assignments.push(newAssignment);
     saveLocalArray(STORAGE_KEYS.ASSIGNMENTS, assignments);
+
+    // C) Write to Supabase if configured (non-blocking)
+    if (isSupabaseConfigured()) {
+      Promise.resolve(
+        supabase.from('physical_qr_inventory').upsert([
+          {
+            qr_code: cleanQrId,
+            qr_type: params.physicalQrType,
+            environment: env,
+            status: 'ASSIGNED',
+            participant_id: params.participantId,
+            registration_id: params.registrationId,
+            assigned_at: now,
+            assigned_by: params.staffId,
+            updated_at: now,
+          },
+        ], { onConflict: 'qr_code' })
+      ).catch(() => {});
+    }
+
+    // 6. IMMEDIATE RE-SELECT & VERIFY
+    const reselected = getLocalArray<PhysicalQrInventoryItem>(STORAGE_KEYS.QR_INVENTORY).find(
+      (i) => i.qrCode.toUpperCase() === cleanQrId
+    );
+
+    const isVerified =
+      reselected &&
+      reselected.status === 'ASSIGNED' &&
+      (reselected.registrationId === params.registrationId ||
+        reselected.participantId === params.participantId);
+
+    if (!isVerified) {
+      return {
+        state: 'VERIFICATION_FAILED',
+        verbatimMessage: 'QR assignment could not be verified. Please try again.',
+        details: 'Failed live re-query confirmation on assigned QR row',
+      };
+    }
 
     await this.logAudit({
       staffUser: params.staffId,
@@ -456,7 +793,11 @@ export const operationsApi = {
     const campusLogs = getLocalArray<any>(STORAGE_KEYS.CAMPUS);
 
     // Check idempotency
-    const existing = campusLogs.find((c) => c.registrationId === params.registrationId);
+    const existing = campusLogs.find(
+      (c) =>
+        c.participantId === params.participantId
+    );
+
     if (existing) {
       await this.logAudit({
         staffUser: params.staffId,
@@ -491,14 +832,12 @@ export const operationsApi = {
 
     // Update Supabase overall_registrations if live
     if (isSupabaseConfigured()) {
-      try {
-        await supabase
+      Promise.resolve(
+        supabase
           .from('overall_registrations')
           .update({ overall_attendance_status: 'Present' })
-          .eq('registration_id', params.registrationId);
-      } catch (e) {
-        console.warn('Supabase campus attendance update notice:', e);
-      }
+          .eq('registration_id', params.registrationId)
+      ).catch(() => {});
     }
 
     await this.logAudit({
@@ -535,12 +874,15 @@ export const operationsApi = {
     eventId: string;
     staffId: string;
     station?: string;
+    portalMode?: 'TEST' | 'PRODUCTION';
     isAdminOverride?: boolean;
     overrideReason?: string;
   }): Promise<ScanOperationResponse> {
     const cleanQr = params.physicalQrId.trim().toUpperCase();
     const eventId = params.eventId.trim().toUpperCase();
     const station = params.station || `Event Desk (${eventId})`;
+    const portalMode =
+      params.portalMode || (station.toUpperCase().includes('TEST') ? 'TEST' : 'PRODUCTION');
     const eventMeta = OFFICIAL_EVENTS.find((e) => e.eventId.toUpperCase() === eventId);
     const eventTitle = eventMeta ? eventMeta.title : eventId;
 
@@ -552,9 +894,34 @@ export const operationsApi = {
       };
     }
 
-    // 1. Resolve participant from physical QR or registration token
-    const lookup = await this.lookupRegistration({ token: cleanQr });
-    if (!lookup.success || !lookup.data) {
+    // 1. Resolve participant via single shared resolver
+    const resolved = await this.resolvePhysicalQR(cleanQr, portalMode);
+
+    if (!resolved.success || !resolved.participant) {
+      const errCode = resolved.errorCode;
+      let state: ScanResultState = 'NOT_FOUND';
+      let msg = 'PARTICIPANT NOT FOUND';
+
+      if (errCode === 'INVALID_QR_FORMAT') {
+        state = 'INVALID_QR';
+        msg = 'INVALID QR';
+      } else if (errCode === 'QR_NOT_FOUND') {
+        state = 'QR_NOT_FOUND';
+        msg = 'QR NOT FOUND IN INVENTORY';
+      } else if (errCode === 'QR_NOT_ASSIGNED') {
+        state = 'UNASSIGNED_QR';
+        msg = 'QR NOT ASSIGNED';
+      } else if (errCode === 'QR_REVOKED') {
+        state = 'QR_REVOKED';
+        msg = 'QR REVOKED';
+      } else if (errCode === 'TEST_QR_IN_PRODUCTION_MODE') {
+        state = 'TEST_QR_IN_PROD';
+        msg = 'TEST QR DETECTED';
+      } else if (errCode === 'PRODUCTION_QR_IN_TEST_MODE') {
+        state = 'PROD_QR_IN_TEST';
+        msg = 'PRODUCTION QR IN TEST MODE';
+      }
+
       await this.logAudit({
         staffUser: params.staffId,
         station,
@@ -563,17 +930,17 @@ export const operationsApi = {
         eventName: eventTitle,
         physicalQrId: cleanQr,
         result: 'ERROR',
-        reason: 'Participant not found for scanned QR',
+        reason: resolved.errorMessage || 'Resolver failure',
       });
 
       return {
-        state: 'NOT_FOUND',
-        verbatimMessage: 'PARTICIPANT NOT FOUND',
-        details: `No active registration found for QR ${cleanQr}`,
+        state,
+        verbatimMessage: msg,
+        details: resolved.errorMessage || `No active registration found for QR ${cleanQr}`,
       };
     }
 
-    const participant = lookup.data;
+    const participant = resolved.participant;
 
     // 2. Check if participant is registered for this event
     const isRegistered = participant.selectedEvents.some((e) => e.toUpperCase() === eventId);
@@ -594,9 +961,9 @@ export const operationsApi = {
 
       return {
         state: 'WRONG_EVENT',
-        verbatimMessage: 'NOT REGISTERED FOR THIS EVENT',
+        verbatimMessage: 'PARTICIPANT FOUND — NOT REGISTERED FOR THIS EVENT',
         registeredEvents: participant.selectedEvents,
-        details: `Participant ${participant.participantName} is registered for: ${participant.selectedEvents.join(', ')}`,
+        details: 'You are not registered for this event. Please proceed to one of your registered event desks.',
         participant,
       };
     }
@@ -604,7 +971,9 @@ export const operationsApi = {
     // 3. Check idempotency for this event
     const eventLogs = getLocalArray<any>(STORAGE_KEYS.EVENT_ATTENDANCE);
     const existing = eventLogs.find(
-      (el) => el.registrationId === participant.registrationId && el.eventId.toUpperCase() === eventId
+      (el) =>
+        el.participantId === participant.id &&
+        el.eventId.toUpperCase() === eventId
     );
 
     if (existing) {
@@ -623,7 +992,7 @@ export const operationsApi = {
 
       return {
         state: 'DUPLICATE_EVENT',
-        verbatimMessage: 'ALREADY PRESENT',
+        verbatimMessage: 'ALREADY MARKED PRESENT',
         originalTime: existing.checkinTime,
         originalStation: existing.station,
         details: `Already marked present at ${new Date(existing.checkinTime).toLocaleTimeString()} (${existing.station})`,
@@ -651,14 +1020,12 @@ export const operationsApi = {
 
     // Update Supabase event_registrations if live
     if (isSupabaseConfigured()) {
-      try {
-        await supabase
+      Promise.resolve(
+        supabase
           .from('event_registrations')
           .update({ attendance_status: 'Present', participation_status: 'Present' })
-          .match({ registration_id: participant.registrationId, event_id: eventId });
-      } catch (e) {
-        console.warn('Supabase event attendance update notice:', e);
-      }
+          .match({ registration_id: participant.registrationId, event_id: eventId })
+      ).catch(() => {});
     }
 
     await this.logAudit({
@@ -700,11 +1067,14 @@ export const operationsApi = {
     physicalQrId: string;
     staffId: string;
     station?: string;
+    portalMode?: 'TEST' | 'PRODUCTION';
     isAdminOverride?: boolean;
     overrideReason?: string;
   }): Promise<ScanOperationResponse> {
     const cleanQr = params.physicalQrId.trim().toUpperCase();
     const station = params.station || 'Food Counter';
+    const portalMode =
+      params.portalMode || (station.toUpperCase().includes('TEST') ? 'TEST' : 'PRODUCTION');
 
     if (!cleanQr) {
       return {
@@ -714,30 +1084,58 @@ export const operationsApi = {
       };
     }
 
-    // 1. Resolve participant
-    const lookup = await this.lookupRegistration({ token: cleanQr });
-    if (!lookup.success || !lookup.data) {
+    // 1. Resolve participant via single shared resolver
+    const resolved = await this.resolvePhysicalQR(cleanQr, portalMode);
+
+    if (!resolved.success || !resolved.participant) {
+      const errCode = resolved.errorCode;
+      let state: ScanResultState = 'NOT_FOUND';
+      let msg = 'PARTICIPANT NOT FOUND';
+
+      if (errCode === 'INVALID_QR_FORMAT') {
+        state = 'INVALID_QR';
+        msg = 'INVALID QR';
+      } else if (errCode === 'QR_NOT_FOUND') {
+        state = 'QR_NOT_FOUND';
+        msg = 'QR NOT FOUND IN INVENTORY';
+      } else if (errCode === 'QR_NOT_ASSIGNED') {
+        state = 'UNASSIGNED_QR';
+        msg = 'QR NOT ASSIGNED';
+      } else if (errCode === 'QR_REVOKED') {
+        state = 'QR_REVOKED';
+        msg = 'QR REVOKED';
+      } else if (errCode === 'TEST_QR_IN_PRODUCTION_MODE') {
+        state = 'TEST_QR_IN_PROD';
+        msg = 'TEST QR DETECTED';
+      } else if (errCode === 'PRODUCTION_QR_IN_TEST_MODE') {
+        state = 'PROD_QR_IN_TEST';
+        msg = 'PRODUCTION QR IN TEST MODE';
+      }
+
       await this.logAudit({
         staffUser: params.staffId,
         station,
         operation: 'FOOD_DELIVERY',
         physicalQrId: cleanQr,
         result: 'ERROR',
-        reason: 'Participant not found for food scan',
+        reason: resolved.errorMessage || 'Resolver failure',
       });
 
       return {
-        state: 'NOT_FOUND',
-        verbatimMessage: 'PARTICIPANT NOT FOUND',
-        details: `No active participant linked to QR ${cleanQr}`,
+        state,
+        verbatimMessage: msg,
+        details: resolved.errorMessage || `No active participant linked to QR ${cleanQr}`,
       };
     }
 
-    const participant = lookup.data;
+    const participant = resolved.participant;
 
     // 2. Check food duplicate idempotency
     const foodLogs = getLocalArray<any>(STORAGE_KEYS.FOOD);
-    const existing = foodLogs.find((f) => f.registrationId === participant.registrationId);
+    const existing = foodLogs.find(
+      (f) =>
+        f.participantId === participant.id
+    );
 
     if (existing && !params.isAdminOverride) {
       await this.logAudit({
@@ -748,7 +1146,7 @@ export const operationsApi = {
         participantName: participant.participantName,
         physicalQrId: cleanQr,
         result: 'DUPLICATE',
-        reason: 'Meal already collected',
+        reason: 'Meal token already redeemed',
       });
 
       return {
@@ -756,12 +1154,12 @@ export const operationsApi = {
         verbatimMessage: 'FOOD ALREADY DELIVERED',
         originalTime: existing.deliveredTime,
         originalStation: existing.station,
-        details: `Meal delivered at ${new Date(existing.deliveredTime).toLocaleTimeString()} (${existing.station})`,
+        details: `Meal token redeemed at ${new Date(existing.deliveredTime).toLocaleTimeString()} (${existing.station})`,
         participant,
       };
     }
 
-    // 3. Record meal delivery
+    // 3. Record meal redemption
     const now = new Date().toISOString();
     foodLogs.push({
       id: 'FOOD-' + Math.random().toString(36).substring(2, 9),
@@ -797,9 +1195,9 @@ export const operationsApi = {
 
     return {
       state: 'SUCCESS',
-      verbatimMessage: '✓ PRESENT',
+      verbatimMessage: '✓ MEAL DELIVERED',
       timestamp: now,
-      details: `Meal redeemed for ${participant.participantName}`,
+      details: `Meal token redeemed for ${participant.participantName}`,
       participant,
     };
   },
@@ -1065,9 +1463,8 @@ export const operationsApi = {
 
     // If local inventory is empty, check if we should auto-seed from pre-generated set
     if (all.length === 0) {
-      // Seed default production & test skeleton if empty
-      const prodRes = await this.generateQrInventory({ environment: 'PRODUCTION', count: 1000 });
-      const testRes = await this.generateQrInventory({ environment: 'TEST', count: 100 });
+      await this.generateQrInventory({ environment: 'PRODUCTION', count: 1000 });
+      await this.generateQrInventory({ environment: 'TEST', count: 100 });
       all = getLocalArray<PhysicalQrInventoryItem>(STORAGE_KEYS.QR_INVENTORY);
     }
 
@@ -1171,4 +1568,3 @@ export const operationsApi = {
     return { success: true, message: `QR Code ${cleanQr} revoked successfully.` };
   },
 };
-
