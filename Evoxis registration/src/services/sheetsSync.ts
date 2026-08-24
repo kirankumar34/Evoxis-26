@@ -6,15 +6,30 @@
 const APPS_SCRIPT_URL = import.meta.env.VITE_APPS_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbxATuX68Uzi7ozu1OSHQtyKM8m78K66IZ7l42aobpKrTrc7qWegj6vIoM1NGlLajX7F/exec';
 
 export interface SheetsSyncPayload {
-  action: 'markAttendance' | 'markFoodDelivered' | 'assignPhysicalQr' | 'syncCampusCheckin';
-  registrationId: string;
+  action: 'markAttendance' | 'markFoodDelivered' | 'assignPhysicalQr' | 'syncCampusCheckin' | 'generateQrInventory';
+  registrationId?: string;
+  participantId?: string;
   participantName?: string;
+  email?: string;
+  mobile?: string;
+  college?: string;
+  department?: string;
+  year?: string;
+  gender?: string;
+  registrationType?: string;
+  selectedEvents?: string[] | string;
+  participant?: any;
   eventId?: string;
   eventName?: string;
   physicalQrId?: string;
+  environment?: string;
+  count?: number;
+  qrType?: string;
   station?: string;
   timestamp?: string;
   verifiedBy?: string;
+  campusStatus?: string;
+  foodStatus?: string;
 }
 
 export const syncToGoogleSheets = async (payload: SheetsSyncPayload): Promise<boolean> => {

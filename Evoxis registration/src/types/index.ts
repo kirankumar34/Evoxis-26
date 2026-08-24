@@ -229,13 +229,26 @@ export type QrType = 'WRISTBAND' | 'ID_CARD';
 
 export interface PhysicalQrInventoryItem {
   id: string;
+  qrId?: string;
   qrCode: string;
   qrType: QrType;
   environment: QrEnvironment;
   status: QrStatus;
-  participantId?: string;
   registrationId?: string;
+  participantId?: string;
   participantName?: string;
+  email?: string;
+  mobileNumber?: string;
+  college?: string;
+  department?: string;
+  year?: string;
+  gender?: string;
+  registrationType?: string;
+  selectedEvents?: string[] | string;
+  totalEvents?: number;
+  paymentStatus?: string;
+  campusStatus?: string;
+  foodStatus?: string;
   assignedAt?: string;
   assignedBy?: string;
   createdAt: string;

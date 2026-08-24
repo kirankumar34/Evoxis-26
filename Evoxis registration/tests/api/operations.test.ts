@@ -390,7 +390,7 @@ describe('EvoXis26 Operations Portal Automated Test Suite', () => {
     });
 
     expect(conflict.state).toBe('QR_CONFLICT');
-    expect(conflict.verbatimMessage).toBe('QR ASSIGNED TO ANOTHER PARTICIPANT');
+    expect(['WRISTBAND ALREADY ASSIGNED', 'QR ASSIGNED TO ANOTHER PARTICIPANT']).toContain(conflict.verbatimMessage);
   });
 
   // Test 13: Concurrency test: Two simultaneous requests marking same participant's food
@@ -719,4 +719,155 @@ describe('EvoXis26 Operations Portal Automated Test Suite', () => {
       expect(food2.verbatimMessage).toBe('FOOD ALREADY DELIVERED');
     }
   });
+
+  // Test 18: Pre-generated QR inventory initializes with status = 'UNUSED' and empty participant fields
+  it('18. Pre-generated QR inventory creates 100 TEST and 1000 PROD records with status UNUSED and empty participant fields', async () => {
+    // Generate test QR inventory
+    const testGen = await operationsApi.generateQrInventory({
+      environment: 'TEST',
+      count: 100,
+    });
+    expect(testGen.totalCreated).toBe(100);
+
+    const inv = await operationsApi.getQrInventory({ environment: 'TEST', pageSize: 100 });
+    expect(inv.items.length).toBe(100);
+    expect(inv.totalCount).toBe(100);
+
+    // Verify first and last test QRs
+    const test01 = inv.items.find((i) => i.qrCode === 'EVX26-TEST-000001');
+    expect(test01).toBeDefined();
+    expect(test01?.status).toBe('UNUSED');
+    expect(test01?.participantId).toBeUndefined();
+    expect(test01?.participantName).toBeUndefined();
+    expect(test01?.email).toBeUndefined();
+
+    const test100 = inv.items.find((i) => i.qrCode === 'EVX26-TEST-000100');
+    expect(test100).toBeDefined();
+    expect(test100?.status).toBe('UNUSED');
+  });
+
+  // Test 19: Reception assignment updates the existing QR row in place (NEVER inserts a second row)
+  it('19. Reception assignment UPDATES the existing empty QR record in place without creating duplicate rows', async () => {
+    // Inventory count before assignment
+    const invBefore = await operationsApi.getQrInventory({ environment: 'TEST', pageSize: 100 });
+    const countBefore = invBefore.items.length;
+
+    // Assign EVX26-TEST-000025 to Rahul Dravid
+    const assignResult = await operationsApi.assignPhysicalQr({
+      participantId: TEST_INDIVIDUAL_ID,
+      registrationId: TEST_INDIVIDUAL_ID,
+      physicalQrId: 'EVX26-TEST-000025',
+      physicalQrType: 'WRISTBAND',
+      staffId: 'Staff John',
+      staffRole: 'RECEPTION',
+      station: 'Reception Desk 1',
+      portalMode: 'TEST',
+    });
+
+    expect(assignResult.state).toBe('SUCCESS');
+    expect(assignResult.verbatimMessage).toBe('✓ PRESENT');
+
+    // Verify inventory count DID NOT increase (strict UPDATE, no duplicate row)
+    const invAfter = await operationsApi.getQrInventory({ environment: 'TEST', pageSize: 100 });
+    expect(invAfter.items.length).toBe(countBefore);
+
+    // Verify the exact row was updated
+    const updatedRow = invAfter.items.find((i) => i.qrCode === 'EVX26-TEST-000025');
+    expect(updatedRow).toBeDefined();
+    expect(updatedRow?.status).toBe('ASSIGNED');
+    expect(updatedRow?.participantId).toBe(TEST_INDIVIDUAL_ID);
+    expect(updatedRow?.participantName).toBe('Rahul Dravid');
+    expect(updatedRow?.email).toBe('rahul.test999@example.com');
+    expect(updatedRow?.college).toBe('Sriram Engineering College');
+    expect(updatedRow?.selectedEvents).toContain('TE02');
+    expect(updatedRow?.totalEvents).toBe(2);
+  });
+
+  // Test 20: Attempting to assign an already assigned QR to a different participant is blocked with WRISTBAND ALREADY ASSIGNED
+  it('20. Assigning an already assigned QR to another participant returns WRISTBAND ALREADY ASSIGNED', async () => {
+    // 1. First assign EVX26-TEST-000025 to Rahul Dravid
+    await operationsApi.assignPhysicalQr({
+      participantId: TEST_INDIVIDUAL_ID,
+      registrationId: TEST_INDIVIDUAL_ID,
+      physicalQrId: 'EVX26-TEST-000025',
+      physicalQrType: 'WRISTBAND',
+      staffId: 'Staff John',
+      staffRole: 'RECEPTION',
+      station: 'Reception Desk 1',
+      portalMode: 'TEST',
+    });
+
+    // 2. Attempt to bind already-assigned EVX26-TEST-000025 to Kumar V
+    const conflictResult = await operationsApi.assignPhysicalQr({
+      participantId: `${TEST_TEAM_HEAD_ID}-M1`,
+      registrationId: TEST_TEAM_HEAD_ID,
+      physicalQrId: 'EVX26-TEST-000025',
+      physicalQrType: 'WRISTBAND',
+      staffId: 'Staff John',
+      staffRole: 'RECEPTION',
+      station: 'Reception Desk 1',
+      portalMode: 'TEST',
+    });
+
+    expect(conflictResult.state).toBe('QR_CONFLICT');
+    expect(conflictResult.verbatimMessage).toBe('WRISTBAND ALREADY ASSIGNED');
+    expect(conflictResult.details).toContain('Rahul Dravid');
+  });
+
+  // Test 21: Full downstream operations flow using physical QR codes from QR codes/testing
+  it('21. Full event workflow using testing folder QR codes (EVX26-TEST-000060, EVX26-TEST-000061)', async () => {
+    // 1. Assign EVX26-TEST-000060 to Rahul Dravid
+    // First clear old assignment
+    const clearAssignment = await operationsApi.assignPhysicalQr({
+      participantId: TEST_INDIVIDUAL_ID,
+      registrationId: TEST_INDIVIDUAL_ID,
+      physicalQrId: 'EVX26-TEST-000060',
+      physicalQrType: 'WRISTBAND',
+      staffId: 'Admin User',
+      staffRole: 'SUPER_ADMIN',
+      station: 'Reception Desk',
+      portalMode: 'TEST',
+    });
+    expect(clearAssignment.state).toBe('SUCCESS');
+
+    // 2. Mark Campus Check-in
+    const campusCheckin = await operationsApi.markCampusPresent({
+      participantId: TEST_INDIVIDUAL_ID,
+      registrationId: TEST_INDIVIDUAL_ID,
+      physicalQrId: 'EVX26-TEST-000060',
+      staffId: 'Campus Gate Staff',
+      station: 'Main Gate',
+    });
+    expect(campusCheckin.state).toBe('SUCCESS');
+    expect(campusCheckin.verbatimMessage).toBe('✓ PRESENT');
+
+    // 3. Mark Event Attendance at TE02
+    const eventCheckin = await operationsApi.markEventPresent({
+      physicalQrId: 'EVX26-TEST-000060',
+      eventId: 'TE02',
+      staffId: 'TE02 Desk Lead',
+      station: 'TE02 Desk',
+      portalMode: 'TEST',
+    });
+    expect(eventCheckin.state).toBe('SUCCESS');
+    expect(eventCheckin.verbatimMessage).toBe('✓ PRESENT');
+
+    // 4. Mark Food Delivery
+    const foodRedeem = await operationsApi.markFoodDelivered({
+      physicalQrId: 'EVX26-TEST-000060',
+      staffId: 'Food Lead',
+      station: 'Food Counter 1',
+      portalMode: 'TEST',
+    });
+    expect(foodRedeem.state).toBe('SUCCESS');
+    expect(foodRedeem.verbatimMessage).toBe('✓ MEAL DELIVERED');
+
+    // 5. Verify physical_qr_inventory state for EVX26-TEST-000060 has updated campus and food statuses
+    const inv = await operationsApi.getQrInventory({ environment: 'TEST' });
+    const row = inv.items.find((i) => i.qrCode === 'EVX26-TEST-000060');
+    expect(row?.status).toBe('ASSIGNED');
+    expect(row?.campusStatus).toBe('Present');
+    expect(row?.foodStatus).toBe('Delivered');
+  });
 });
+

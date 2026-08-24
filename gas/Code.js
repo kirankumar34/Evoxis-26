@@ -21,7 +21,8 @@ const SHEETS = {
   ATTENDANCE_LOG: 'Attendance_Log',
   NOTIFICATION_LOG: 'Notification_Log',
   EVENT_MASTER: 'Event_Master',
-  CONFIGURATION: 'Configuration'
+  CONFIGURATION: 'Configuration',
+  PHYSICAL_QR_INVENTORY: 'Physical_QR_Inventory'
 };
 
 // 16 Official EvoXis'26 Events Master Metadata
@@ -149,6 +150,15 @@ function setupEvoXis26Sheets() {
     configSheet.getRange(2, 1, configRows.length, configRows[0].length).setValues(configRows);
   }
 
+  // 10. Physical_QR_Inventory Master Inventory Sheet
+  createOrUpdateSheet(ss, SHEETS.PHYSICAL_QR_INVENTORY, [
+    'QR ID', 'QR Code', 'QR Type', 'Environment', 'Status',
+    'Registration ID', 'Participant ID', 'Participant Name', 'Email', 'Mobile Number',
+    'College/Institution', 'Department', 'Year', 'Gender', 'Registration Type',
+    'Selected Events', 'Total Events', 'Payment Status', 'Campus Status', 'Food Status',
+    'Assigned At', 'Assigned By', 'Created At', 'Updated At'
+  ], '#0D1B2A', '#38BDF8');
+
   Logger.log('✅ EvoXis 26 Database and Sheets initialized successfully!');
   return { success: true, message: 'All sheets and master tables initialized successfully!' };
 }
@@ -229,11 +239,28 @@ function handleRequest(e, method) {
         break;
 
       case 'markEventAttendance':
+      case 'markAttendance':
         responseData = markEventAttendance(params);
         break;
 
       case 'updateParticipationStatus':
         responseData = updateParticipationStatus(params);
+        break;
+
+      case 'generateQrInventory':
+        responseData = generateQrInventorySheet(params);
+        break;
+
+      case 'assignPhysicalQr':
+        responseData = assignPhysicalQrSheet(params);
+        break;
+
+      case 'syncCampusCheckin':
+        responseData = syncCampusCheckinSheet(params);
+        break;
+
+      case 'markFoodDelivered':
+        responseData = markFoodDeliveredSheet(params);
         break;
 
       case 'getEventParticipants':
@@ -1245,3 +1272,207 @@ function processScheduledReminders() {
   const data = overallSheet.getDataRange().getValues();
   Logger.log('Running daily scheduled reminder checks across ' + (data.length - 1) + ' participants.');
 }
+
+/**
+ * ============================================================================
+ * PHYSICAL QR INVENTORY & RECEPTION WRISTBAND ASSIGNMENT ENGINE
+ * Pre-generated inventory management, atomic update, and Google Sheets sync
+ * ============================================================================
+ */
+
+/**
+ * Pre-generate / Seed QR Inventory in Physical_QR_Inventory Sheet
+ */
+function generateQrInventorySheet(params) {
+  const ss = getSpreadsheet();
+  let sheet = ss.getSheetByName(SHEETS.PHYSICAL_QR_INVENTORY);
+  if (!sheet) {
+    setupEvoXis26Sheets();
+    sheet = ss.getSheetByName(SHEETS.PHYSICAL_QR_INVENTORY);
+  }
+
+  const env = params.environment || 'PRODUCTION';
+  const count = params.count || (env === 'PRODUCTION' ? 1000 : 100);
+  const prefix = env === 'PRODUCTION' ? 'EVX26-WB-' : 'EVX26-TEST-';
+  const qrType = params.qrType || 'WRISTBAND';
+
+  const existingData = sheet.getDataRange().getValues();
+  const existingSet = new Set();
+  for (let i = 1; i < existingData.length; i++) {
+    existingSet.add(String(existingData[i][0]).trim().toUpperCase());
+  }
+
+  const rowsToAdd = [];
+  const now = new Date().toISOString();
+
+  for (let i = 1; i <= count; i++) {
+    const qrCode = prefix + String(i).padStart(6, '0');
+    if (!existingSet.has(qrCode.toUpperCase())) {
+      rowsToAdd.push([
+        qrCode,       // QR ID
+        qrCode,       // QR Code
+        qrType,       // QR Type
+        env,          // Environment
+        'UNUSED',     // Status
+        '', '', '', '', '', '', '', '', '', '', '', 0, '', '', '', '', '', now, now
+      ]);
+    }
+  }
+
+  if (rowsToAdd.length > 0) {
+    sheet.getRange(sheet.getLastRow() + 1, 1, rowsToAdd.length, rowsToAdd[0].length).setValues(rowsToAdd);
+    Logger.log('✅ [generateQrInventorySheet] Added ' + rowsToAdd.length + ' pre-generated ' + env + ' QR rows to Google Sheets.');
+  }
+
+  return {
+    success: true,
+    message: 'Pre-generated ' + rowsToAdd.length + ' QR inventory rows in Google Sheet.',
+    totalAdded: rowsToAdd.length
+  };
+}
+
+/**
+ * Update Existing Physical QR Inventory Row upon Reception Assignment (UPDATE, NEVER INSERT)
+ */
+function assignPhysicalQrSheet(params) {
+  const { physicalQrId, participant, registrationId, verifiedBy, station } = params;
+  if (!physicalQrId) {
+    return { success: false, message: 'Missing physicalQrId' };
+  }
+
+  const ss = getSpreadsheet();
+  let sheet = ss.getSheetByName(SHEETS.PHYSICAL_QR_INVENTORY);
+  if (!sheet) {
+    setupEvoXis26Sheets();
+    sheet = ss.getSheetByName(SHEETS.PHYSICAL_QR_INVENTORY);
+  }
+
+  const cleanQr = String(physicalQrId).trim().toUpperCase();
+  const data = sheet.getDataRange().getValues();
+  let targetRowIndex = -1;
+
+  for (let i = 1; i < data.length; i++) {
+    const rowQrId = String(data[i][0]).trim().toUpperCase();
+    const rowQrCode = String(data[i][1]).trim().toUpperCase();
+    if (rowQrId === cleanQr || rowQrCode === cleanQr) {
+      targetRowIndex = i + 1; // 1-indexed for Sheets
+      break;
+    }
+  }
+
+  const now = new Date().toISOString();
+  const regId = registrationId || (participant && (participant.registrationId || participant.id)) || '';
+  const partId = (participant && participant.id) || regId;
+  const pName = (participant && participant.participantName) || params.participantName || '';
+  const email = (participant && participant.email) || params.email || '';
+  const mobile = (participant && participant.mobile) || params.mobile || '';
+  const college = (participant && participant.college) || params.college || '';
+  const dept = (participant && participant.department) || params.department || '';
+  const year = (participant && participant.year) || params.year || '';
+  const gender = (participant && participant.gender) || params.gender || '';
+  const regType = (participant && participant.registrationType) || params.registrationType || '';
+  const selectedEventsStr = (participant && participant.selectedEvents) ? (Array.isArray(participant.selectedEvents) ? participant.selectedEvents.join(', ') : participant.selectedEvents) : (params.selectedEvents || '');
+  const totalEvts = (participant && participant.selectedEvents) ? (Array.isArray(participant.selectedEvents) ? participant.selectedEvents.length : 1) : 0;
+  const staff = verifiedBy || params.staffId || 'Reception Staff';
+
+  if (targetRowIndex > 0) {
+    // UPDATE EXISTING ROW (Columns 5 to 24)
+    const updateValues = [[
+      'ASSIGNED',
+      regId,
+      partId,
+      pName,
+      email,
+      mobile,
+      college,
+      dept,
+      year,
+      gender,
+      regType,
+      selectedEventsStr,
+      totalEvts,
+      'Paid/Confirmed',
+      params.campusStatus || 'Pending',
+      params.foodStatus || 'Pending',
+      now,
+      staff,
+      data[targetRowIndex - 1][22] || now, // Created At preserved
+      now // Updated At
+    ]];
+    sheet.getRange(targetRowIndex, 5, 1, 20).setValues(updateValues);
+    Logger.log('✅ [assignPhysicalQrSheet] Updated existing row ' + targetRowIndex + ' for QR ' + cleanQr);
+  } else {
+    // Auto-create initial row if not pre-seeded and update it
+    const env = cleanQr.startsWith('EVX26-TEST-') ? 'TEST' : 'PRODUCTION';
+    sheet.appendRow([
+      cleanQr, cleanQr, 'WRISTBAND', env, 'ASSIGNED',
+      regId, partId, pName, email, mobile, college, dept, year, gender, regType,
+      selectedEventsStr, totalEvts, 'Paid/Confirmed', params.campusStatus || 'Pending', params.foodStatus || 'Pending',
+      now, staff, now, now
+    ]);
+    Logger.log('➕ [assignPhysicalQrSheet] Seeded new row for QR ' + cleanQr);
+  }
+
+  return { success: true, message: 'Physical QR ' + cleanQr + ' assigned and synced to Google Sheets.' };
+}
+
+/**
+ * Sync Campus Check-in to Physical_QR_Inventory Sheet
+ */
+function syncCampusCheckinSheet(params) {
+  const { physicalQrId, registrationId, participantId } = params;
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.PHYSICAL_QR_INVENTORY);
+  if (!sheet) return { success: false, message: 'Sheet not found' };
+
+  const data = sheet.getDataRange().getValues();
+  const cleanQr = (physicalQrId || '').trim().toUpperCase();
+  const targetId = (participantId || registrationId || '').trim().toUpperCase();
+  const now = new Date().toISOString();
+
+  for (let i = 1; i < data.length; i++) {
+    const rowQr = String(data[i][0]).trim().toUpperCase();
+    const rowReg = String(data[i][5]).trim().toUpperCase();
+    const rowPart = String(data[i][6]).trim().toUpperCase();
+
+    if ((cleanQr && rowQr === cleanQr) || (targetId && (rowReg === targetId || rowPart === targetId))) {
+      sheet.getRange(i + 1, 19).setValue('Present'); // Col 19: Campus Status
+      sheet.getRange(i + 1, 24).setValue(now);       // Col 24: Updated At
+      Logger.log('✅ [syncCampusCheckinSheet] Updated Campus Status to Present for ' + (cleanQr || targetId));
+      break;
+    }
+  }
+
+  return { success: true, message: 'Campus check-in status updated in Google Sheet.' };
+}
+
+/**
+ * Mark Food Delivered in Physical_QR_Inventory Sheet
+ */
+function markFoodDeliveredSheet(params) {
+  const { physicalQrId, registrationId, participantId } = params;
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.PHYSICAL_QR_INVENTORY);
+  if (!sheet) return { success: false, message: 'Sheet not found' };
+
+  const data = sheet.getDataRange().getValues();
+  const cleanQr = (physicalQrId || '').trim().toUpperCase();
+  const targetId = (participantId || registrationId || '').trim().toUpperCase();
+  const now = new Date().toISOString();
+
+  for (let i = 1; i < data.length; i++) {
+    const rowQr = String(data[i][0]).trim().toUpperCase();
+    const rowReg = String(data[i][5]).trim().toUpperCase();
+    const rowPart = String(data[i][6]).trim().toUpperCase();
+
+    if ((cleanQr && rowQr === cleanQr) || (targetId && (rowReg === targetId || rowPart === targetId))) {
+      sheet.getRange(i + 1, 20).setValue('Delivered'); // Col 20: Food Status
+      sheet.getRange(i + 1, 24).setValue(now);         // Col 24: Updated At
+      Logger.log('✅ [markFoodDeliveredSheet] Updated Food Status to Delivered for ' + (cleanQr || targetId));
+      break;
+    }
+  }
+
+  return { success: true, message: 'Food delivery status updated in Google Sheet.' };
+}
+

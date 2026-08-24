@@ -623,7 +623,11 @@ export const operationsApi = {
         a.participantId !== params.participantId
     );
 
-    if (existingOther) {
+    if (existingOther || (invItem && (invItem.status === 'ASSIGNED' || invItem.status === 'ACTIVE') && invItem.participantId && invItem.participantId !== params.participantId)) {
+      const assignedPartId = (invItem && invItem.participantId) || (existingOther && existingOther.participantId) || '';
+      const assignedName = (invItem && invItem.participantName) || assignedPartId;
+      const assignedTime = (invItem && invItem.assignedAt) || (existingOther && existingOther.assignedAt) || '';
+
       await this.logAudit({
         staffUser: params.staffId,
         station,
@@ -631,13 +635,13 @@ export const operationsApi = {
         registrationId: params.registrationId,
         physicalQrId: cleanQrId,
         result: 'DENIED',
-        reason: `QR already assigned to participant ${existingOther.participantId || existingOther.registrationId}`,
+        reason: `WRISTBAND ALREADY ASSIGNED to participant ${assignedName} (${assignedPartId})`,
       });
 
       return {
         state: 'QR_CONFLICT',
-        verbatimMessage: 'QR ASSIGNED TO ANOTHER PARTICIPANT',
-        details: `This physical QR is already active on participant ${existingOther.participantId || existingOther.registrationId}`,
+        verbatimMessage: 'WRISTBAND ALREADY ASSIGNED',
+        details: `This physical wristband (${cleanQrId}) is already assigned to participant ${assignedName} (${assignedPartId})${assignedTime ? ` at ${new Date(assignedTime).toLocaleTimeString()}` : ''}. Reassignment requires authorized admin override.`,
       };
     }
 
@@ -662,36 +666,69 @@ export const operationsApi = {
 
         return {
           state: 'QR_CONFLICT',
-          verbatimMessage: 'QR ASSIGNED TO ANOTHER PARTICIPANT',
+          verbatimMessage: 'PARTICIPANT ALREADY HAS ACTIVE WRISTBAND',
           details: `Participant already has active QR ${existingMine.physicalQrId}. Only Super Admin can reassign.`,
         };
       }
       existingMine.active = false;
     }
 
-    // 4. ATOMIC WRITE
+    // 4. Fetch Participant Details
+    const profileLookup = await this.lookupRegistration({ queryStr: params.participantId });
+    const participant = profileLookup.data;
+
+    // 5. ATOMIC WRITE (UPDATE EXISTING ROW IN PLACE)
     const now = new Date().toISOString();
     const env: QrEnvironment = isTestQr ? 'TEST' : 'PRODUCTION';
 
     // A) Update or insert in physical_qr_inventory
     if (invItem) {
       invItem.status = 'ASSIGNED';
-      invItem.participantId = params.participantId;
-      invItem.registrationId = params.registrationId;
+      invItem.qrId = cleanQrId;
+      invItem.qrCode = cleanQrId;
       invItem.qrType = params.physicalQrType;
       invItem.environment = env;
+      invItem.participantId = params.participantId;
+      invItem.registrationId = params.registrationId;
+      invItem.participantName = participant?.participantName || '';
+      invItem.email = participant?.email || '';
+      invItem.mobileNumber = participant?.mobile || '';
+      invItem.college = participant?.college || '';
+      invItem.department = participant?.department || '';
+      invItem.year = participant?.year || '';
+      invItem.gender = participant?.gender || '';
+      invItem.registrationType = participant?.registrationType || '';
+      invItem.selectedEvents = participant?.selectedEvents || [];
+      invItem.totalEvents = participant?.selectedEvents ? participant.selectedEvents.length : 0;
+      invItem.paymentStatus = 'Paid/Confirmed';
+      invItem.campusStatus = invItem.campusStatus || 'Pending';
+      invItem.foodStatus = invItem.foodStatus || 'Pending';
       invItem.assignedAt = now;
       invItem.assignedBy = params.staffId;
       invItem.updatedAt = now;
     } else {
       invItem = {
         id: 'INV-' + cleanQrId,
+        qrId: cleanQrId,
         qrCode: cleanQrId,
         qrType: params.physicalQrType,
         environment: env,
         status: 'ASSIGNED',
         participantId: params.participantId,
         registrationId: params.registrationId,
+        participantName: participant?.participantName || '',
+        email: participant?.email || '',
+        mobileNumber: participant?.mobile || '',
+        college: participant?.college || '',
+        department: participant?.department || '',
+        year: participant?.year || '',
+        gender: participant?.gender || '',
+        registrationType: participant?.registrationType || '',
+        selectedEvents: participant?.selectedEvents || [],
+        totalEvents: participant?.selectedEvents ? participant.selectedEvents.length : 0,
+        paymentStatus: 'Paid/Confirmed',
+        campusStatus: 'Pending',
+        foodStatus: 'Pending',
         assignedAt: now,
         assignedBy: params.staffId,
         createdAt: now,
@@ -722,7 +759,7 @@ export const operationsApi = {
           {
             attendance_id: 'AUD-ASSIGN-' + Math.random().toString(36).substring(2, 9),
             registration_id: params.participantId,
-            participant_name: params.staffId,
+            participant_name: participant?.participantName || params.staffId,
             event_id: 'QR_ASSIGNMENT',
             event_name: 'QR_ASSIGNMENT',
             event_type: 'QR_ASSIGNMENT',
@@ -741,7 +778,7 @@ export const operationsApi = {
       }
     }
 
-    // 5. IMMEDIATE RE-SELECT & VERIFY
+    // 6. IMMEDIATE RE-SELECT & VERIFY
     const reselected = getLocalArray<PhysicalQrInventoryItem>(STORAGE_KEYS.QR_INVENTORY).find(
       (i) => i.qrCode.toUpperCase() === cleanQrId
     );
@@ -773,10 +810,22 @@ export const operationsApi = {
 
     syncToGoogleSheets({
       action: 'assignPhysicalQr',
-      registrationId: params.participantId,
+      registrationId: params.registrationId,
+      participantId: params.participantId,
+      participantName: participant?.participantName,
+      email: participant?.email,
+      mobile: participant?.mobile,
+      college: participant?.college,
+      department: participant?.department,
+      year: participant?.year,
+      gender: participant?.gender,
+      registrationType: participant?.registrationType,
+      selectedEvents: participant?.selectedEvents,
       physicalQrId: cleanQrId,
       station,
       verifiedBy: params.staffId,
+      campusStatus: invItem.campusStatus,
+      foodStatus: invItem.foodStatus,
     });
 
     return {
@@ -838,6 +887,20 @@ export const operationsApi = {
     });
     saveLocalArray(STORAGE_KEYS.CAMPUS, campusLogs);
 
+    // Update physical_qr_inventory campusStatus
+    const inventory = getLocalArray<PhysicalQrInventoryItem>(STORAGE_KEYS.QR_INVENTORY);
+    const invMatch = inventory.find(
+      (i) =>
+        i.participantId === params.participantId ||
+        i.registrationId === params.registrationId ||
+        (params.physicalQrId && i.qrCode.toUpperCase() === params.physicalQrId.toUpperCase())
+    );
+    if (invMatch) {
+      invMatch.campusStatus = 'Present';
+      invMatch.updatedAt = now;
+      saveLocalArray(STORAGE_KEYS.QR_INVENTORY, inventory);
+    }
+
     // Update Supabase overall_registrations if live
     if (isSupabaseConfigured()) {
       Promise.resolve(
@@ -865,6 +928,7 @@ export const operationsApi = {
       physicalQrId: params.physicalQrId,
       station,
       verifiedBy: params.staffId,
+      campusStatus: 'Present',
     });
 
     return {
@@ -1186,6 +1250,20 @@ export const operationsApi = {
     });
     saveLocalArray(STORAGE_KEYS.FOOD, foodLogs);
 
+    // Update physical_qr_inventory foodStatus
+    const inventory = getLocalArray<PhysicalQrInventoryItem>(STORAGE_KEYS.QR_INVENTORY);
+    const invMatch = inventory.find(
+      (i) =>
+        i.participantId === participant.id ||
+        i.registrationId === participant.registrationId ||
+        i.qrCode.toUpperCase() === cleanQr
+    );
+    if (invMatch) {
+      invMatch.foodStatus = 'Delivered';
+      invMatch.updatedAt = now;
+      saveLocalArray(STORAGE_KEYS.QR_INVENTORY, inventory);
+    }
+
     await this.logAudit({
       staffUser: params.staffId,
       station,
@@ -1201,9 +1279,12 @@ export const operationsApi = {
     syncToGoogleSheets({
       action: 'markFoodDelivered',
       registrationId: participant.id,
+      participantId: participant.id,
       participantName: participant.participantName,
+      physicalQrId: cleanQr,
       station,
       verifiedBy: params.staffId,
+      foodStatus: 'Delivered',
     });
 
     return {
@@ -1542,10 +1623,28 @@ export const operationsApi = {
       } else {
         const item: PhysicalQrInventoryItem = {
           id: `INV-${qrCode}`,
+          qrId: qrCode,
           qrCode,
           qrType: type,
           environment: env,
           status: 'UNUSED',
+          registrationId: undefined,
+          participantId: undefined,
+          participantName: undefined,
+          email: undefined,
+          mobileNumber: undefined,
+          college: undefined,
+          department: undefined,
+          year: undefined,
+          gender: undefined,
+          registrationType: undefined,
+          selectedEvents: undefined,
+          totalEvents: 0,
+          paymentStatus: undefined,
+          campusStatus: undefined,
+          foodStatus: undefined,
+          assignedAt: undefined,
+          assignedBy: undefined,
           createdAt: now,
           updatedAt: now,
         };
@@ -1569,6 +1668,7 @@ export const operationsApi = {
           const batchSize = 200;
           for (let b = 0; b < newItems.length; b += batchSize) {
             const chunk = newItems.slice(b, b + batchSize).map((it) => ({
+              qr_id: it.qrCode,
               qr_code: it.qrCode,
               qr_type: it.qrType,
               environment: it.environment,
@@ -1582,6 +1682,14 @@ export const operationsApi = {
           console.warn('Supabase physical_qr_inventory upsert notice:', err);
         }
       }
+
+      // Sync pre-generation to Google Sheets
+      syncToGoogleSheets({
+        action: 'generateQrInventory',
+        environment: env,
+        count,
+        qrType: type,
+      });
     }
 
     await this.logAudit({
