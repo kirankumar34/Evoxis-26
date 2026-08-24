@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, test, expect, beforeEach } from 'vitest';
 
 // Polyfill localStorage for Node test runner
 const memoryStore = new Map<string, string>();
@@ -868,6 +868,159 @@ describe('EvoXis26 Operations Portal Automated Test Suite', () => {
     expect(row?.status).toBe('ASSIGNED');
     expect(row?.campusStatus).toBe('Present');
     expect(row?.foodStatus).toBe('Delivered');
+  });
+
+  test('22. Event Desk two-step inspection and [ MARK AS PRESENT ] action with duplicate protection', async () => {
+    const testRegId = 'EVOXIS26-TEST-MARK-00022';
+    // 1. Seed Participant test15 with multi-events (SP01, SP02, NT05, SP04)
+    const seed = JSON.parse(localStorage.getItem('evoxis26_overall_registrations') || '[]');
+    seed.push({
+      registrationId: testRegId,
+      participantName: 'test15',
+      email: 'test15@sec.edu',
+      mobileNumber: '9888877777',
+      collegeInstitution: 'SEC',
+      selectedEvents: 'SP01, SP02, NT05, SP04',
+      role: 'INDIVIDUAL',
+      teamName: 'Team Spidey',
+      qrToken: 'EVOXIS26:test15token22',
+    });
+    localStorage.setItem('evoxis26_overall_registrations', JSON.stringify(seed));
+
+    // 2. Assign physical wristband EVX26-TEST-000075 at reception
+    const assignRes = await operationsApi.assignPhysicalQr({
+      physicalQrId: 'EVX26-TEST-000075',
+      participantId: testRegId,
+      registrationId: testRegId,
+      staffId: 'Reception Staff 1',
+      station: 'Main Reception Desk',
+    });
+    expect(assignRes.state).toBe('SUCCESS');
+
+    // 3. Step 1: Scan at SP01 Event Desk -> Resolve QR
+    const resolved = await operationsApi.resolvePhysicalQR('EVX26-TEST-000075', 'TEST');
+    expect(resolved.success).toBe(true);
+    expect(resolved.participant?.participantName).toBe('test15');
+    expect(resolved.registeredEvents).toContain('SP01');
+
+    // 4. Validate registration for current event and check attendance status before clicking button
+    const preCheck = await operationsApi.checkEventAttendance({
+      participantId: testRegId,
+      eventId: 'SP01',
+    });
+    expect(preCheck.isPresent).toBe(false);
+
+    // 5. Step 2: Coordinator clicks [ MARK AS PRESENT ]
+    const markRes = await operationsApi.markEventPresent({
+      physicalQrId: 'EVX26-TEST-000075',
+      eventId: 'SP01',
+      staffId: 'SP01 Coordinator',
+      station: 'Event Desk (SP01)',
+      portalMode: 'TEST',
+    });
+    expect(markRes.state).toBe('SUCCESS');
+    expect(markRes.verbatimMessage).toBe('✓ PRESENT');
+
+    // 6. Rescanning at SP01 -> checkEventAttendance confirms already present
+    const postCheck = await operationsApi.checkEventAttendance({
+      participantId: testRegId,
+      eventId: 'SP01',
+    });
+    expect(postCheck.isPresent).toBe(true);
+    expect(postCheck.station).toContain('SP01');
+
+    // 7. Duplicate click / scan is rejected idempotently
+    const duplicateRes = await operationsApi.markEventPresent({
+      physicalQrId: 'EVX26-TEST-000075',
+      eventId: 'SP01',
+      staffId: 'SP01 Coordinator',
+      station: 'Event Desk (SP01)',
+      portalMode: 'TEST',
+    });
+    expect(duplicateRes.state).toBe('DUPLICATE_EVENT');
+    expect(duplicateRes.verbatimMessage).toBe('ALREADY MARKED PRESENT');
+  });
+
+  test('23. Multi-event attendance tracking: separate status per event (SP01, SP02 vs unregistered TE01)', async () => {
+    const testRegId = 'EVOXIS26-TEST-MARK-00023';
+    // 1. Seed Participant test15 with multi-events (SP01, SP02, NT05, SP04)
+    const seed = JSON.parse(localStorage.getItem('evoxis26_overall_registrations') || '[]');
+    seed.push({
+      registrationId: testRegId,
+      participantName: 'test15',
+      email: 'test15@sec.edu',
+      mobileNumber: '9888877777',
+      collegeInstitution: 'SEC',
+      selectedEvents: 'SP01, SP02, NT05, SP04',
+      role: 'INDIVIDUAL',
+      teamName: 'Team Spidey',
+      qrToken: 'EVOXIS26:test15token23',
+    });
+    localStorage.setItem('evoxis26_overall_registrations', JSON.stringify(seed));
+
+    // 2. Assign physical wristband EVX26-TEST-000076 at reception
+    await operationsApi.assignPhysicalQr({
+      physicalQrId: 'EVX26-TEST-000076',
+      participantId: testRegId,
+      registrationId: testRegId,
+      staffId: 'Reception Staff 1',
+      station: 'Main Reception Desk',
+    });
+
+    // 3. Mark SP01 as Present first
+    await operationsApi.markEventPresent({
+      physicalQrId: 'EVX26-TEST-000076',
+      eventId: 'SP01',
+      staffId: 'SP01 Coordinator',
+      station: 'Event Desk (SP01)',
+      portalMode: 'TEST',
+    });
+
+    // 4. Participant test15 now visits SP02 desk after SP01
+    const sp02PreCheck = await operationsApi.checkEventAttendance({
+      participantId: testRegId,
+      eventId: 'SP02',
+    });
+    expect(sp02PreCheck.isPresent).toBe(false);
+
+    // 5. Mark present for SP02
+    const sp02Mark = await operationsApi.markEventPresent({
+      physicalQrId: 'EVX26-TEST-000076',
+      eventId: 'SP02',
+      staffId: 'SP02 Coordinator',
+      station: 'Event Desk (SP02)',
+      portalMode: 'TEST',
+    });
+    expect(sp02Mark.state).toBe('SUCCESS');
+
+    // 6. Confirm SP01 and SP02 are PRESENT, while NT05 and SP04 remain un-attended
+    const sp01Status = await operationsApi.checkEventAttendance({
+      participantId: testRegId,
+      eventId: 'SP01',
+    });
+    const sp02Status = await operationsApi.checkEventAttendance({
+      participantId: testRegId,
+      eventId: 'SP02',
+    });
+    const nt05Status = await operationsApi.checkEventAttendance({
+      participantId: testRegId,
+      eventId: 'NT05',
+    });
+    expect(sp01Status.isPresent).toBe(true);
+    expect(sp02Status.isPresent).toBe(true);
+    expect(nt05Status.isPresent).toBe(false);
+
+    // 7. Scanning at TE01 (not registered) returns WRONG_EVENT and lists registered events
+    const wrongEvtRes = await operationsApi.markEventPresent({
+      physicalQrId: 'EVX26-TEST-000076',
+      eventId: 'TE01',
+      staffId: 'TE01 Coordinator',
+      station: 'Event Desk (TE01)',
+      portalMode: 'TEST',
+    });
+    expect(wrongEvtRes.state).toBe('WRONG_EVENT');
+    expect(wrongEvtRes.verbatimMessage).toContain('NOT REGISTERED FOR THIS EVENT');
+    expect(wrongEvtRes.registeredEvents).toEqual(['SP01', 'SP02', 'NT05', 'SP04']);
   });
 });
 

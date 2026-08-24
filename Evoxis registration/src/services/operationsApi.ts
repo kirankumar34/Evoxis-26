@@ -940,11 +940,64 @@ export const operationsApi = {
   },
 
   /**
+   * Check if participant is already marked present for a specific event
+   */
+  async checkEventAttendance(params: {
+    participantId: string;
+    eventId: string;
+  }): Promise<{
+    isPresent: boolean;
+    checkinTime?: string;
+    station?: string;
+    checkedInBy?: string;
+  }> {
+    const cleanEventId = params.eventId.trim().toUpperCase();
+    const eventLogs = getLocalArray<any>(STORAGE_KEYS.EVENT_ATTENDANCE);
+    const existingLocal = eventLogs.find(
+      (el) =>
+        (el.participantId === params.participantId || el.registrationId === params.participantId) &&
+        el.eventId.toUpperCase() === cleanEventId
+    );
+
+    if (existingLocal) {
+      return {
+        isPresent: true,
+        checkinTime: existingLocal.checkinTime,
+        station: existingLocal.station,
+        checkedInBy: existingLocal.checkinBy,
+      };
+    }
+
+    if (isSupabaseConfigured()) {
+      try {
+        const { data: logs } = await supabase
+          .from('attendance_logs')
+          .select('*')
+          .match({ registration_id: params.participantId, event_id: cleanEventId, attendance_status: 'SUCCESS' })
+          .limit(1);
+
+        if (logs && logs.length > 0) {
+          return {
+            isPresent: true,
+            checkinTime: logs[0].scan_timestamp || `${logs[0].attendance_date} ${logs[0].attendance_time}`,
+            station: logs[0].attendance_location,
+            checkedInBy: logs[0].verified_by,
+          };
+        }
+      } catch (err) {
+        console.warn('Supabase checkEventAttendance lookup notice:', err);
+      }
+    }
+
+    return { isPresent: false };
+  },
+
+  /**
    * Mark Event Attendance at Event Desk (Enforces event registration eligibility & idempotency)
    */
   async markEventPresent(params: {
-    physicalQrId: string;
     eventId: string;
+    physicalQrId: string;
     staffId: string;
     station?: string;
     portalMode?: 'TEST' | 'PRODUCTION';
@@ -956,8 +1009,6 @@ export const operationsApi = {
     const station = params.station || `Event Desk (${eventId})`;
     const portalMode =
       params.portalMode || (station.toUpperCase().includes('TEST') ? 'TEST' : 'PRODUCTION');
-    const eventMeta = OFFICIAL_EVENTS.find((e) => e.eventId.toUpperCase() === eventId);
-    const eventTitle = eventMeta ? eventMeta.title : eventId;
 
     if (!cleanQr) {
       return {
@@ -966,6 +1017,10 @@ export const operationsApi = {
         details: 'QR code cannot be empty',
       };
     }
+
+    // Lookup event title
+    const eventMeta = OFFICIAL_EVENTS.find((e) => e.eventId.toUpperCase() === eventId);
+    const eventTitle = eventMeta?.title || eventId;
 
     // 1. Resolve participant via single shared resolver
     const resolved = await this.resolvePhysicalQR(cleanQr, portalMode);
@@ -1046,7 +1101,7 @@ export const operationsApi = {
     const eventLogs = getLocalArray<any>(STORAGE_KEYS.EVENT_ATTENDANCE);
     const existing = eventLogs.find(
       (el) =>
-        el.participantId === participant.id &&
+        (el.participantId === participant.id || el.registrationId === participant.registrationId) &&
         el.eventId.toUpperCase() === eventId
     );
 
@@ -1093,14 +1148,34 @@ export const operationsApi = {
     });
     saveLocalArray(STORAGE_KEYS.EVENT_ATTENDANCE, eventLogs);
 
-    // Update Supabase event_registrations if live
+    // Update Supabase event_registrations and attendance_logs if live
     if (isSupabaseConfigured()) {
-      Promise.resolve(
-        supabase
+      try {
+        await supabase.from('attendance_logs').insert([
+          {
+            attendance_id: 'AUD-EVT-' + Math.random().toString(36).substring(2, 9),
+            registration_id: participant.id,
+            participant_name: participant.participantName,
+            event_id: eventId,
+            event_name: eventTitle,
+            event_type: 'EVENT_CHECKIN',
+            attendance_date: now.split('T')[0],
+            attendance_time: new Date(now).toLocaleTimeString('en-US'),
+            attendance_location: station,
+            attendance_status: 'SUCCESS',
+            participation_status: 'Present',
+            verified_by: params.staffId,
+            qr_token: cleanQr,
+            scan_timestamp: now,
+          },
+        ]);
+        await supabase
           .from('event_registrations')
           .update({ attendance_status: 'Present', participation_status: 'Present' })
-          .match({ registration_id: participant.registrationId, event_id: eventId })
-      ).catch(() => {});
+          .match({ registration_id: participant.registrationId, event_id: eventId });
+      } catch (err) {
+        console.warn('Supabase event check-in write notice:', err);
+      }
     }
 
     await this.logAudit({
@@ -1120,7 +1195,9 @@ export const operationsApi = {
     syncToGoogleSheets({
       action: 'markAttendance',
       registrationId: participant.id,
+      participantId: participant.id,
       participantName: participant.participantName,
+      physicalQrId: cleanQr,
       eventId,
       eventName: eventTitle,
       station,

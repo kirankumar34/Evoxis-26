@@ -856,28 +856,34 @@ function markReceptionAttendance(params) {
  * Mark Event Attendance at Event Desk
  */
 function markEventAttendance(params) {
-  const { qrToken, eventId, verifiedBy } = params;
+  const { qrToken, eventId, verifiedBy, registrationId, participantId, participantName, station, physicalQrId } = params;
   const ss = getSpreadsheet();
   const overallSheet = ss.getSheetByName(SHEETS.OVERALL_REG);
   const logSheet = ss.getSheetByName(SHEETS.ATTENDANCE_LOG);
 
-  const data = overallSheet.getDataRange().getValues();
-  let participantRow = null;
+  let regId = registrationId || participantId || '';
+  let pName = participantName || '';
+  let token = qrToken || physicalQrId || '';
 
-  for (let i = 1; i < data.length; i++) {
-    if (String(data[i][15]).trim() === qrToken.trim()) {
-      participantRow = data[i];
-      break;
+  if (overallSheet) {
+    const data = overallSheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      const rowRegId = String(data[i][0]).trim();
+      const rowToken = String(data[i][15]).trim();
+      if ((regId && rowRegId === regId.trim()) || (token && rowToken === token.trim())) {
+        regId = rowRegId;
+        pName = pName || data[i][3];
+        token = token || rowToken;
+        break;
+      }
     }
   }
 
-  if (!participantRow) {
-    return { success: false, errorCode: 'INVALID_QR_CODE', message: 'Participant record not found.' };
+  if (!regId && !pName) {
+    return { success: false, errorCode: 'INVALID_REGISTRATION', message: 'Participant record not found.' };
   }
 
-  const regId = participantRow[0];
-  const participantName = participantRow[3];
-  const evtMeta = OFFICIAL_EVENTS.find(e => e.eventId === eventId) || { eventId, eventName: eventId, category: 'Technical', slug: eventId.toLowerCase() };
+  const evtMeta = OFFICIAL_EVENTS.find(e => e.eventId === eventId) || { eventId, eventName: eventId, category: 'Technical', slug: eventId ? eventId.toLowerCase() : 'event' };
 
   const now = new Date();
   const dateStr = Utilities.formatDate(now, 'Asia/Kolkata', 'yyyy-MM-dd');
@@ -888,7 +894,7 @@ function markEventAttendance(params) {
   if (evtSheet) {
     const evtData = evtSheet.getDataRange().getValues();
     for (let k = 1; k < evtData.length; k++) {
-      if (evtData[k][0] === regId) {
+      if (String(evtData[k][0]).trim() === regId.trim()) {
         evtSheet.getRange(k + 1, 11).setValue('Present');
         evtSheet.getRange(k + 1, 12).setValue('Present');
         break;
@@ -902,7 +908,7 @@ function markEventAttendance(params) {
   if (catSheet) {
     const catData = catSheet.getDataRange().getValues();
     for (let c = 1; c < catData.length; c++) {
-      if (catData[c][0] === regId && catData[c][6] === eventId) {
+      if (String(catData[c][0]).trim() === regId.trim() && String(catData[c][6]).trim() === eventId) {
         catSheet.getRange(c + 1, 11).setValue('Present');
         catSheet.getRange(c + 1, 12).setValue('Present');
         break;
@@ -910,32 +916,45 @@ function markEventAttendance(params) {
     }
   }
 
-  // Append to Attendance_Log
+  // Check duplicate in Attendance_Log before append
   if (logSheet) {
-    const attId = 'ATT-EVT-' + Utilities.getUuid().substring(0, 8).toUpperCase();
-    logSheet.appendRow([
-      attId,
-      regId,
-      participantName,
-      eventId,
-      evtMeta.eventName,
-      evtMeta.category,
-      dateStr,
-      timeStr,
-      evtMeta.venue || 'Event Desk',
-      'Present',
-      'Present',
-      verifiedBy || 'Event Coordinator',
-      qrToken,
-      now.toISOString()
-    ]);
+    const logData = logSheet.getDataRange().getValues();
+    let alreadyLogged = false;
+    for (let l = 1; l < logData.length; l++) {
+      const logReg = String(logData[l][1]).trim();
+      const logEvt = String(logData[l][3]).trim();
+      if (logReg === regId.trim() && logEvt === eventId.trim()) {
+        alreadyLogged = true;
+        break;
+      }
+    }
+
+    if (!alreadyLogged) {
+      const attId = 'ATT-EVT-' + Utilities.getUuid().substring(0, 8).toUpperCase();
+      logSheet.appendRow([
+        attId,
+        regId,
+        pName,
+        eventId,
+        evtMeta.eventName,
+        evtMeta.category,
+        dateStr,
+        timeStr,
+        station || evtMeta.venue || 'Event Desk',
+        'Present',
+        'Present',
+        verifiedBy || 'Event Coordinator',
+        token,
+        now.toISOString()
+      ]);
+    }
   }
 
   return {
     success: true,
     message: 'Event attendance marked successfully for ' + evtMeta.eventName,
     timestamp: timeStr,
-    participantName,
+    participantName: pName,
     registrationId: regId,
     eventId
   };
