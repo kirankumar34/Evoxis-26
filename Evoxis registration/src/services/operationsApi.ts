@@ -62,26 +62,38 @@ export const operationsApi = {
     // 2. Supabase write if table exists
     if (isSupabaseConfigured()) {
       try {
-        await supabase.from('attendance_logs').insert([
-          {
-            attendance_id: log.id,
-            registration_id: log.registrationId || log.participantId || 'N/A',
-            participant_name: log.participantName || log.staffUser,
-            event_id: log.eventId || log.operation,
-            event_name: log.eventName || log.operation,
-            event_type: log.operation,
-            attendance_date: log.timestamp.split('T')[0],
-            attendance_time: new Date(log.timestamp).toLocaleTimeString('en-US'),
-            attendance_location: log.station,
-            attendance_status: log.result,
-            participation_status: log.result === 'SUCCESS' ? 'Present' : 'Pending',
-            verified_by: log.staffUser,
-            qr_token: log.physicalQrId || 'N/A',
-            scan_timestamp: log.timestamp,
-          },
-        ]);
-      } catch {
-        // Silently continue if attendance_logs table schema differs
+        Promise.resolve(
+          supabase
+            .from('attendance_logs')
+            .insert([
+              {
+                attendance_id: log.id,
+                registration_id: log.registrationId || log.participantId || 'N/A',
+                participant_name: log.participantName || log.staffUser,
+                event_id: log.eventId || log.operation,
+                event_name: log.eventName || log.operation,
+                event_type: log.operation,
+                attendance_date: log.timestamp.split('T')[0],
+                attendance_time: new Date(log.timestamp).toLocaleTimeString('en-US'),
+                attendance_location: log.station,
+                attendance_status: log.result,
+                participation_status: log.result === 'SUCCESS' ? 'Present' : 'Pending',
+                verified_by: log.staffUser,
+                qr_token: log.physicalQrId || 'N/A',
+                scan_timestamp: log.timestamp,
+              },
+            ])
+        )
+          .then((res: any) => {
+            if (res?.error) {
+              console.warn('attendance_logs insert warning:', res.error.message);
+            }
+          })
+          .catch((err: unknown) => {
+            console.warn('attendance_logs network drop caught:', err);
+          });
+      } catch (err) {
+        console.warn('attendance_logs offline fallback active:', err);
       }
     }
   },

@@ -1012,26 +1012,32 @@ export const api = {
 
         if (updateErr) throw updateErr;
 
-        // Append to attendance_logs
+        // Append to attendance_logs (non-blocking)
         const logId = `ATT-REC-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
-        await supabase.from('attendance_logs').insert([
-          {
-            attendance_id: logId,
-            registration_id: match.registration_id,
-            participant_name: match.participant_name,
-            event_id: 'RECEPTION',
-            event_name: 'Campus Reception Check-In',
-            event_type: 'Reception Check-In',
-            attendance_date: dateStr,
-            attendance_time: timeStr,
-            attendance_location: 'Main Reception Desk',
-            attendance_status: 'Present',
-            participation_status: 'Present',
-            verified_by: verifiedBy,
-            qr_token: qrToken,
-            scan_timestamp: now.toISOString(),
-          },
-        ]);
+        Promise.resolve(
+          supabase.from('attendance_logs').insert([
+            {
+              attendance_id: logId,
+              registration_id: match.registration_id,
+              participant_name: match.participant_name,
+              event_id: 'RECEPTION',
+              event_name: 'Campus Reception Check-In',
+              event_type: 'Reception Check-In',
+              attendance_date: dateStr,
+              attendance_time: timeStr,
+              attendance_location: 'Main Reception Desk',
+              attendance_status: 'Present',
+              participation_status: 'Present',
+              verified_by: verifiedBy,
+              qr_token: qrToken,
+              scan_timestamp: now.toISOString(),
+            },
+          ])
+        ).then((res: any) => {
+          if (res?.error) console.warn('attendance_logs insert warning:', res.error.message);
+        }).catch((err: unknown) => {
+          console.warn('attendance_logs connection notice:', err);
+        });
 
         return {
           success: true,
@@ -1146,26 +1152,32 @@ export const api = {
           .eq('registration_id', match.registration_id)
           .eq('event_id', eventId);
 
-        // Append to attendance_logs
+        // Append to attendance_logs (non-blocking)
         const logId = `ATT-EVT-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
-        await supabase.from('attendance_logs').insert([
-          {
-            attendance_id: logId,
-            registration_id: match.registration_id,
-            participant_name: match.participant_name,
-            event_id: eventId,
-            event_name: eventName,
-            event_type: evt ? evt.category : 'Technical',
-            attendance_date: dateStr,
-            attendance_time: timeStr,
-            attendance_location: evt ? evt.schedule.venue : 'Event Desk',
-            attendance_status: 'Present',
-            participation_status: 'Present',
-            verified_by: verifiedBy,
-            qr_token: qrToken,
-            scan_timestamp: now.toISOString(),
-          },
-        ]);
+        Promise.resolve(
+          supabase.from('attendance_logs').insert([
+            {
+              attendance_id: logId,
+              registration_id: match.registration_id,
+              participant_name: match.participant_name,
+              event_id: eventId,
+              event_name: eventName,
+              event_type: evt ? evt.category : 'Technical',
+              attendance_date: dateStr,
+              attendance_time: timeStr,
+              attendance_location: evt ? evt.schedule.venue : 'Event Desk',
+              attendance_status: 'Present',
+              participation_status: 'Present',
+              verified_by: verifiedBy,
+              qr_token: qrToken,
+              scan_timestamp: now.toISOString(),
+            },
+          ])
+        ).then((res: any) => {
+          if (res?.error) console.warn('attendance_logs insert warning:', res.error.message);
+        }).catch((err: unknown) => {
+          console.warn('attendance_logs connection notice:', err);
+        });
 
         return {
           success: true,

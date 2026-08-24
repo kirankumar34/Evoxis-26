@@ -22,11 +22,15 @@ export const syncToGoogleSheets = async (payload: SheetsSyncPayload): Promise<bo
     return false;
   }
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 3000);
+
   try {
     const response = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       mode: 'cors',
       redirect: 'follow',
+      signal: controller.signal,
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({
         ...payload,
@@ -34,12 +38,15 @@ export const syncToGoogleSheets = async (payload: SheetsSyncPayload): Promise<bo
       }),
     });
 
+    clearTimeout(timeoutId);
+
     if (response.ok) {
       const json = await response.json();
       return json.success === true;
     }
     return false;
   } catch (err) {
+    clearTimeout(timeoutId);
     console.warn('[SheetsSync] Google Sheets mirror sync notice:', err);
     return false;
   }
