@@ -14,6 +14,9 @@ import {
   QrResolutionErrorCode,
   QrResolutionResult,
   ScanResultState,
+  ParticipantOperationalSummary,
+  EventAttendanceSummary,
+  TeamOperationalSummary,
 } from '../types';
 import { OFFICIAL_EVENTS } from '../config/events';
 import { syncToGoogleSheets } from './sheetsSync';
@@ -49,7 +52,7 @@ const saveLocalArray = <T>(key: string, arr: T[]) => {
 
 export const operationsApi = {
   /**
-   * Log an operational event to audit trail
+   * Log an operational event to audit trail and Supabase attendance_logs
    */
   async logAudit(entry: Omit<AuditLogEntry, 'id' | 'timestamp'>): Promise<void> {
     const log: AuditLogEntry = {
@@ -115,14 +118,14 @@ export const operationsApi = {
     }
 
     try {
-      // 1. Check if token is an assigned Physical QR ID (e.g. EVX26-TEST-000051, EVX26-WB-000001)
       let lookupKey = rawQuery;
 
-      const inventory = getLocalArray<PhysicalQrInventoryItem>(STORAGE_KEYS.QR_INVENTORY);
-      const matchedInv = inventory.find((i) => i.qrCode.toUpperCase() === rawQuery.toUpperCase());
-      if (matchedInv && (matchedInv.participantId || matchedInv.registrationId)) {
-        lookupKey = matchedInv.participantId || matchedInv.registrationId!;
-      } else {
+      // 1. If rawQuery looks like a Physical QR, resolve from local assignments first, then Supabase attendance_logs
+      if (
+        rawQuery.toUpperCase().startsWith('EVX26-') ||
+        rawQuery.toUpperCase().startsWith('WRIST-') ||
+        rawQuery.toUpperCase().startsWith('IDC-')
+      ) {
         const localAssignments = getLocalArray<{
           physicalQrId: string;
           participantId: string;
@@ -134,6 +137,29 @@ export const operationsApi = {
         );
         if (matchedPhysical) {
           lookupKey = matchedPhysical.participantId || matchedPhysical.registrationId;
+        } else {
+          const inventory = getLocalArray<PhysicalQrInventoryItem>(STORAGE_KEYS.QR_INVENTORY);
+          const matchedInv = inventory.find((i) => i.qrCode.toUpperCase() === rawQuery.toUpperCase());
+          if (matchedInv && (matchedInv.participantId || matchedInv.registrationId)) {
+            lookupKey = matchedInv.participantId || matchedInv.registrationId!;
+          } else if (isSupabaseConfigured()) {
+            try {
+              const { data: logRecords } = await supabase
+                .from('attendance_logs')
+                .select('*')
+                .eq('event_type', 'QR_ASSIGNMENT')
+                .eq('qr_token', rawQuery.toUpperCase())
+                .eq('attendance_status', 'SUCCESS')
+                .order('scan_timestamp', { ascending: false })
+                .limit(1);
+
+              if (logRecords && logRecords.length > 0 && logRecords[0].registration_id) {
+                lookupKey = logRecords[0].registration_id;
+              }
+            } catch (e) {
+              console.warn('Supabase attendance_logs lookup notice:', e);
+            }
+          }
         }
       }
 
@@ -272,7 +298,7 @@ export const operationsApi = {
       registeredEvents.forEach((re) => {
         const found = localEventAtt.find(
           (la) =>
-            (la.participantId === currentParticipantId || la.registrationId === currentParticipantId || la.registrationId === regId) &&
+            la.participantId === currentParticipantId &&
             la.eventId.toUpperCase() === re.eventId.toUpperCase()
         );
         if (found) {
@@ -290,7 +316,7 @@ export const operationsApi = {
         checkinBy: string;
       }>(STORAGE_KEYS.CAMPUS);
       const campusCheck = localCampus.find(
-        (c) => c.participantId === currentParticipantId || c.registrationId === currentParticipantId || c.registrationId === regId
+        (c) => c.participantId === currentParticipantId
       );
 
       // Retrieve Food Status
@@ -302,7 +328,7 @@ export const operationsApi = {
         deliveredBy: string;
       }>(STORAGE_KEYS.FOOD);
       const foodCheck = localFood.find(
-        (f) => f.participantId === currentParticipantId || f.registrationId === currentParticipantId || f.registrationId === regId
+        (f) => f.participantId === currentParticipantId
       );
 
       // Retrieve Physical QR Assignment
@@ -315,7 +341,7 @@ export const operationsApi = {
         assignedAt?: string;
       }>(STORAGE_KEYS.ASSIGNMENTS);
       const physicalAssignment = localAssignments.find(
-        (a) => a.active && (a.participantId === currentParticipantId || a.registrationId === currentParticipantId || a.registrationId === regId)
+        (a) => a.active && a.participantId === currentParticipantId
       );
 
       const profile: ParticipantProfile = {
@@ -358,7 +384,7 @@ export const operationsApi = {
   /**
    * Single Shared Physical QR Resolver
    * Resolves physical QR codes (e.g. EVX26-TEST-000051, EVX26-WB-000001)
-   * into participant profiles and registered events.
+   * into participant profiles and registered events for Reception, Event Desks, and Food Counters alike.
    */
   async resolvePhysicalQR(
     qrCode: string,
@@ -378,7 +404,9 @@ export const operationsApi = {
     // Step 1: Format validation
     const isStaticFormat = /^EVX26-(TEST|WB)-\d{1,6}$/i.test(cleanQr);
     const isLegacyPhysical = /^(WRIST|IDC)-[A-Z0-9-]+$/i.test(cleanQr);
-    if (!isStaticFormat && !isLegacyPhysical && !cleanQr.startsWith('EVX26-')) {
+    const isDirectReg = cleanQr.startsWith('EVOXIS26');
+
+    if (!isStaticFormat && !isLegacyPhysical && !isDirectReg && !cleanQr.startsWith('EVX26-')) {
       return {
         success: false,
         errorCode: 'INVALID_QR_FORMAT',
@@ -387,72 +415,57 @@ export const operationsApi = {
       };
     }
 
-    // Step 2: Query physical_qr_inventory
-    let inventory = getLocalArray<PhysicalQrInventoryItem>(STORAGE_KEYS.QR_INVENTORY);
-    let invItem = inventory.find((i) => i.qrCode.toUpperCase() === cleanQr);
+    // Step 2: Resolve Target Participant ID from local assignments first, then Supabase attendance_logs
+    let targetParticipantId: string | null = null;
+    let assignedAt: string | undefined;
+    let qrType: QrType = 'WRISTBAND';
 
-    // If item not yet in local inventory array, check assignments
-    if (!invItem) {
-      const assignments = getLocalArray<any>(STORAGE_KEYS.ASSIGNMENTS);
-      const matchedAssign = assignments.find(
-        (a) => a.active && a.physicalQrId.toUpperCase() === cleanQr
+    const assignments = getLocalArray<any>(STORAGE_KEYS.ASSIGNMENTS);
+    const matchAssign = assignments.find((a) => a.active && a.physicalQrId.toUpperCase() === cleanQr);
+    if (matchAssign) {
+      targetParticipantId = matchAssign.participantId || matchAssign.registrationId;
+      assignedAt = matchAssign.assignedAt;
+      qrType = matchAssign.physicalQrType || 'WRISTBAND';
+    } else {
+      const inventory = getLocalArray<PhysicalQrInventoryItem>(STORAGE_KEYS.QR_INVENTORY);
+      const matchInv = inventory.find(
+        (i) => i.qrCode.toUpperCase() === cleanQr && (i.status === 'ASSIGNED' || i.status === 'ACTIVE')
       );
-      if (matchedAssign) {
-        invItem = {
-          id: matchedAssign.id || 'INV-' + cleanQr,
-          qrCode: cleanQr,
-          qrType: matchedAssign.physicalQrType || 'WRISTBAND',
-          environment: cleanQr.startsWith('EVX26-TEST-') ? 'TEST' : 'PRODUCTION',
-          status: 'ASSIGNED',
-          participantId: matchedAssign.participantId,
-          registrationId: matchedAssign.registrationId,
-          assignedAt: matchedAssign.assignedAt,
-          assignedBy: matchedAssign.assignedBy,
-          createdAt: matchedAssign.assignedAt || new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        // Auto-seed into inventory
-        inventory.push(invItem);
-        saveLocalArray(STORAGE_KEYS.QR_INVENTORY, inventory);
+      if (matchInv) {
+        targetParticipantId = matchInv.participantId || matchInv.registrationId || null;
+        assignedAt = matchInv.assignedAt;
+        qrType = matchInv.qrType || 'WRISTBAND';
+      } else if (isSupabaseConfigured()) {
+        try {
+          const { data: logs } = await supabase
+            .from('attendance_logs')
+            .select('*')
+            .eq('event_type', 'QR_ASSIGNMENT')
+            .eq('qr_token', cleanQr)
+            .eq('attendance_status', 'SUCCESS')
+            .order('scan_timestamp', { ascending: false })
+            .limit(1);
+
+          if (logs && logs.length > 0 && logs[0].registration_id) {
+            targetParticipantId = logs[0].registration_id;
+            assignedAt = logs[0].scan_timestamp;
+          }
+        } catch (e) {
+          console.warn('Supabase attendance_logs resolve notice:', e);
+        }
       }
     }
 
-    if (!invItem) {
-      return {
-        success: false,
-        errorCode: 'QR_NOT_FOUND',
-        errorMessage: `Physical QR ${cleanQr} not found in inventory`,
-        qrCode: cleanQr,
-      };
+    // If cleanQr is a direct registration ID or digital QR token
+    if (!targetParticipantId && (cleanQr.startsWith('EVOXIS26') || cleanQr.includes(':'))) {
+      targetParticipantId = cleanQr;
     }
 
-    // Step 3: Environment check against portalMode
-    if (portalMode === 'PRODUCTION' && (invItem.environment === 'TEST' || cleanQr.startsWith('EVX26-TEST-'))) {
-      return {
-        success: false,
-        errorCode: 'TEST_QR_IN_PRODUCTION_MODE',
-        errorMessage: 'TEST QR DETECTED: This QR is for testing only and cannot be used in Production mode.',
-        qrCode: cleanQr,
-        qrType: invItem.qrType,
-        environment: invItem.environment,
-        status: invItem.status,
-      };
-    }
+    // Step 3: Check Revocation
+    const inventory = getLocalArray<PhysicalQrInventoryItem>(STORAGE_KEYS.QR_INVENTORY);
+    const invItem = inventory.find((i) => i.qrCode.toUpperCase() === cleanQr);
 
-    if (portalMode === 'TEST' && (invItem.environment === 'PRODUCTION' || cleanQr.startsWith('EVX26-WB-'))) {
-      return {
-        success: false,
-        errorCode: 'PRODUCTION_QR_IN_TEST_MODE',
-        errorMessage: 'PRODUCTION QR IN TEST MODE: This QR belongs to Production event day inventory.',
-        qrCode: cleanQr,
-        qrType: invItem.qrType,
-        environment: invItem.environment,
-        status: invItem.status,
-      };
-    }
-
-    // Step 4: Status check
-    if (invItem.status === 'REVOKED') {
+    if (invItem && invItem.status === 'REVOKED') {
       return {
         success: false,
         errorCode: 'QR_REVOKED',
@@ -464,44 +477,65 @@ export const operationsApi = {
       };
     }
 
-    if (invItem.status !== 'ASSIGNED' && invItem.status !== 'ACTIVE') {
+    // Step 4: Environment check against portalMode
+    if (portalMode === 'PRODUCTION' && (cleanQr.startsWith('EVX26-TEST-') || invItem?.environment === 'TEST')) {
+      return {
+        success: false,
+        errorCode: 'TEST_QR_IN_PRODUCTION_MODE',
+        errorMessage: 'TEST QR DETECTED: This QR is for testing only and cannot be used in Production mode.',
+        qrCode: cleanQr,
+        qrType: invItem?.qrType || qrType,
+        environment: 'TEST',
+        status: invItem?.status || 'UNUSED',
+      };
+    }
+
+    if (portalMode === 'TEST' && (cleanQr.startsWith('EVX26-WB-') || invItem?.environment === 'PRODUCTION')) {
+      return {
+        success: false,
+        errorCode: 'PRODUCTION_QR_IN_TEST_MODE',
+        errorMessage: 'PRODUCTION QR IN TEST MODE: This QR belongs to Production event day inventory.',
+        qrCode: cleanQr,
+        qrType: invItem?.qrType || qrType,
+        environment: 'PRODUCTION',
+        status: invItem?.status || 'UNUSED',
+      };
+    }
+
+    // Step 5: If not assigned to any participant
+    if (!targetParticipantId) {
+      if (!invItem && !cleanQr.startsWith('EVOXIS26')) {
+        return {
+          success: false,
+          errorCode: 'QR_NOT_FOUND',
+          errorMessage: `Physical QR ${cleanQr} not found in inventory`,
+          qrCode: cleanQr,
+        };
+      }
+
       return {
         success: false,
         errorCode: 'QR_NOT_ASSIGNED',
         errorMessage: `Physical QR ${cleanQr} is UNASSIGNED. Please visit Reception Desk to bind wristband.`,
         qrCode: cleanQr,
-        qrType: invItem.qrType,
-        environment: invItem.environment,
-        status: invItem.status,
-      };
-    }
-
-    // Step 5: Foreign key & participant existence
-    const targetRegId = invItem.participantId || invItem.registrationId;
-    if (!targetRegId) {
-      return {
-        success: false,
-        errorCode: 'PARTICIPANT_NOT_FOUND',
-        errorMessage: `No participant linked to physical QR ${cleanQr}`,
-        qrCode: cleanQr,
-        qrType: invItem.qrType,
-        environment: invItem.environment,
-        status: invItem.status,
+        qrType: invItem?.qrType || qrType,
+        environment: invItem?.environment || (cleanQr.startsWith('EVX26-TEST-') ? 'TEST' : 'PRODUCTION'),
+        status: 'UNUSED',
       };
     }
 
     // Step 6: Fetch participant profile
-    const profileLookup = await this.lookupRegistration({ queryStr: targetRegId });
+    const profileLookup = await this.lookupRegistration({ queryStr: targetParticipantId });
     if (!profileLookup.success || !profileLookup.data) {
       return {
         success: false,
         errorCode: 'PARTICIPANT_NOT_FOUND',
-        errorMessage: `Participant profile for registration ${targetRegId} not found`,
+        errorMessage: `Participant profile for registration ${targetParticipantId} not found`,
         qrCode: cleanQr,
-        qrType: invItem.qrType,
-        environment: invItem.environment,
-        status: invItem.status,
-        registrationId: targetRegId,
+        qrType,
+        environment: cleanQr.startsWith('EVX26-TEST-') ? 'TEST' : 'PRODUCTION',
+        status: 'ASSIGNED',
+        registrationId: targetParticipantId,
       };
     }
 
@@ -509,21 +543,24 @@ export const operationsApi = {
 
     // Attach physical QR info
     participant.physicalQrId = cleanQr;
-    participant.physicalQrType = invItem.qrType;
-    participant.physicalQrAssignedAt = invItem.assignedAt;
+    participant.physicalQrType = qrType;
+    participant.physicalQrAssignedAt = assignedAt;
 
     // Step 7: Return full resolved object
     return {
       success: true,
       qrCode: cleanQr,
-      qrType: invItem.qrType,
-      environment: invItem.environment,
-      status: invItem.status,
+      qrType,
+      environment: cleanQr.startsWith('EVX26-TEST-') ? 'TEST' : 'PRODUCTION',
+      status: 'ASSIGNED',
       participantId: participant.id,
       registrationId: participant.registrationId,
+      teamId: participant.teamName,
       participant,
       registration: participant,
       registeredEvents: participant.selectedEvents,
+      campusStatus: participant.campusAttendanceStatus,
+      foodStatus: participant.foodDelivered ? 'DELIVERED' : 'PENDING',
     };
   },
 
@@ -553,45 +590,9 @@ export const operationsApi = {
       };
     }
 
-    // 1. Environment validation
     const isTestQr = cleanQrId.startsWith('EVX26-TEST-');
-    if (isTestQr && portalMode === 'PRODUCTION') {
-      await this.logAudit({
-        staffUser: params.staffId,
-        station,
-        operation: 'QR_ASSIGNMENT',
-        registrationId: params.registrationId,
-        physicalQrId: cleanQrId,
-        result: 'DENIED',
-        reason: 'TEST QR detected at production desk',
-      });
 
-      return {
-        state: 'TEST_QR_IN_PROD',
-        verbatimMessage: 'TEST QR DETECTED',
-        details: 'This QR is for testing only and cannot be used for live participant check-in.',
-      };
-    }
-
-    if (!isTestQr && portalMode === 'TEST' && cleanQrId.startsWith('EVX26-WB-')) {
-      await this.logAudit({
-        staffUser: params.staffId,
-        station,
-        operation: 'QR_ASSIGNMENT',
-        registrationId: params.registrationId,
-        physicalQrId: cleanQrId,
-        result: 'DENIED',
-        reason: 'Production QR scanned in test mode',
-      });
-
-      return {
-        state: 'PROD_QR_IN_TEST',
-        verbatimMessage: 'PRODUCTION QR IN TEST MODE',
-        details: 'This QR belongs to event day inventory and cannot be bound in test mode.',
-      };
-    }
-
-    // 2. Revocation check
+    // 1. Revocation check
     let inventory = getLocalArray<PhysicalQrInventoryItem>(STORAGE_KEYS.QR_INVENTORY);
     let invItem = inventory.find((i) => i.qrCode.toUpperCase() === cleanQrId);
 
@@ -613,7 +614,7 @@ export const operationsApi = {
       };
     }
 
-    // 3. Rule: Check if physical QR is already assigned to a DIFFERENT active participant
+    // 2. Rule: Check if physical QR is already assigned to a DIFFERENT active participant
     const assignments = getLocalArray<any>(STORAGE_KEYS.ASSIGNMENTS);
     const existingOther = assignments.find(
       (a) =>
@@ -640,7 +641,7 @@ export const operationsApi = {
       };
     }
 
-    // 4. Rule: Check if participant already has an active physical QR
+    // 3. Rule: Check if participant already has an active physical QR
     const existingMine = assignments.find(
       (a) =>
         a.active &&
@@ -665,11 +666,10 @@ export const operationsApi = {
           details: `Participant already has active QR ${existingMine.physicalQrId}. Only Super Admin can reassign.`,
         };
       }
-      // Super admin override: deactivate previous QR
       existingMine.active = false;
     }
 
-    // 5. ATOMIC WRITE
+    // 4. ATOMIC WRITE
     const now = new Date().toISOString();
     const env: QrEnvironment = isTestQr ? 'TEST' : 'PRODUCTION';
 
@@ -715,26 +715,33 @@ export const operationsApi = {
     assignments.push(newAssignment);
     saveLocalArray(STORAGE_KEYS.ASSIGNMENTS, assignments);
 
-    // C) Write to Supabase if configured (non-blocking)
+    // C) Write to Supabase attendance_logs synchronously
     if (isSupabaseConfigured()) {
-      Promise.resolve(
-        supabase.from('physical_qr_inventory').upsert([
+      try {
+        await supabase.from('attendance_logs').insert([
           {
-            qr_code: cleanQrId,
-            qr_type: params.physicalQrType,
-            environment: env,
-            status: 'ASSIGNED',
-            participant_id: params.participantId,
-            registration_id: params.registrationId,
-            assigned_at: now,
-            assigned_by: params.staffId,
-            updated_at: now,
+            attendance_id: 'AUD-ASSIGN-' + Math.random().toString(36).substring(2, 9),
+            registration_id: params.participantId,
+            participant_name: params.staffId,
+            event_id: 'QR_ASSIGNMENT',
+            event_name: 'QR_ASSIGNMENT',
+            event_type: 'QR_ASSIGNMENT',
+            attendance_date: now.split('T')[0],
+            attendance_time: new Date(now).toLocaleTimeString('en-US'),
+            attendance_location: station,
+            attendance_status: 'SUCCESS',
+            participation_status: 'Present',
+            verified_by: params.staffId,
+            qr_token: cleanQrId,
+            scan_timestamp: now,
           },
-        ], { onConflict: 'qr_code' })
-      ).catch(() => {});
+        ]);
+      } catch (err) {
+        console.warn('Supabase assignPhysicalQr write notice:', err);
+      }
     }
 
-    // 6. IMMEDIATE RE-SELECT & VERIFY
+    // 5. IMMEDIATE RE-SELECT & VERIFY
     const reselected = getLocalArray<PhysicalQrInventoryItem>(STORAGE_KEYS.QR_INVENTORY).find(
       (i) => i.qrCode.toUpperCase() === cleanQrId
     );
@@ -758,6 +765,7 @@ export const operationsApi = {
       station,
       operation: 'QR_ASSIGNMENT',
       registrationId: params.registrationId,
+      participantId: params.participantId,
       physicalQrId: cleanQrId,
       result: 'SUCCESS',
       reason: `Bound ${params.physicalQrType} ${cleanQrId}`,
@@ -765,7 +773,7 @@ export const operationsApi = {
 
     syncToGoogleSheets({
       action: 'assignPhysicalQr',
-      registrationId: params.registrationId,
+      registrationId: params.participantId,
       physicalQrId: cleanQrId,
       station,
       verifiedBy: params.staffId,
@@ -794,8 +802,7 @@ export const operationsApi = {
 
     // Check idempotency
     const existing = campusLogs.find(
-      (c) =>
-        c.participantId === params.participantId
+      (c) => c.participantId === params.participantId
     );
 
     if (existing) {
@@ -804,6 +811,7 @@ export const operationsApi = {
         station,
         operation: 'CAMPUS_CHECKIN',
         registrationId: params.registrationId,
+        participantId: params.participantId,
         physicalQrId: params.physicalQrId,
         result: 'DUPLICATE',
         reason: 'Participant already checked in to campus',
@@ -836,7 +844,7 @@ export const operationsApi = {
         supabase
           .from('overall_registrations')
           .update({ overall_attendance_status: 'Present' })
-          .eq('registration_id', params.registrationId)
+          .eq('registration_id', params.participantId)
       ).catch(() => {});
     }
 
@@ -845,6 +853,7 @@ export const operationsApi = {
       station,
       operation: 'CAMPUS_CHECKIN',
       registrationId: params.registrationId,
+      participantId: params.participantId,
       physicalQrId: params.physicalQrId,
       result: 'SUCCESS',
       reason: 'Campus check-in confirmed',
@@ -852,7 +861,7 @@ export const operationsApi = {
 
     syncToGoogleSheets({
       action: 'syncCampusCheckin',
-      registrationId: params.registrationId,
+      registrationId: params.participantId,
       physicalQrId: params.physicalQrId,
       station,
       verifiedBy: params.staffId,
@@ -951,6 +960,7 @@ export const operationsApi = {
         station,
         operation: 'EVENT_CHECKIN',
         registrationId: participant.registrationId,
+        participantId: participant.id,
         participantName: participant.participantName,
         eventId,
         eventName: eventTitle,
@@ -982,6 +992,7 @@ export const operationsApi = {
         station,
         operation: 'EVENT_CHECKIN',
         registrationId: participant.registrationId,
+        participantId: participant.id,
         participantName: participant.participantName,
         eventId,
         eventName: eventTitle,
@@ -1033,6 +1044,7 @@ export const operationsApi = {
       station,
       operation: 'EVENT_CHECKIN',
       registrationId: participant.registrationId,
+      participantId: participant.id,
       participantName: participant.participantName,
       eventId,
       eventName: eventTitle,
@@ -1043,7 +1055,7 @@ export const operationsApi = {
 
     syncToGoogleSheets({
       action: 'markAttendance',
-      registrationId: participant.registrationId,
+      registrationId: participant.id,
       participantName: participant.participantName,
       eventId,
       eventName: eventTitle,
@@ -1133,8 +1145,7 @@ export const operationsApi = {
     // 2. Check food duplicate idempotency
     const foodLogs = getLocalArray<any>(STORAGE_KEYS.FOOD);
     const existing = foodLogs.find(
-      (f) =>
-        f.participantId === participant.id
+      (f) => f.participantId === participant.id
     );
 
     if (existing && !params.isAdminOverride) {
@@ -1143,6 +1154,7 @@ export const operationsApi = {
         station,
         operation: 'FOOD_DELIVERY',
         registrationId: participant.registrationId,
+        participantId: participant.id,
         participantName: participant.participantName,
         physicalQrId: cleanQr,
         result: 'DUPLICATE',
@@ -1179,6 +1191,7 @@ export const operationsApi = {
       station,
       operation: 'FOOD_DELIVERY',
       registrationId: participant.registrationId,
+      participantId: participant.id,
       participantName: participant.participantName,
       physicalQrId: cleanQr,
       result: 'SUCCESS',
@@ -1187,7 +1200,7 @@ export const operationsApi = {
 
     syncToGoogleSheets({
       action: 'markFoodDelivered',
-      registrationId: participant.registrationId,
+      registrationId: participant.id,
       participantName: participant.participantName,
       station,
       verifiedBy: params.staffId,
@@ -1290,15 +1303,173 @@ export const operationsApi = {
   },
 
   /**
-   * Search participants with filters
+   * Fetch Per-Participant Operational Summary (Instant calculation without ad-hoc loops)
+   */
+  async getParticipantOperationalSummary(options?: {
+    teamName?: string;
+    limit?: number;
+  }): Promise<ParticipantOperationalSummary[]> {
+    const limit = options?.limit || 50;
+    const summaries: ParticipantOperationalSummary[] = [];
+
+    // Check if view exists in Supabase
+    if (isSupabaseConfigured()) {
+      try {
+        let q = supabase.from('participant_operational_summary').select('*').limit(limit);
+        if (options?.teamName) {
+          q = q.ilike('team_name', `%${options.teamName}%`);
+        }
+        const { data, error } = await q;
+        if (!error && data && data.length > 0) {
+          return data.map((d: any) => ({
+            participantId: d.participant_id,
+            registrationId: d.registration_id,
+            teamId: d.team_name,
+            fullName: d.full_name,
+            email: d.email,
+            mobileNumber: d.mobile_number,
+            college: d.college,
+            department: d.department,
+            physicalQrId: d.physical_qr_id,
+            qrStatus: d.qr_status || (d.physical_qr_id ? 'ASSIGNED' : 'UNASSIGNED'),
+            campusCheckinTime: d.campus_checkin_time,
+            campusPresent: !!d.campus_present,
+            totalRegisteredEvents: d.total_registered_events || 0,
+            totalEventsAttended: d.total_events_attended || 0,
+            foodDeliveredTime: d.food_delivered_time,
+            foodDelivered: !!d.food_delivered,
+          }));
+        }
+      } catch (err) {
+        console.warn('View participant_operational_summary notice:', err);
+      }
+    }
+
+    // Dynamic derivation from overall_registrations + attendance_logs
+    const participants = await this.searchParticipants('', limit);
+    for (const p of participants) {
+      if (options?.teamName && p.teamName?.toLowerCase() !== options.teamName.toLowerCase()) {
+        continue;
+      }
+      summaries.push({
+        participantId: p.id,
+        registrationId: p.registrationId,
+        teamId: p.teamName,
+        fullName: p.participantName,
+        email: p.email,
+        mobileNumber: p.mobile,
+        college: p.college,
+        department: p.department,
+        physicalQrId: p.physicalQrId,
+        qrStatus: p.physicalQrId ? 'ASSIGNED' : 'UNASSIGNED',
+        campusCheckinTime: p.campusCheckinTime,
+        campusPresent: p.campusAttendanceStatus === 'Present',
+        totalRegisteredEvents: p.selectedEvents.length,
+        totalEventsAttended: p.registeredEvents.filter((re) => re.attendanceStatus === 'Present').length,
+        foodDeliveredTime: p.foodDeliveredTime,
+        foodDelivered: p.foodDelivered,
+      });
+    }
+
+    return summaries;
+  },
+
+  /**
+   * Fetch Event Attendance Summary (Live rollups per event)
+   */
+  async getEventAttendanceSummary(): Promise<EventAttendanceSummary[]> {
+    const stats = await this.getLiveStats();
+    return OFFICIAL_EVENTS.map((e) => {
+      const m = stats.perEventMetrics[e.eventId.toUpperCase()] || {
+        registered: 0,
+        present: 0,
+        absent: 0,
+        attendancePct: 0,
+      };
+      return {
+        eventId: e.eventId,
+        eventName: e.title,
+        category: e.category,
+        totalRegistered: m.registered,
+        totalPresent: m.present,
+        totalAbsent: m.absent,
+        attendancePercentage: m.attendancePct,
+      };
+    });
+  },
+
+  /**
+   * Fetch Team Operational Summary (Readiness & check-in metrics grouped by team)
+   */
+  async getTeamOperationalSummary(): Promise<TeamOperationalSummary[]> {
+    const participants = await this.searchParticipants('', 30);
+    const teamMap = new Map<string, ParticipantProfile[]>();
+
+    participants.forEach((p) => {
+      if (p.teamName) {
+        const list = teamMap.get(p.teamName) || [];
+        list.push(p);
+        teamMap.set(p.teamName, list);
+      }
+    });
+
+    const results: TeamOperationalSummary[] = [];
+    teamMap.forEach((members, teamName) => {
+      results.push({
+        teamName,
+        totalMembers: members.length,
+        membersCampusCheckedIn: members.filter((m) => m.campusAttendanceStatus === 'Present').length,
+        membersQrAssigned: members.filter((m) => !!m.physicalQrId).length,
+        membersFoodDelivered: members.filter((m) => m.foodDelivered).length,
+      });
+    });
+
+    return results;
+  },
+
+  /**
+   * Search participants with filters (Parallelized lookup)
    */
   async searchParticipants(searchTerm: string, limit: number = 25): Promise<ParticipantProfile[]> {
     const q = searchTerm.trim().toLowerCase();
     const results: ParticipantProfile[] = [];
+    const seenIds = new Set<string>();
 
-    if (isSupabaseConfigured()) {
+    // 1. Check local mock registrations first
+    const mockRegs = getLocalArray<any>('evoxis26_overall_registrations');
+    const matchedMockIds: string[] = [];
+    for (const r of mockRegs) {
+      const regId = r.registrationId || r.registration_id;
+      const pName = r.participantName || r.participant_name || '';
+      const email = r.email || '';
+      const tName = r.teamName || r.team_name || '';
+      if (
+        !q ||
+        pName.toLowerCase().includes(q) ||
+        email.toLowerCase().includes(q) ||
+        regId.toLowerCase().includes(q) ||
+        tName.toLowerCase().includes(q)
+      ) {
+        if (!seenIds.has(regId)) {
+          seenIds.add(regId);
+          matchedMockIds.push(regId);
+        }
+      }
+    }
+
+    if (matchedMockIds.length > 0) {
+      const mockProfiles = await Promise.all(
+        matchedMockIds.slice(0, limit).map((id) => this.lookupRegistration({ queryStr: id }))
+      );
+      mockProfiles.forEach((p) => {
+        if (p.data) results.push(p.data);
+      });
+    }
+
+    // 2. Query Supabase overall_registrations if needed
+    if (isSupabaseConfigured() && results.length < limit) {
       try {
-        let query = supabase.from('overall_registrations').select('*').limit(limit);
+        let query = supabase.from('overall_registrations').select('*').limit(limit - results.length);
         if (q) {
           query = query.or(
             `participant_name.ilike.%${q}%,email.ilike.%${q}%,mobile_number.ilike.%${q}%,registration_id.ilike.%${q}%,team_name.ilike.%${q}%`
@@ -1306,33 +1477,18 @@ export const operationsApi = {
         }
         const { data } = await query;
         if (data) {
-          for (const d of data) {
-            const p = await this.lookupRegistration({ queryStr: d.registration_id });
+          const newIds = data.map((d: any) => d.registration_id).filter((id: string) => !seenIds.has(id));
+          newIds.forEach((id: string) => seenIds.add(id));
+          const dbProfiles = await Promise.all(
+            newIds.map((id: string) => this.lookupRegistration({ queryStr: id }))
+          );
+          dbProfiles.forEach((p) => {
             if (p.data) results.push(p.data);
-          }
-          return results;
+          });
         }
       } catch (e) {
         console.warn('Search participants Supabase fallback:', e);
       }
-    }
-
-    const mockRegs = getLocalArray<any>('evoxis26_overall_registrations');
-    const filtered = mockRegs.filter((r) => {
-      if (!q) return true;
-      return (
-        (r.participantName && r.participantName.toLowerCase().includes(q)) ||
-        (r.participant_name && r.participant_name.toLowerCase().includes(q)) ||
-        (r.email && r.email.toLowerCase().includes(q)) ||
-        (r.registrationId && r.registrationId.toLowerCase().includes(q)) ||
-        (r.registration_id && r.registration_id.toLowerCase().includes(q))
-      );
-    });
-
-    for (const r of filtered.slice(0, limit)) {
-      const regId = r.registrationId || r.registration_id;
-      const p = await this.lookupRegistration({ queryStr: regId });
-      if (p.data) results.push(p.data);
     }
 
     return results;

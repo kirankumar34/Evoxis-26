@@ -550,4 +550,173 @@ describe('EvoXis26 Operations Portal Automated Test Suite', () => {
     expect(r6.success).toBe(false);
     expect(r6.errorCode).toBe('PRODUCTION_QR_IN_TEST_MODE');
   });
+
+  // Test 16: Prompt 7 Section 4: Operational Summary & Aggregate calculation methods
+  it('16. Operational summaries calculate per-participant, event, and team rollups with zero drift', async () => {
+    // Check initial summaries
+    const partSummaries = await operationsApi.getParticipantOperationalSummary();
+    expect(partSummaries.length).toBeGreaterThan(0);
+    const rahulSummary = partSummaries.find((p) => p.participantId === TEST_INDIVIDUAL_ID);
+    expect(rahulSummary).toBeDefined();
+    expect(rahulSummary?.fullName).toBe('Rahul Dravid');
+    expect(rahulSummary?.totalRegisteredEvents).toBe(2);
+
+    // Event summary
+    const eventSummaries = await operationsApi.getEventAttendanceSummary();
+    expect(eventSummaries.length).toBeGreaterThan(0);
+    const te02Summary = eventSummaries.find((e) => e.eventId === 'TE02');
+    expect(te02Summary).toBeDefined();
+    expect(te02Summary?.eventName).toBe('Business Battle');
+
+    // Team summary
+    const teamSummaries = await operationsApi.getTeamOperationalSummary();
+    const cskTeam = teamSummaries.find((t) => t.teamName === 'Code Warriors');
+    expect(cskTeam).toBeDefined();
+    expect(cskTeam?.totalMembers).toBe(4);
+  });
+
+  // Test 17: Prompt 7 Section 6: Real 4-member Team CSK end-to-end verification
+  it('17. Prompt 7 Section 6: Real Team CSK 4 members independently resolve across Reception, Event Desks, and Food Counter', async () => {
+    const cskMembers = [
+      { id: 'EVOXIS26-00041', qr: 'EVX26-TEST-000051', name: 'test07', role: 'TEAM_HEAD' },
+      { id: 'EVOXIS26-00041-M1', qr: 'EVX26-TEST-000052', name: 'test03', role: 'TEAM_MEMBER' },
+      { id: 'EVOXIS26-00041-M2', qr: 'EVX26-TEST-000053', name: 'test31', role: 'TEAM_MEMBER' },
+      { id: 'EVOXIS26-00041-M3', qr: 'EVX26-TEST-000054', name: 'test09', role: 'TEAM_MEMBER' },
+    ];
+
+    // Seed mock registrations for Team CSK if running offline
+    const currentRegs = JSON.parse(localStorage.getItem('evoxis26_overall_registrations') || '[]');
+    const cskSeed = [
+      {
+        registrationId: 'EVOXIS26-00041',
+        participantName: 'test07',
+        email: 'test07@gmail.com',
+        mobileNumber: '0987654321',
+        collegeInstitution: 'IND',
+        department: 'CSBS',
+        year: '2nd Year',
+        gender: 'Male',
+        registrationType: 'Team',
+        role: 'TEAM_HEAD',
+        teamName: 'team CSK',
+        selectedEvents: 'SP02, SP03',
+        qrToken: 'EVOXIS26:0c6c8ce82600041',
+      },
+      {
+        registrationId: 'EVOXIS26-00041-M1',
+        participantName: 'test03',
+        email: 'test03@gmail.com',
+        mobileNumber: '9870654321',
+        collegeInstitution: 'IND',
+        department: 'CSBS',
+        year: '1st Year',
+        gender: 'Male',
+        registrationType: 'Team',
+        role: 'TEAM_MEMBER',
+        teamName: 'team CSK',
+        selectedEvents: 'SP02, SP03',
+        qrToken: 'EVOXIS26:0c6c8ce82600041-M1',
+      },
+      {
+        registrationId: 'EVOXIS26-00041-M2',
+        participantName: 'test31',
+        email: 'test31@gmail.com',
+        mobileNumber: '1234567890',
+        collegeInstitution: 'IND',
+        department: 'CSBS',
+        year: '2nd Year',
+        gender: 'Male',
+        registrationType: 'Team',
+        role: 'TEAM_MEMBER',
+        teamName: 'team CSK',
+        selectedEvents: 'SP02, SP03',
+        qrToken: 'EVOXIS26:0c6c8ce82600041-M2',
+      },
+      {
+        registrationId: 'EVOXIS26-00041-M3',
+        participantName: 'test09',
+        email: 'test09@gmail.com',
+        mobileNumber: '1234123490',
+        collegeInstitution: 'IND',
+        department: 'CSBS',
+        year: '2nd Year',
+        gender: 'Male',
+        registrationType: 'Team',
+        role: 'TEAM_MEMBER',
+        teamName: 'team CSK',
+        selectedEvents: 'SP02, SP03',
+        qrToken: 'EVOXIS26:0c6c8ce82600041-M3',
+      },
+    ];
+    localStorage.setItem('evoxis26_overall_registrations', JSON.stringify([...currentRegs, ...cskSeed]));
+
+    // Step 1: Bind 4 distinct wristbands at Reception
+    for (const m of cskMembers) {
+      const bind = await operationsApi.assignPhysicalQr({
+        participantId: m.id,
+        registrationId: 'EVOXIS26-00041',
+        physicalQrId: m.qr,
+        physicalQrType: 'WRISTBAND',
+        staffId: 'Reception Lead',
+        staffRole: 'RECEPTION',
+        station: 'Reception Desk 1',
+        portalMode: 'TEST',
+      });
+      expect(bind.state).toBe('SUCCESS');
+      expect(bind.verbatimMessage).toBe('✓ PRESENT');
+    }
+
+    // Step 2: Event Desk for SP02 (registered event) -> Each member resolves independently to their own record
+    for (const m of cskMembers) {
+      const att = await operationsApi.markEventPresent({
+        physicalQrId: m.qr,
+        eventId: 'SP02',
+        staffId: 'SP02 Coordinator',
+        station: 'Desk SP02',
+        portalMode: 'TEST',
+      });
+      expect(att.state).toBe('SUCCESS');
+      expect(att.verbatimMessage).toBe('✓ PRESENT');
+      expect(att.participant?.participantName).toBe(m.name);
+      expect(att.participant?.id).toBe(m.id);
+    }
+
+    // Step 3: Event Desk for TE03 (unregistered event) -> Each member receives WRONG_EVENT with their registered events
+    for (const m of cskMembers) {
+      const wrong = await operationsApi.markEventPresent({
+        physicalQrId: m.qr,
+        eventId: 'TE03',
+        staffId: 'TE03 Coordinator',
+        station: 'Desk TE03',
+        portalMode: 'TEST',
+      });
+      expect(wrong.state).toBe('WRONG_EVENT');
+      expect(wrong.verbatimMessage).toBe('PARTICIPANT FOUND — NOT REGISTERED FOR THIS EVENT');
+      expect(wrong.registeredEvents).toContain('SP02');
+      expect(wrong.registeredEvents).toContain('SP03');
+      expect(wrong.registeredEvents).not.toContain('TE03');
+    }
+
+    // Step 4: Food Counter -> Each member redeems food independently once; duplicate rescan is blocked
+    for (const m of cskMembers) {
+      const food1 = await operationsApi.markFoodDelivered({
+        physicalQrId: m.qr,
+        staffId: 'Food Staff',
+        station: 'Food Counter',
+        portalMode: 'TEST',
+      });
+      expect(food1.state).toBe('SUCCESS');
+      expect(food1.verbatimMessage).toBe('✓ MEAL DELIVERED');
+      expect(food1.participant?.participantName).toBe(m.name);
+
+      const food2 = await operationsApi.markFoodDelivered({
+        physicalQrId: m.qr,
+        staffId: 'Food Staff',
+        station: 'Food Counter',
+        portalMode: 'TEST',
+      });
+      expect(food2.state).toBe('DUPLICATE_FOOD');
+      expect(food2.verbatimMessage).toBe('FOOD ALREADY DELIVERED');
+    }
+  });
 });

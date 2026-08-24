@@ -101,9 +101,49 @@ export interface QrResolutionResult {
   status?: QrStatus;
   participantId?: string;
   registrationId?: string;
+  teamId?: string;
   participant?: ParticipantProfile;
   registration?: any;
   registeredEvents?: string[];
+  campusStatus?: 'Present' | 'Pending';
+  foodStatus?: 'DELIVERED' | 'PENDING';
+}
+
+export interface ParticipantOperationalSummary {
+  participantId: string;
+  registrationId: string;
+  teamId?: string;
+  fullName: string;
+  email: string;
+  mobileNumber?: string;
+  college?: string;
+  department?: string;
+  physicalQrId?: string;
+  qrStatus: 'ASSIGNED' | 'UNASSIGNED' | 'REVOKED';
+  campusCheckinTime?: string;
+  campusPresent: boolean;
+  totalRegisteredEvents: number;
+  totalEventsAttended: number;
+  foodDeliveredTime?: string;
+  foodDelivered: boolean;
+}
+
+export interface EventAttendanceSummary {
+  eventId: string;
+  eventName: string;
+  category: string;
+  totalRegistered: number;
+  totalPresent: number;
+  totalAbsent: number;
+  attendancePercentage: number;
+}
+
+export interface TeamOperationalSummary {
+  teamName: string;
+  totalMembers: number;
+  membersCampusCheckedIn: number;
+  membersQrAssigned: number;
+  membersFoodDelivered: number;
 }
 
 export type ScanResultState =
