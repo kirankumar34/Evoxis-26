@@ -7,6 +7,10 @@ import {
   LiveDashboardMetrics,
   StaffRole,
   TeamMemberInfo,
+  PhysicalQrInventoryItem,
+  InventoryMetrics,
+  QrEnvironment,
+  QrType,
 } from '../types';
 import { OFFICIAL_EVENTS } from '../config/events';
 import { syncToGoogleSheets } from './sheetsSync';
@@ -18,6 +22,7 @@ const STORAGE_KEYS = {
   EVENT_ATTENDANCE: 'evoxis_op_event_attendance',
   FOOD: 'evoxis_op_food_delivery',
   AUDIT: 'evoxis_op_audit_logs',
+  QR_INVENTORY: 'evoxis_op_qr_inventory',
 };
 
 // Helper: in-memory / local storage fallback state for atomic client-side locks
@@ -288,6 +293,48 @@ export const operationsApi = {
         state: 'INVALID_QR',
         verbatimMessage: 'INVALID QR',
         details: 'Physical QR code cannot be empty',
+      };
+    }
+
+    // Safety Rule A: TEST QR protection in Production Mode
+    const isTestQr = cleanQrId.startsWith('EVX26-TEST-');
+    const isProdMode = !station.toUpperCase().includes('TEST');
+    if (isTestQr && isProdMode) {
+      await this.logAudit({
+        staffUser: params.staffId,
+        station,
+        operation: 'QR_ASSIGNMENT',
+        registrationId: params.registrationId,
+        physicalQrId: cleanQrId,
+        result: 'DENIED',
+        reason: 'TEST QR detected at production desk',
+      });
+
+      return {
+        state: 'TEST_QR_IN_PROD',
+        verbatimMessage: 'TEST QR DETECTED',
+        details: 'This QR is for testing only and cannot be used for live participant check-in.',
+      };
+    }
+
+    // Safety Rule B: Check if QR is REVOKED in inventory
+    const inventory = getLocalArray<PhysicalQrInventoryItem>(STORAGE_KEYS.QR_INVENTORY);
+    const invItem = inventory.find((i) => i.qrCode.toUpperCase() === cleanQrId);
+    if (invItem && invItem.status === 'REVOKED') {
+      await this.logAudit({
+        staffUser: params.staffId,
+        station,
+        operation: 'QR_ASSIGNMENT',
+        registrationId: params.registrationId,
+        physicalQrId: cleanQrId,
+        result: 'DENIED',
+        reason: `Attempted to assign revoked QR: ${invItem.revocationReason || 'Lost or replaced'}`,
+      });
+
+      return {
+        state: 'QR_REVOKED',
+        verbatimMessage: 'QR REVOKED',
+        details: `This physical QR has been revoked and cannot be used. (${invItem.revocationReason || 'Lost or replaced'})`,
       };
     }
 
@@ -892,4 +939,224 @@ export const operationsApi = {
       return true;
     });
   },
+
+  /**
+   * Bulk Generate Static QR Inventory (1000 Production or 100 Test)
+   * IDEMPOTENT: Detects already generated IDs and skips them without creating duplicates.
+   */
+  async generateQrInventory(options: {
+    environment: QrEnvironment;
+    count?: number;
+    qrType?: QrType;
+    onProgress?: (current: number, total: number) => void;
+  }): Promise<{
+    totalCreated: number;
+    totalExisting: number;
+    totalDuplicatesPrevented: number;
+    items: PhysicalQrInventoryItem[];
+  }> {
+    const env = options.environment;
+    const count = options.count || (env === 'PRODUCTION' ? 1000 : 100);
+    const type = options.qrType || 'WRISTBAND';
+    const prefix = env === 'PRODUCTION' ? 'EVX26-WB-' : 'EVX26-TEST-';
+
+    const inventory = getLocalArray<PhysicalQrInventoryItem>(STORAGE_KEYS.QR_INVENTORY);
+    const existingMap = new Map<string, PhysicalQrInventoryItem>();
+    inventory.forEach((i) => existingMap.set(i.qrCode.toUpperCase(), i));
+
+    let createdCount = 0;
+    let existingCount = 0;
+    const newItems: PhysicalQrInventoryItem[] = [];
+    const now = new Date().toISOString();
+
+    for (let i = 1; i <= count; i++) {
+      const qrCode = `${prefix}${String(i).padStart(6, '0')}`;
+      if (existingMap.has(qrCode.toUpperCase())) {
+        existingCount++;
+      } else {
+        const item: PhysicalQrInventoryItem = {
+          id: `INV-${qrCode}`,
+          qrCode,
+          qrType: type,
+          environment: env,
+          status: 'UNUSED',
+          createdAt: now,
+          updatedAt: now,
+        };
+        newItems.push(item);
+        existingMap.set(qrCode.toUpperCase(), item);
+        createdCount++;
+      }
+
+      if (options.onProgress && (i % 25 === 0 || i === count)) {
+        options.onProgress(i, count);
+      }
+    }
+
+    if (newItems.length > 0) {
+      const updatedInventory = [...inventory, ...newItems];
+      saveLocalArray(STORAGE_KEYS.QR_INVENTORY, updatedInventory);
+
+      // Attempt batch insert into Supabase physical_qr_inventory if configured
+      if (isSupabaseConfigured()) {
+        try {
+          const batchSize = 200;
+          for (let b = 0; b < newItems.length; b += batchSize) {
+            const chunk = newItems.slice(b, b + batchSize).map((it) => ({
+              qr_code: it.qrCode,
+              qr_type: it.qrType,
+              environment: it.environment,
+              status: it.status,
+              created_at: it.createdAt,
+              updated_at: it.updatedAt,
+            }));
+            await supabase.from('physical_qr_inventory').upsert(chunk, { onConflict: 'qr_code' });
+          }
+        } catch (err) {
+          console.warn('Supabase physical_qr_inventory upsert notice:', err);
+        }
+      }
+    }
+
+    await this.logAudit({
+      staffUser: 'Admin Staff',
+      station: 'Admin Panel',
+      operation: 'ADMIN_OVERRIDE',
+      result: 'SUCCESS',
+      reason: `Generated ${createdCount} ${env} static QR inventory codes (${existingCount} already existed).`,
+    });
+
+    return {
+      totalCreated: createdCount,
+      totalExisting: existingCount,
+      totalDuplicatesPrevented: existingCount,
+      items: Array.from(existingMap.values()),
+    };
+  },
+
+  /**
+   * Get QR Inventory list with optional filters and pagination
+   */
+  async getQrInventory(filter?: {
+    environment?: string;
+    status?: string;
+    search?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<{
+    items: PhysicalQrInventoryItem[];
+    totalCount: number;
+    page: number;
+    totalPages: number;
+  }> {
+    let all = getLocalArray<PhysicalQrInventoryItem>(STORAGE_KEYS.QR_INVENTORY);
+
+    // If local inventory is empty, check if we should auto-seed from pre-generated set
+    if (all.length === 0) {
+      // Seed default production & test skeleton if empty
+      const prodRes = await this.generateQrInventory({ environment: 'PRODUCTION', count: 1000 });
+      const testRes = await this.generateQrInventory({ environment: 'TEST', count: 100 });
+      all = getLocalArray<PhysicalQrInventoryItem>(STORAGE_KEYS.QR_INVENTORY);
+    }
+
+    let filtered = all;
+
+    if (filter?.environment && filter.environment !== 'ALL') {
+      filtered = filtered.filter((i) => i.environment === filter.environment);
+    }
+
+    if (filter?.status && filter.status !== 'ALL') {
+      filtered = filtered.filter((i) => i.status === filter.status);
+    }
+
+    if (filter?.search && filter.search.trim()) {
+      const q = filter.search.trim().toLowerCase();
+      filtered = filtered.filter(
+        (i) =>
+          i.qrCode.toLowerCase().includes(q) ||
+          (i.registrationId && i.registrationId.toLowerCase().includes(q)) ||
+          (i.participantName && i.participantName.toLowerCase().includes(q)) ||
+          (i.participantId && i.participantId.toLowerCase().includes(q))
+      );
+    }
+
+    const totalCount = filtered.length;
+    const page = filter?.page || 1;
+    const pageSize = filter?.pageSize || 25;
+    const totalPages = Math.ceil(totalCount / pageSize) || 1;
+    const startIndex = (page - 1) * pageSize;
+    const items = filtered.slice(startIndex, startIndex + pageSize);
+
+    return { items, totalCount, page, totalPages };
+  },
+
+  /**
+   * Get QR Inventory summary metrics
+   */
+  async getInventoryMetrics(): Promise<InventoryMetrics> {
+    const all = getLocalArray<PhysicalQrInventoryItem>(STORAGE_KEYS.QR_INVENTORY);
+
+    const prod = all.filter((i) => i.environment === 'PRODUCTION');
+    const test = all.filter((i) => i.environment === 'TEST');
+
+    return {
+      production: {
+        total: prod.length,
+        unused: prod.filter((i) => i.status === 'UNUSED').length,
+        assigned: prod.filter((i) => i.status === 'ASSIGNED' || i.status === 'ACTIVE').length,
+        revoked: prod.filter((i) => i.status === 'REVOKED').length,
+      },
+      test: {
+        total: test.length,
+        unused: test.filter((i) => i.status === 'UNUSED').length,
+        assigned: test.filter((i) => i.status === 'ASSIGNED' || i.status === 'ACTIVE').length,
+        revoked: test.filter((i) => i.status === 'REVOKED').length,
+      },
+    };
+  },
+
+  /**
+   * Revoke a Physical QR (e.g. Lost wristband)
+   */
+  async revokeQr(params: {
+    qrCode: string;
+    reason?: string;
+    staffId: string;
+    station?: string;
+  }): Promise<{ success: boolean; message: string }> {
+    const cleanQr = params.qrCode.trim().toUpperCase();
+    const inventory = getLocalArray<PhysicalQrInventoryItem>(STORAGE_KEYS.QR_INVENTORY);
+    const item = inventory.find((i) => i.qrCode.toUpperCase() === cleanQr);
+
+    if (!item) {
+      return { success: false, message: `QR Code ${cleanQr} not found in inventory` };
+    }
+
+    item.status = 'REVOKED';
+    item.revocationReason = params.reason || 'Lost or damaged wristband';
+    item.updatedAt = new Date().toISOString();
+
+    saveLocalArray(STORAGE_KEYS.QR_INVENTORY, inventory);
+
+    // Also deactivate any active assignment
+    const assignments = getLocalArray<any>(STORAGE_KEYS.ASSIGNMENTS);
+    const assignItem = assignments.find((a) => a.physicalQrId.toUpperCase() === cleanQr);
+    if (assignItem) {
+      assignItem.active = false;
+      saveLocalArray(STORAGE_KEYS.ASSIGNMENTS, assignments);
+    }
+
+    await this.logAudit({
+      staffUser: params.staffId,
+      station: params.station || 'Admin Panel',
+      operation: 'ADMIN_OVERRIDE',
+      physicalQrId: cleanQr,
+      registrationId: item.registrationId,
+      result: 'SUCCESS',
+      reason: `Revoked physical QR ${cleanQr}: ${item.revocationReason}`,
+    });
+
+    return { success: true, message: `QR Code ${cleanQr} revoked successfully.` };
+  },
 };
+

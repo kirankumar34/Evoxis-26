@@ -14,6 +14,8 @@ import { AuditLogPage } from './pages/AuditLogPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { StaffRole } from './types';
 
+import { QrGeneratorPage } from './pages/QrGeneratorPage';
+
 // Protected Route Guard
 const ProtectedRoute: React.FC<{
   children: React.ReactNode;
@@ -154,6 +156,24 @@ export const App: React.FC = () => {
               element={
                 <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
                   <AuditLogPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* QR Code Inventory Generator */}
+            <Route
+              path="/admin/qr-generator"
+              element={
+                <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
+                  <QrGeneratorPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/qr-generator"
+              element={
+                <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
+                  <QrGeneratorPage />
                 </ProtectedRoute>
               }
             />

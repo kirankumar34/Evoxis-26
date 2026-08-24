@@ -438,4 +438,86 @@ describe('EvoXis26 Operations Portal Automated Test Suite (13 Spec Requirements)
     expect(states).toContain('SUCCESS');
     expect(states).toContain('DUPLICATE_FOOD');
   });
+
+  // Test 14: Bulk Static QR Generation (1000 Production + 100 Test, Idempotent)
+  it('14. Static QR Inventory Generation creates 1000 production and 100 test records idempotently without duplicates', async () => {
+    const prodRes1 = await operationsApi.generateQrInventory({ environment: 'PRODUCTION', count: 1000 });
+    expect(prodRes1.totalCreated).toBe(1000);
+
+    const testRes1 = await operationsApi.generateQrInventory({ environment: 'TEST', count: 100 });
+    expect(testRes1.totalCreated).toBe(100);
+
+    // Running again must detect all existing and create 0 duplicates
+    const prodRes2 = await operationsApi.generateQrInventory({ environment: 'PRODUCTION', count: 1000 });
+    expect(prodRes2.totalCreated).toBe(0);
+    expect(prodRes2.totalDuplicatesPrevented).toBe(1000);
+
+    const metrics = await operationsApi.getInventoryMetrics();
+    expect(metrics.production.total).toBe(1000);
+    expect(metrics.test.total).toBe(100);
+    expect(metrics.production.unused).toBe(1000);
+    expect(metrics.test.unused).toBe(100);
+  });
+
+  // Test 15: TEST QR scanned in live production mode is strictly rejected
+  it('15. TEST QR scanned at production desk is rejected with TEST QR DETECTED', async () => {
+    await operationsApi.generateQrInventory({ environment: 'TEST', count: 100 });
+
+    const scanResult = await operationsApi.assignPhysicalQr({
+      participantId: TEST_INDIVIDUAL_ID,
+      registrationId: TEST_INDIVIDUAL_ID,
+      physicalQrId: 'EVX26-TEST-000001',
+      physicalQrType: 'WRISTBAND',
+      staffId: 'Receptionist 1',
+      staffRole: 'RECEPTION',
+      station: 'Reception Desk 1', // Production station
+    });
+
+    expect(scanResult.state).toBe('TEST_QR_IN_PROD');
+    expect(scanResult.verbatimMessage).toBe('TEST QR DETECTED');
+  });
+
+  // Test 16: Lost wristband revocation and check-in block
+  it('16. Lost physical QR can be revoked and is subsequently blocked with QR REVOKED', async () => {
+    await operationsApi.generateQrInventory({ environment: 'PRODUCTION', count: 1000 });
+
+    // Revoke EVX26-WB-000123
+    const revokeRes = await operationsApi.revokeQr({
+      qrCode: 'EVX26-WB-000123',
+      reason: 'Physical wristband snapped / lost',
+      staffId: 'Super Admin',
+    });
+    expect(revokeRes.success).toBe(true);
+
+    // Attempt assignment
+    const assignResult = await operationsApi.assignPhysicalQr({
+      participantId: TEST_INDIVIDUAL_ID,
+      registrationId: TEST_INDIVIDUAL_ID,
+      physicalQrId: 'EVX26-WB-000123',
+      physicalQrType: 'WRISTBAND',
+      staffId: 'Receptionist 1',
+      staffRole: 'RECEPTION',
+    });
+
+    expect(assignResult.state).toBe('QR_REVOKED');
+    expect(assignResult.verbatimMessage).toBe('QR REVOKED');
+  });
+
+  // Test 17: Inventory search and pagination
+  it('17. QR Inventory search and filter functions correctly', async () => {
+    await operationsApi.generateQrInventory({ environment: 'PRODUCTION', count: 1000 });
+    await operationsApi.generateQrInventory({ environment: 'TEST', count: 100 });
+
+    const searchRes = await operationsApi.getQrInventory({
+      search: 'EVX26-WB-000500',
+      page: 1,
+      pageSize: 10,
+    });
+
+    expect(searchRes.totalCount).toBe(1);
+    expect(searchRes.items[0].qrCode).toBe('EVX26-WB-000500');
+    expect(searchRes.items[0].environment).toBe('PRODUCTION');
+    expect(searchRes.items[0].status).toBe('UNUSED');
+  });
 });
+

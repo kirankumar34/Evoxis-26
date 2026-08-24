@@ -27,7 +27,8 @@ export const StatusBanner: React.FC<StatusBannerProps> = ({
   const isDuplicate = state === 'DUPLICATE_CAMPUS' || state === 'DUPLICATE_EVENT' || state === 'DUPLICATE_FOOD';
   const isWrongEvent = state === 'WRONG_EVENT';
   const isOffline = state === 'OFFLINE_ERROR';
-  const isConflict = state === 'QR_CONFLICT' || state === 'UNASSIGNED_QR';
+  const isConflict = state === 'QR_CONFLICT' || state === 'UNASSIGNED_QR' || state === 'QR_REVOKED';
+  const isTestInProd = state === 'TEST_QR_IN_PROD';
   const isError = state === 'INVALID_QR' || state === 'NOT_FOUND' || isOffline;
 
   // Background and border styles
@@ -40,6 +41,9 @@ export const StatusBanner: React.FC<StatusBannerProps> = ({
   } else if (isDuplicate) {
     containerStyles = 'glass-panel-glow-amber border-amber-500/50 bg-amber-950/85 text-amber-100';
     icon = <AlertTriangle className="w-9 h-9 text-amber-400 shrink-0" />;
+  } else if (isTestInProd) {
+    containerStyles = 'border-amber-500/80 bg-amber-950/90 text-amber-100 shadow-lg shadow-amber-950/60';
+    icon = <ShieldAlert className="w-9 h-9 text-amber-400 shrink-0 animate-bounce" />;
   } else if (isWrongEvent) {
     containerStyles = 'border-purple-500/60 bg-purple-950/90 text-purple-100 shadow-lg shadow-purple-950/50';
     icon = <ShieldAlert className="w-9 h-9 text-purple-400 shrink-0" />;

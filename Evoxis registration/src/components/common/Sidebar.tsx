@@ -57,6 +57,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       color: 'text-indigo-400',
     },
     {
+      to: '/admin/qr-generator',
+      label: 'QR Inventory Generator',
+      icon: QrCode,
+      roles: ['SUPER_ADMIN'] as const,
+      color: 'text-pink-400',
+    },
+    {
       to: '/settings',
       label: 'Station Settings',
       icon: Settings,

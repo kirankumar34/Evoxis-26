@@ -91,6 +91,8 @@ export type ScanResultState =
   | 'UNASSIGNED_QR'
   | 'NOT_FOUND'
   | 'QR_CONFLICT'
+  | 'TEST_QR_IN_PROD'
+  | 'QR_REVOKED'
   | 'OFFLINE_ERROR';
 
 export interface ScanOperationResponse {
@@ -151,4 +153,39 @@ export interface LiveDashboardMetrics {
     absent: number;
     attendancePct: number;
   }>;
+}
+
+export type QrEnvironment = 'PRODUCTION' | 'TEST';
+export type QrStatus = 'UNUSED' | 'ASSIGNED' | 'ACTIVE' | 'REVOKED';
+export type QrType = 'WRISTBAND' | 'ID_CARD';
+
+export interface PhysicalQrInventoryItem {
+  id: string;
+  qrCode: string;
+  qrType: QrType;
+  environment: QrEnvironment;
+  status: QrStatus;
+  participantId?: string;
+  registrationId?: string;
+  participantName?: string;
+  assignedAt?: string;
+  assignedBy?: string;
+  createdAt: string;
+  updatedAt: string;
+  revocationReason?: string;
+}
+
+export interface InventoryMetrics {
+  production: {
+    total: number;
+    unused: number;
+    assigned: number;
+    revoked: number;
+  };
+  test: {
+    total: number;
+    unused: number;
+    assigned: number;
+    revoked: number;
+  };
 }

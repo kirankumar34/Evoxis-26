@@ -4,7 +4,27 @@
 -- Scope: Operational state (Physical QR, Campus Check-In, Event Attendance, Food Delivery, Audit Log)
 -- ============================================================================
 
--- 1. Physical QR Assignments (Wristbands / ID Cards)
+-- 1. Physical QR Inventory (Pre-generated Wristbands & ID Cards)
+CREATE TABLE IF NOT EXISTS public.physical_qr_inventory (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  qr_code TEXT NOT NULL UNIQUE,
+  qr_type TEXT NOT NULL DEFAULT 'WRISTBAND' CHECK (qr_type IN ('WRISTBAND', 'ID_CARD')),
+  environment TEXT NOT NULL CHECK (environment IN ('PRODUCTION', 'TEST')),
+  status TEXT NOT NULL DEFAULT 'UNUSED' CHECK (status IN ('UNUSED', 'ASSIGNED', 'ACTIVE', 'REVOKED')),
+  participant_id TEXT,
+  registration_id TEXT REFERENCES public.overall_registrations(registration_id) ON DELETE SET NULL,
+  assigned_at TIMESTAMPTZ,
+  assigned_by TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Indices for physical_qr_inventory
+CREATE INDEX IF NOT EXISTS idx_qr_code ON public.physical_qr_inventory(qr_code);
+CREATE INDEX IF NOT EXISTS idx_qr_env_status ON public.physical_qr_inventory(environment, status);
+CREATE INDEX IF NOT EXISTS idx_qr_reg_id ON public.physical_qr_inventory(registration_id);
+
+-- 2. Physical QR Assignments (Active Bindings)
 CREATE TABLE IF NOT EXISTS public.physical_qr_assignments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   physical_qr_id TEXT NOT NULL UNIQUE,
