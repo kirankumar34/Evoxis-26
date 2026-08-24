@@ -99,9 +99,11 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
   const startCamera = async (cameraId: string) => {
     setCameraError(null);
     try {
-      if (scannerRef.current) {
-        await stopCamera();
-      }
+      await stopCamera();
+
+      // Ensure container element exists in DOM
+      const containerEl = document.getElementById(readerElementId);
+      if (!containerEl) return;
 
       const html5Qr = new Html5Qrcode(readerElementId, {
         formatsToSupport: [
@@ -142,17 +144,27 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
   };
 
   const stopCamera = async () => {
-    if (scannerRef.current) {
+    const scanner = scannerRef.current;
+    scannerRef.current = null;
+    setIsScanning(false);
+
+    if (scanner) {
       try {
-        if (scannerRef.current.isScanning) {
-          await scannerRef.current.stop();
+        if (scanner.isScanning) {
+          await scanner.stop();
         }
-        await scannerRef.current.clear();
       } catch (e) {
-        console.warn('Stop camera error:', e);
+        // Silently ignore if already stopped
       }
-      scannerRef.current = null;
-      setIsScanning(false);
+
+      try {
+        const el = document.getElementById(readerElementId);
+        if (el && el.childElementCount > 0) {
+          await scanner.clear();
+        }
+      } catch (e) {
+        // Suppress DOM removal NotFoundError if React already detached DOM node
+      }
     }
   };
 

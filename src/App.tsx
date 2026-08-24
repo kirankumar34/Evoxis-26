@@ -13,7 +13,7 @@ import { MyRegistrationPage } from '@/pages/MyRegistrationPage';
 
 export const App: React.FC = () => {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <div className="min-h-screen bg-cyber-dark text-slate-100 selection:bg-cyber-cyan selection:text-black flex flex-col justify-between">
         {/* Sticky Frosted Navbar */}
         <Navbar />

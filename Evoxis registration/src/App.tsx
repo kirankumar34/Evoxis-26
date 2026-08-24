@@ -63,7 +63,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 export const App: React.FC = () => {
   return (
     <AuthProvider>
-      <Router>
+      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <AppLayout>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
