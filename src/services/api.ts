@@ -261,7 +261,7 @@ export const api = {
         // 1. Duplicate check in Supabase
         const { data: existingRecords, error: checkErr } = await supabase
           .from('overall_registrations')
-          .select('registration_id, email, mobile_number, qr_token, participant_name, college_institution, department, selected_events, referral_source, referral_source_other, registration_date, registration_status, team_name, team_members')
+          .select('registration_id, email, mobile_number, qr_token, participant_name, college_institution, department, selected_events, registration_date, registration_status, team_name, team_members')
           .or(`email.eq.${cleanEmail},mobile_number.eq.${cleanPhone}`);
 
         if (!checkErr && existingRecords && existingRecords.length > 0) {
@@ -289,8 +289,8 @@ export const api = {
                   department: active.department,
                   selectedEvents: existingEvents,
                   totalEvents: existingEvents.length,
-                  referralSource: active.referral_source || referralSource,
-                  referralSourceOther: active.referral_source_other || undefined,
+                  referralSource: referralSource,
+                  referralSourceOther: referralSourceOther || undefined,
                   registrationDate: active.registration_date,
                   teamName: active.team_name || undefined,
                   teamMembers: active.team_members || [],
@@ -300,19 +300,33 @@ export const api = {
           }
         }
 
-        // 2. Generate Sequential Registration ID & QR Token
-        const { count } = await supabase
+        // 2. Determine Next Sequential Registration ID & QR Token
+        let nextSeq = 1;
+        const { data: existingIds } = await supabase
           .from('overall_registrations')
-          .select('*', { count: 'exact', head: true });
+          .select('registration_id');
 
-        const nextSeq = (count || 0) + 1;
+        if (existingIds && existingIds.length > 0) {
+          let maxNum = 0;
+          existingIds.forEach((r) => {
+            const match = r.registration_id?.match(/^EVOXIS26-(\d+)/i);
+            if (match) {
+              const num = parseInt(match[1], 10);
+              if (num < 80000 && num > maxNum) {
+                maxNum = num;
+              }
+            }
+          });
+          nextSeq = maxNum + 1;
+        }
+
         assignedRegId = `EVOXIS26-${String(nextSeq).padStart(5, '0')}`;
         assignedQrToken = generateMockQRToken(assignedRegId);
 
         // 3. Assemble Master Records for ALL Participants with unique ID & QR Token
         const participantsWithTokens = allParticipants.map((p, idx) => {
           const memberRegId = idx === 0 ? assignedRegId : `${assignedRegId}-M${idx}`;
-          const memberQrToken = idx === 0 ? assignedQrToken : generateMockQRToken(memberRegId);
+          const memberQrToken = idx === 0 ? assignedQrToken : `${assignedQrToken}-M${idx}`;
           return {
             ...p,
             registrationId: memberRegId,
@@ -339,8 +353,6 @@ export const api = {
             payment_status: 'Free',
             qr_token: p.qrToken,
             qr_status: 'Active',
-            referral_source: referralSource,
-            referral_source_other: referralSourceOther,
             email_status: 'Sent',
             sms_status: 'Sent',
             whatsapp_status: 'Sent',
@@ -356,7 +368,7 @@ export const api = {
           .insert(masterRows);
 
         if (insertMasterErr) {
-          console.error('[EvoXis26 API] Supabase insert master error:', insertMasterErr);
+          console.error('[EvoXis26 API] ❌ Supabase insert master error:', insertMasterErr);
           throw insertMasterErr;
         }
 
@@ -410,15 +422,12 @@ export const api = {
         console.log(`[EvoXis26 API] ✅ Supabase persisted ${masterRows.length} participant record(s) and ${eventRows.length} event record(s) for ${assignedRegId}`);
       } catch (err: any) {
         console.error('[EvoXis26 API] ❌ Supabase live write failed:', err);
-        // If Supabase failed and no Apps Script is available, return failure
-        if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.trim() === '') {
-          return {
-            success: false,
-            databaseSuccess: false,
-            sheetsSyncSuccess: false,
-            message: `Registration server is temporarily unavailable. Please try again. (${err?.message || 'Database error'})`,
-          };
-        }
+        return {
+          success: false,
+          databaseSuccess: false,
+          sheetsSyncSuccess: false,
+          message: `Registration could not be saved to database: ${err?.message || 'Database error'}. Please try again.`,
+        };
       }
     }
 
@@ -428,68 +437,51 @@ export const api = {
     if (isLiveProduction && APPS_SCRIPT_URL && APPS_SCRIPT_URL.trim() !== '') {
       console.log(`[EvoXis26 API] 🚀 Synchronizing registration with Google Apps Script: ${APPS_SCRIPT_URL}`);
       try {
-        let anySuccess = false;
+        const gasPayload = {
+          action: 'registerParticipant',
+          registrationId: assignedRegId,
+          qrToken: assignedQrToken,
+          teamId: isTeam ? `TEAM-${assignedRegId}` : undefined,
+          teamName: safeTeamName || undefined,
+          isTeam,
+          fullName: payload.fullName,
+          email: cleanEmail,
+          phone: cleanPhone,
+          collegeName: payload.collegeName,
+          department: payload.department,
+          yearOfStudy: payload.yearOfStudy,
+          gender: payload.gender,
+          selectedEventIds: payload.selectedEventIds,
+          referralSource: referralSource,
+          referralSourceOther: referralSourceOther || undefined,
+          teamMembers: normalizedTeamMembers,
+          participants: allParticipants,
+        };
 
-        // Synchronize every participant in the registration to Google Sheets
-        for (let pIdx = 0; pIdx < allParticipants.length; pIdx++) {
-          const p = allParticipants[pIdx];
-          const pRegId = pIdx === 0 ? assignedRegId : `${assignedRegId}-M${pIdx}`;
-          const pQrToken = pIdx === 0 ? assignedQrToken : `${assignedQrToken}-M${pIdx}`;
+        const response = await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'cors',
+          redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(gasPayload),
+        });
 
-          const gasPayload = {
-            action: 'registerParticipant',
-            registrationId: pRegId || undefined,
-            qrToken: pQrToken || undefined,
-            teamId: isTeam ? `TEAM-${assignedRegId || 'TEMP'}` : undefined,
-            teamName: safeTeamName || undefined,
-            isTeam,
-            fullName: p.name,
-            email: p.email,
-            phone: p.phone,
-            collegeName: p.college,
-            department: p.department,
-            yearOfStudy: p.year,
-            gender: p.gender,
-            selectedEventIds: payload.selectedEventIds,
-            referralSource: referralSource,
-            referralSourceOther: referralSourceOther || undefined,
-            teamMembers: normalizedTeamMembers,
-            participants: allParticipants,
-          };
-
-          const response = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'cors',
-            redirect: 'follow',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(gasPayload),
-          });
-
-          if (response.ok) {
-            const result = await response.json();
-            console.log(`[EvoXis26 API] 📥 Google Apps Script synced participant [${p.name}]:`, result.success);
-            if (result.success) {
-              anySuccess = true;
-              if (!assignedRegId && result.data?.registrationId) {
-                assignedRegId = result.data.registrationId;
-                assignedQrToken = result.data.qrToken;
-              }
-            }
+        if (response.ok) {
+          const result = await response.json();
+          console.log('[EvoXis26 API] 📥 Google Apps Script synced registration:', result.success);
+          if (result.success) {
+            sheetsSyncSuccess = true;
           }
         }
-
-        if (anySuccess) {
-          sheetsSyncSuccess = true;
-        }
       } catch (gasErr) {
-        console.error('[EvoXis26 API] ❌ Google Apps Script sync failed:', gasErr);
+        console.warn('[EvoXis26 API] ⚠️ Google Apps Script sync warning:', gasErr);
       }
     }
 
     // =========================================================================
-    // STEP C: LOCAL MOCK / FALLBACK (when in LOCAL_MOCK or test mode)
+    // STEP C: LOCAL MOCK / FALLBACK (ONLY when in pure LOCAL_MOCK mode)
     // =========================================================================
-    if (this.getBackendType() === 'LOCAL_MOCK' || (!databaseSuccess && !sheetsSyncSuccess)) {
+    if (this.getBackendType() === 'LOCAL_MOCK') {
       initMockData();
       const records: OverallRegistrationRecord[] = JSON.parse(
         localStorage.getItem(STORAGE_KEYS.REGISTRATIONS) || '[]'
@@ -790,10 +782,21 @@ export const api = {
     // 1. Supabase Validation
     if (this.getBackendType() === 'SUPABASE') {
       try {
-        const { data: records, error } = await supabase
+        const cleanToken = qrToken.trim();
+        let { data: records, error } = await supabase
           .from('overall_registrations')
           .select('*')
-          .eq('qr_token', qrToken.trim());
+          .eq('qr_token', cleanToken);
+
+        if (!error && (!records || records.length === 0)) {
+          const resId = await supabase
+            .from('overall_registrations')
+            .select('*')
+            .eq('registration_id', cleanToken.toUpperCase());
+          if (!resId.error && resId.data && resId.data.length > 0) {
+            records = resId.data;
+          }
+        }
 
         if (error) throw error;
         if (records && records.length > 0) {

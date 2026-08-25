@@ -167,26 +167,65 @@ export const operationsApi = {
       let matchRecord: any = null;
 
       if (isSupabaseConfigured()) {
-        const { data: records, error } = await supabase
-          .from('overall_registrations')
-          .select('*')
-          .or(
-            `registration_id.eq.${lookupKey},email.eq.${lookupKey.toLowerCase()},mobile_number.eq.${lookupKey},qr_token.eq.${lookupKey},participant_name.ilike.%${lookupKey}%`
-          )
-          .limit(1);
-
-        if (!error && records && records.length > 0) {
-          matchRecord = records[0];
-        } else if (lookupKey.includes('-M')) {
-          const baseKey = lookupKey.split('-M')[0];
-          const { data: baseRecs } = await supabase
+        try {
+          // A. Exact match by qr_token
+          const { data: byQr, error: qrErr } = await supabase
             .from('overall_registrations')
             .select('*')
-            .eq('registration_id', baseKey)
+            .eq('qr_token', lookupKey.trim())
             .limit(1);
-          if (baseRecs && baseRecs.length > 0) {
-            matchRecord = baseRecs[0];
+
+          if (!qrErr && byQr && byQr.length > 0) {
+            matchRecord = byQr[0];
+          } else {
+            // B. Exact match by registration_id
+            const { data: byRegId, error: regErr } = await supabase
+              .from('overall_registrations')
+              .select('*')
+              .eq('registration_id', lookupKey.trim().toUpperCase())
+              .limit(1);
+
+            if (!regErr && byRegId && byRegId.length > 0) {
+              matchRecord = byRegId[0];
+            } else {
+              // C. Match by email or mobile
+              const cleanContact = lookupKey.trim();
+              const { data: byContact } = await supabase
+                .from('overall_registrations')
+                .select('*')
+                .or(`email.eq.${cleanContact.toLowerCase()},mobile_number.eq.${cleanContact}`)
+                .limit(1);
+
+              if (byContact && byContact.length > 0) {
+                matchRecord = byContact[0];
+              } else if (cleanContact.length >= 3 && !cleanContact.startsWith('EVX') && !cleanContact.startsWith('EVO') && !cleanContact.includes(':')) {
+                // D. Partial match by name
+                const { data: byName } = await supabase
+                  .from('overall_registrations')
+                  .select('*')
+                  .ilike('participant_name', `%${cleanContact}%`)
+                  .limit(1);
+                if (byName && byName.length > 0) {
+                  matchRecord = byName[0];
+                }
+              }
+
+              // E. Fallback for team member suffixes (e.g. EVOXIS26-00046-M1)
+              if (!matchRecord && lookupKey.includes('-M')) {
+                const baseKey = lookupKey.split('-M')[0];
+                const { data: baseRecs } = await supabase
+                  .from('overall_registrations')
+                  .select('*')
+                  .eq('registration_id', baseKey.toUpperCase())
+                  .limit(1);
+                if (baseRecs && baseRecs.length > 0) {
+                  matchRecord = baseRecs[0];
+                }
+              }
+            }
           }
+        } catch (dbErr) {
+          console.warn('[OperationsAPI] Supabase lookupRegistration error:', dbErr);
         }
       }
 
