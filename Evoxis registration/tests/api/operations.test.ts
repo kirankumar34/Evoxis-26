@@ -13,7 +13,15 @@ Object.defineProperty(globalThis, 'localStorage', {
   writable: true,
 });
 
+// Polyfill fast fetch mock for Google Apps Script sync
+globalThis.fetch = async () => ({
+  ok: true,
+  json: async () => ({ success: true }),
+  text: async () => JSON.stringify({ success: true }),
+}) as any;
+
 import { operationsApi } from '../../src/services/operationsApi';
+import { PRESET_STATIONS } from '../../src/config/stations';
 
 describe('EvoXis26 Operations Portal Automated Test Suite', () => {
   const TEST_INDIVIDUAL_ID = 'EVOXIS26-TEST-99901';
@@ -254,8 +262,8 @@ describe('EvoXis26 Operations Portal Automated Test Suite', () => {
     expect(dup.verbatimMessage).toBe('ALREADY MARKED PRESENT');
   });
 
-  // Test 8: Food scan -> delivered
-  it('8. Food scan marks meal token redeemed', async () => {
+  // Test 8: Campus check-in marks participant present
+  it('8. Campus check-in marks participant present at Reception Desk', async () => {
     await operationsApi.assignPhysicalQr({
       participantId: TEST_INDIVIDUAL_ID,
       registrationId: TEST_INDIVIDUAL_ID,
@@ -265,18 +273,18 @@ describe('EvoXis26 Operations Portal Automated Test Suite', () => {
       staffRole: 'RECEPTION',
     });
 
-    const food = await operationsApi.markFoodDelivered({
+    const checkin = await operationsApi.markCampusPresent({
       physicalQrId: 'EVX26-WB-000001',
-      staffId: 'Food Staff',
-      station: 'FC-01',
+      staffId: 'Reception Staff',
+      station: 'REC-01',
     });
 
-    expect(food.state).toBe('SUCCESS');
-    expect(food.verbatimMessage).toBe('✓ MEAL DELIVERED');
+    expect(checkin.state).toBe('SUCCESS');
+    expect(checkin.verbatimMessage).toBe('✓ PRESENT');
   });
 
-  // Test 9: Duplicate food scan -> FOOD ALREADY DELIVERED, no new row
-  it('9. Duplicate food scan returns FOOD ALREADY DELIVERED', async () => {
+  // Test 9: Duplicate campus check-in -> ALREADY MARKED PRESENT, zero new rows
+  it('9. Duplicate campus check-in returns ALREADY MARKED PRESENT', async () => {
     await operationsApi.assignPhysicalQr({
       participantId: TEST_INDIVIDUAL_ID,
       registrationId: TEST_INDIVIDUAL_ID,
@@ -286,24 +294,24 @@ describe('EvoXis26 Operations Portal Automated Test Suite', () => {
       staffRole: 'RECEPTION',
     });
 
-    await operationsApi.markFoodDelivered({
+    await operationsApi.markCampusPresent({
       physicalQrId: 'EVX26-WB-000001',
-      staffId: 'Food Staff 1',
-      station: 'FC-01',
+      staffId: 'Reception Staff 1',
+      station: 'REC-01',
     });
 
-    const dupFood = await operationsApi.markFoodDelivered({
+    const dupCampus = await operationsApi.markCampusPresent({
       physicalQrId: 'EVX26-WB-000001',
-      staffId: 'Food Staff 2',
-      station: 'FC-02',
+      staffId: 'Reception Staff 2',
+      station: 'REC-02',
     });
 
-    expect(dupFood.state).toBe('DUPLICATE_FOOD');
-    expect(dupFood.verbatimMessage).toBe('FOOD ALREADY DELIVERED');
+    expect(dupCampus.state).toBe('DUPLICATE_CAMPUS');
+    expect(dupCampus.verbatimMessage).toBe('ALREADY PRESENT');
   });
 
-  // Test 10: Team of 4 members: each member independently checks in, attends events, and redeems food
-  it('10. Team of 4 members: each member independently checks in, attends events, and redeems food', async () => {
+  // Test 10: Team of 4 members: each member independently checks in and attends events
+  it('10. Team of 4 members: each member independently checks in and attends events', async () => {
     // Generate inventory
     await operationsApi.generateQrInventory({ environment: 'PRODUCTION', count: 100 });
 
@@ -340,22 +348,25 @@ describe('EvoXis26 Operations Portal Automated Test Suite', () => {
       expect(att.participant?.participantName).toBe(m.name);
     }
 
-    // 3. Each member redeems food independently
+    // 3. Each member attends second event SP01
     for (const m of memberQrs) {
-      const food = await operationsApi.markFoodDelivered({
+      const att2 = await operationsApi.markEventPresent({
         physicalQrId: m.qr,
-        staffId: 'Food Staff',
-        station: 'Food Counter',
+        eventId: 'SP01',
+        staffId: 'SP01 Lead',
+        station: 'SP01 Desk',
       });
-      expect(food.state).toBe('SUCCESS');
+      expect(att2.state).toBe('SUCCESS');
+      expect(att2.participant?.participantName).toBe(m.name);
     }
 
-    // 4. Duplicate food for first member returns duplicate while other state stays clean
-    const dup = await operationsApi.markFoodDelivered({
+    // 4. Duplicate event scan for first member returns duplicate
+    const dup = await operationsApi.markEventPresent({
       physicalQrId: memberQrs[0].qr,
-      staffId: 'Food Staff',
+      eventId: 'TE02',
+      staffId: 'Coordinator',
     });
-    expect(dup.state).toBe('DUPLICATE_FOOD');
+    expect(dup.state).toBe('DUPLICATE_EVENT');
   });
 
   // Test 11: Invalid or unregistered QR -> PARTICIPANT NOT FOUND
@@ -393,8 +404,8 @@ describe('EvoXis26 Operations Portal Automated Test Suite', () => {
     expect(['WRISTBAND ALREADY ASSIGNED', 'QR ASSIGNED TO ANOTHER PARTICIPANT']).toContain(conflict.verbatimMessage);
   });
 
-  // Test 13: Concurrency test: Two simultaneous requests marking same participant's food
-  it('13. Concurrency test: simultaneous food delivery requests result in exactly one SUCCESS and one ALREADY_DELIVERED', async () => {
+  // Test 13: Concurrency test: Two simultaneous requests marking same participant's event attendance
+  it('13. Concurrency test: simultaneous event check-in requests result in exactly one SUCCESS and one DUPLICATE_EVENT', async () => {
     await operationsApi.assignPhysicalQr({
       participantId: TEST_INDIVIDUAL_ID,
       registrationId: TEST_INDIVIDUAL_ID,
@@ -404,23 +415,25 @@ describe('EvoXis26 Operations Portal Automated Test Suite', () => {
       staffRole: 'RECEPTION',
     });
 
-    // Fire 2 concurrent food delivery requests for same QR
+    // Fire 2 concurrent event check-in requests for same QR at TE02
     const [res1, res2] = await Promise.all([
-      operationsApi.markFoodDelivered({
+      operationsApi.markEventPresent({
         physicalQrId: 'EVX26-WB-000001',
-        staffId: 'Counter 1',
-        station: 'FOOD-01',
+        eventId: 'TE02',
+        staffId: 'Coordinator 1',
+        station: 'TE02-01',
       }),
-      operationsApi.markFoodDelivered({
+      operationsApi.markEventPresent({
         physicalQrId: 'EVX26-WB-000001',
-        staffId: 'Counter 2',
-        station: 'FOOD-02',
+        eventId: 'TE02',
+        staffId: 'Coordinator 2',
+        station: 'TE02-02',
       }),
     ]);
 
     const states = [res1.state, res2.state];
     expect(states).toContain('SUCCESS');
-    expect(states).toContain('DUPLICATE_FOOD');
+    expect(states).toContain('DUPLICATE_EVENT');
   });
 
   // Test 14: Prompt 6 Section 13 End-to-End 9-Step Verification with EVX26-TEST-000051
@@ -495,24 +508,26 @@ describe('EvoXis26 Operations Portal Automated Test Suite', () => {
     expect(wrongEvent.registeredEvents).toContain('TE02');
     expect(wrongEvent.registeredEvents).not.toContain('TE06');
 
-    // Step 9: Food Counter: scan -> deliver -> scan again -> FOOD ALREADY DELIVERED, no duplicate row
-    const food1 = await operationsApi.markFoodDelivered({
+    // Step 9: Attend second registered event (NT01) -> SUCCESS, and second scan at NT01 -> DUPLICATE_EVENT
+    const nt01Att = await operationsApi.markEventPresent({
       physicalQrId: 'EVX26-TEST-000051',
-      staffId: 'Food Staff',
-      station: 'Food Counter (TEST)',
+      eventId: 'NT01',
+      staffId: 'NT01 Coordinator',
+      station: 'Event Desk NT01 (TEST)',
       portalMode: 'TEST',
     });
-    expect(food1.state).toBe('SUCCESS');
-    expect(food1.verbatimMessage).toBe('✓ MEAL DELIVERED');
+    expect(nt01Att.state).toBe('SUCCESS');
+    expect(nt01Att.verbatimMessage).toBe('✓ PRESENT');
 
-    const food2 = await operationsApi.markFoodDelivered({
+    const nt01Dup = await operationsApi.markEventPresent({
       physicalQrId: 'EVX26-TEST-000051',
-      staffId: 'Food Staff',
-      station: 'Food Counter (TEST)',
+      eventId: 'NT01',
+      staffId: 'NT01 Coordinator',
+      station: 'Event Desk NT01 (TEST)',
       portalMode: 'TEST',
     });
-    expect(food2.state).toBe('DUPLICATE_FOOD');
-    expect(food2.verbatimMessage).toBe('FOOD ALREADY DELIVERED');
+    expect(nt01Dup.state).toBe('DUPLICATE_EVENT');
+    expect(nt01Dup.verbatimMessage).toBe('ALREADY MARKED PRESENT');
   });
 
   // Test 15: Prompt 6 Section 3: Shared Resolver distinct failure codes
@@ -697,26 +712,28 @@ describe('EvoXis26 Operations Portal Automated Test Suite', () => {
       expect(wrong.registeredEvents).not.toContain('TE03');
     }
 
-    // Step 4: Food Counter -> Each member redeems food independently once; duplicate rescan is blocked
+    // Step 4: Event Desk for SP03 (second registered event) -> Each member attends SP03 independently once; duplicate rescan is blocked
     for (const m of cskMembers) {
-      const food1 = await operationsApi.markFoodDelivered({
+      const att1 = await operationsApi.markEventPresent({
         physicalQrId: m.qr,
-        staffId: 'Food Staff',
-        station: 'Food Counter',
+        eventId: 'SP03',
+        staffId: 'SP03 Coordinator',
+        station: 'Desk SP03',
         portalMode: 'TEST',
       });
-      expect(food1.state).toBe('SUCCESS');
-      expect(food1.verbatimMessage).toBe('✓ MEAL DELIVERED');
-      expect(food1.participant?.participantName).toBe(m.name);
+      expect(att1.state).toBe('SUCCESS');
+      expect(att1.verbatimMessage).toBe('✓ PRESENT');
+      expect(att1.participant?.participantName).toBe(m.name);
 
-      const food2 = await operationsApi.markFoodDelivered({
+      const att2 = await operationsApi.markEventPresent({
         physicalQrId: m.qr,
-        staffId: 'Food Staff',
-        station: 'Food Counter',
+        eventId: 'SP03',
+        staffId: 'SP03 Coordinator',
+        station: 'Desk SP03',
         portalMode: 'TEST',
       });
-      expect(food2.state).toBe('DUPLICATE_FOOD');
-      expect(food2.verbatimMessage).toBe('FOOD ALREADY DELIVERED');
+      expect(att2.state).toBe('DUPLICATE_EVENT');
+      expect(att2.verbatimMessage).toBe('ALREADY MARKED PRESENT');
     }
   });
 
@@ -852,22 +869,22 @@ describe('EvoXis26 Operations Portal Automated Test Suite', () => {
     expect(eventCheckin.state).toBe('SUCCESS');
     expect(eventCheckin.verbatimMessage).toBe('✓ PRESENT');
 
-    // 4. Mark Food Delivery
-    const foodRedeem = await operationsApi.markFoodDelivered({
+    // 4. Mark Event Attendance at NT01
+    const eventCheckin2 = await operationsApi.markEventPresent({
       physicalQrId: 'EVX26-TEST-000060',
-      staffId: 'Food Lead',
-      station: 'Food Counter 1',
+      eventId: 'NT01',
+      staffId: 'NT01 Desk Lead',
+      station: 'NT01 Desk',
       portalMode: 'TEST',
     });
-    expect(foodRedeem.state).toBe('SUCCESS');
-    expect(foodRedeem.verbatimMessage).toBe('✓ MEAL DELIVERED');
+    expect(eventCheckin2.state).toBe('SUCCESS');
+    expect(eventCheckin2.verbatimMessage).toBe('✓ PRESENT');
 
-    // 5. Verify physical_qr_inventory state for EVX26-TEST-000060 has updated campus and food statuses
+    // 5. Verify physical_qr_inventory state for EVX26-TEST-000060 has updated campus status
     const inv = await operationsApi.getQrInventory({ environment: 'TEST' });
     const row = inv.items.find((i) => i.qrCode === 'EVX26-TEST-000060');
     expect(row?.status).toBe('ASSIGNED');
     expect(row?.campusStatus).toBe('Present');
-    expect(row?.foodStatus).toBe('Delivered');
   });
 
   test('22. Event Desk two-step inspection and [ MARK AS PRESENT ] action with duplicate protection', async () => {
@@ -1021,6 +1038,15 @@ describe('EvoXis26 Operations Portal Automated Test Suite', () => {
     expect(wrongEvtRes.state).toBe('WRONG_EVENT');
     expect(wrongEvtRes.verbatimMessage).toContain('NOT REGISTERED FOR THIS EVENT');
     expect(wrongEvtRes.registeredEvents).toEqual(['SP01', 'SP02', 'NT05', 'SP04']);
+  });
+
+  test('24. Food Counter module decommissioning verification', () => {
+    // 1. operationsApi must not have markFoodDelivered method
+    expect((operationsApi as any).markFoodDelivered).toBeUndefined();
+
+    // 2. Preset stations must only have RECEPTION and ADMIN categories (no FOOD stations)
+    const foodStations = PRESET_STATIONS.filter((s: any) => s.category === 'FOOD');
+    expect(foodStations.length).toBe(0);
   });
 });
 

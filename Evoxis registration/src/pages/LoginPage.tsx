@@ -8,7 +8,6 @@ import {
   Shield,
   QrCode,
   CalendarCheck,
-  UtensilsCrossed,
   Sparkles,
   ArrowRight,
   MapPin,
@@ -41,15 +40,6 @@ export const LoginPage: React.FC = () => {
       color: 'border-amber-500/50 text-amber-400 bg-amber-950/20',
       activeBg: 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-neon-amber',
       defaultRoute: '/events',
-    },
-    {
-      role: 'FOOD_COUNTER' as StaffRole,
-      title: 'Food Counter',
-      desc: 'Single-meal distribution, duplicate scan prevention',
-      icon: UtensilsCrossed,
-      color: 'border-emerald-500/50 text-emerald-400 bg-emerald-950/20',
-      activeBg: 'bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-neon-emerald',
-      defaultRoute: '/food',
     },
     {
       role: 'SUPER_ADMIN' as StaffRole,
@@ -94,7 +84,7 @@ export const LoginPage: React.FC = () => {
             </span>
           </h1>
           <p className="text-sm md:text-base text-slate-400 max-w-lg mx-auto">
-            Reception Desk · 15 Event Stations · Food Counter · Super Admin Hub
+            Reception Desk · 15 Event Stations · Super Admin Hub
           </p>
         </div>
 

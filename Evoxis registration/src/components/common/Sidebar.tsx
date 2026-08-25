@@ -5,7 +5,6 @@ import {
   LayoutDashboard,
   QrCode,
   CalendarCheck,
-  UtensilsCrossed,
   ScrollText,
   Settings,
   Users,
@@ -43,13 +42,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       color: 'text-amber-400',
     },
     {
-      to: '/food',
-      label: 'Food Counter',
-      icon: UtensilsCrossed,
-      roles: ['SUPER_ADMIN', 'FOOD_COUNTER'] as const,
-      color: 'text-emerald-400',
-    },
-    {
       to: '/audit',
       label: 'Live Audit Log',
       icon: ScrollText,
@@ -67,7 +59,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       to: '/settings',
       label: 'Station Settings',
       icon: Settings,
-      roles: ['SUPER_ADMIN', 'RECEPTION', 'EVENT_COORDINATOR', 'FOOD_COUNTER'] as const,
+      roles: ['SUPER_ADMIN', 'RECEPTION', 'EVENT_COORDINATOR'] as const,
       color: 'text-slate-400',
     },
   ];

@@ -11,7 +11,6 @@ import {
   CheckCircle2,
   Clock,
   QrCode,
-  UtensilsCrossed,
   ShieldAlert,
 } from 'lucide-react';
 
@@ -29,7 +28,6 @@ export const ParticipantCard: React.FC<ParticipantCardProps> = ({
   isMarkingPresent = false,
 }) => {
   const isCampusPresent = participant.campusAttendanceStatus === 'Present';
-  const isFoodDelivered = participant.foodDelivered;
   const isTeam = participant.registrationType === 'Team';
 
   return (
@@ -73,17 +71,6 @@ export const ParticipantCard: React.FC<ParticipantCardProps> = ({
           >
             {isCampusPresent ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
             <span>CAMPUS: {participant.campusAttendanceStatus.toUpperCase()}</span>
-          </span>
-
-          <span
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-mono font-bold border ${
-              isFoodDelivered
-                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                : 'bg-slate-800 text-slate-400 border-slate-700'
-            }`}
-          >
-            <UtensilsCrossed className="w-3.5 h-3.5" />
-            <span>FOOD: {isFoodDelivered ? 'DELIVERED' : 'PENDING'}</span>
           </span>
         </div>
       </div>

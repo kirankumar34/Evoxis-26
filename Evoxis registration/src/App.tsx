@@ -8,7 +8,6 @@ import { DashboardPage } from './pages/DashboardPage';
 import { ReceptionPage } from './pages/ReceptionPage';
 import { EventsHubPage } from './pages/EventsHubPage';
 import { EventScanPage } from './pages/EventScanPage';
-import { FoodPage } from './pages/FoodPage';
 import { ParticipantDetailPage } from './pages/ParticipantDetailPage';
 import { AuditLogPage } from './pages/AuditLogPage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -31,7 +30,6 @@ const ProtectedRoute: React.FC<{
     // Redirect to default route for their role
     if (user.role === 'RECEPTION') return <Navigate to="/reception" replace />;
     if (user.role === 'EVENT_COORDINATOR') return <Navigate to="/events" replace />;
-    if (user.role === 'FOOD_COUNTER') return <Navigate to="/food" replace />;
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -118,24 +116,6 @@ export const App: React.FC = () => {
               element={
                 <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'EVENT_COORDINATOR']}>
                   <EventScanPage />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Food Counter */}
-            <Route
-              path="/food"
-              element={
-                <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'FOOD_COUNTER']}>
-                  <FoodPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/food/scan"
-              element={
-                <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'FOOD_COUNTER']}>
-                  <FoodPage />
                 </ProtectedRoute>
               }
             />

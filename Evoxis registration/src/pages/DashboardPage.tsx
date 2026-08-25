@@ -7,7 +7,6 @@ import {
   Users,
   CheckCircle2,
   QrCode,
-  UtensilsCrossed,
   CalendarCheck,
   AlertTriangle,
   RefreshCw,
@@ -44,11 +43,6 @@ export const DashboardPage: React.FC = () => {
       ? Math.round((metrics.campusPresent / metrics.totalRegistered) * 100)
       : 0;
 
-  const foodPct =
-    metrics && metrics.totalRegistered > 0
-      ? Math.round((metrics.foodDelivered / metrics.totalRegistered) * 100)
-      : 0;
-
   return (
     <div className="space-y-8 animate-in fade-in pb-12">
       {/* Top Title & Refresh */}
@@ -76,7 +70,7 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* Primary KPI Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Campus Attendance */}
         <div className="p-5 rounded-2xl glass-panel border border-cyan-500/30 relative overflow-hidden">
           <div className="flex items-center justify-between text-slate-400 mb-3">
@@ -115,28 +109,6 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div className="mt-3 text-xs font-mono text-slate-400">
             Unassigned: <strong className="text-amber-400">{metrics?.qrUnassigned || 0}</strong>
-          </div>
-        </div>
-
-        {/* Food Distribution */}
-        <div className="p-5 rounded-2xl glass-panel border border-emerald-500/30 relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-400 mb-3">
-            <span className="text-xs font-mono uppercase font-bold text-emerald-400">Meals Delivered</span>
-            <UtensilsCrossed className="w-5 h-5 text-emerald-400" />
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl md:text-4xl font-black text-white font-mono">
-              {metrics?.foodDelivered || 0}
-            </span>
-            <span className="text-xs font-mono text-slate-400">
-              / {metrics?.totalRegistered || 0} ({foodPct}%)
-            </span>
-          </div>
-          <div className="mt-3 w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-            <div
-              className="bg-emerald-400 h-full rounded-full transition-all duration-500"
-              style={{ width: `${foodPct}%` }}
-            />
           </div>
         </div>
 

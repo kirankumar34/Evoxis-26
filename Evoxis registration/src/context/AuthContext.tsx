@@ -70,7 +70,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       SUPER_ADMIN: 'Super Administrator',
       RECEPTION: 'Reception Desk Lead',
       EVENT_COORDINATOR: 'Event Coordinator',
-      FOOD_COUNTER: 'Food Counter Staff',
     };
 
     const newUser: StaffUser = {

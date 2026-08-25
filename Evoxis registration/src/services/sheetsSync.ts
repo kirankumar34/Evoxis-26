@@ -6,7 +6,7 @@
 const APPS_SCRIPT_URL = import.meta.env.VITE_APPS_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbxATuX68Uzi7ozu1OSHQtyKM8m78K66IZ7l42aobpKrTrc7qWegj6vIoM1NGlLajX7F/exec';
 
 export interface SheetsSyncPayload {
-  action: 'markAttendance' | 'markFoodDelivered' | 'assignPhysicalQr' | 'syncCampusCheckin' | 'generateQrInventory';
+  action: 'markAttendance' | 'assignPhysicalQr' | 'syncCampusCheckin' | 'generateQrInventory';
   registrationId?: string;
   participantId?: string;
   participantName?: string;

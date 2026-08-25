@@ -31,8 +31,6 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
         return 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40';
       case 'EVENT_COORDINATOR':
         return 'bg-amber-500/20 text-amber-300 border-amber-500/40';
-      case 'FOOD_COUNTER':
-        return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
       default:
         return 'bg-slate-700 text-slate-300 border-slate-600';
     }

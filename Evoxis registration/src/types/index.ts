@@ -1,4 +1,4 @@
-export type StaffRole = 'SUPER_ADMIN' | 'RECEPTION' | 'EVENT_COORDINATOR' | 'FOOD_COUNTER';
+export type StaffRole = 'SUPER_ADMIN' | 'RECEPTION' | 'EVENT_COORDINATOR';
 
 export interface StaffUser {
   id: string;
