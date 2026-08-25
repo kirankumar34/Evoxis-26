@@ -126,7 +126,7 @@ export const operationsApi = {
             .insert([
               {
                 attendance_id: log.id,
-                registration_id: log.registrationId || log.participantId || 'N/A',
+                registration_id: log.participantId || log.registrationId || 'N/A',
                 participant_name: log.participantName || log.staffUser,
                 event_id: log.eventId || log.operation,
                 event_name: log.eventName || log.operation,
@@ -489,6 +489,67 @@ export const operationsApi = {
         physicalQrType: 'ID_CARD' | 'WRISTBAND';
         assignedAt?: string;
       }>(STORAGE_KEYS.ASSIGNMENTS);
+
+      // Hydrate from live Supabase attendance_logs if available
+      if (isSupabaseConfigured()) {
+        try {
+          const { data: dbAssignLogs } = await supabase
+            .from('attendance_logs')
+            .select('*')
+            .eq('event_type', 'QR_ASSIGNMENT')
+            .eq('attendance_status', 'SUCCESS')
+            .or(`registration_id.eq.${regId},registration_id.ilike.${regId}-M%`);
+
+          if (dbAssignLogs && dbAssignLogs.length > 0) {
+            dbAssignLogs.forEach((log) => {
+              if (log.registration_id && log.qr_token) {
+                const existing = localAssignments.find(
+                  (a) => a.active && a.participantId === log.registration_id
+                );
+                if (!existing) {
+                  localAssignments.push({
+                    physicalQrId: log.qr_token,
+                    participantId: log.registration_id,
+                    registrationId: regId,
+                    active: true,
+                    physicalQrType: 'WRISTBAND',
+                    assignedAt: log.scan_timestamp,
+                  });
+                } else if (existing.physicalQrId !== log.qr_token) {
+                  existing.physicalQrId = log.qr_token;
+                  existing.assignedAt = log.scan_timestamp;
+                }
+              }
+            });
+          }
+
+          const { data: dbCampusLogs } = await supabase
+            .from('attendance_logs')
+            .select('*')
+            .eq('event_type', 'CAMPUS_CHECKIN')
+            .eq('attendance_status', 'SUCCESS')
+            .or(`registration_id.eq.${regId},registration_id.ilike.${regId}-M%`);
+
+          if (dbCampusLogs && dbCampusLogs.length > 0) {
+            dbCampusLogs.forEach((log) => {
+              if (log.registration_id) {
+                const existing = localCampus.find((c) => c.participantId === log.registration_id);
+                if (!existing) {
+                  localCampus.push({
+                    registrationId: regId,
+                    participantId: log.registration_id,
+                    checkinTime: log.scan_timestamp,
+                    station: log.attendance_location,
+                    checkinBy: log.verified_by,
+                  });
+                }
+              }
+            });
+          }
+        } catch (dbSyncErr) {
+          console.warn('[OperationsAPI] attendance_logs live sync notice:', dbSyncErr);
+        }
+      }
 
       const physicalAssignment = localAssignments.find(
         (a) => a.active && a.participantId === currentParticipantId
@@ -912,8 +973,29 @@ export const operationsApi = {
       };
     }
 
-    // 2. Rule: Check if physical QR is already assigned to a DIFFERENT active participant
+    // 2. Fetch Participant Details early for rich validation and logging
+    const profileLookup = await this.lookupRegistration({ queryStr: params.participantId });
+    const participant = profileLookup.data;
+
+    // 3. Rule: Check Idempotency (Participant already has this exact wristband)
     const assignments = getLocalArray<any>(STORAGE_KEYS.ASSIGNMENTS);
+    const existingMine = assignments.find(
+      (a) =>
+        a.active &&
+        a.participantId === params.participantId
+    );
+
+    if (existingMine && existingMine.physicalQrId.toUpperCase() === cleanQrId) {
+      return {
+        state: 'SUCCESS',
+        verbatimMessage: 'WRISTBAND ALREADY ASSIGNED TO THIS PARTICIPANT',
+        details: `Physical wristband (${cleanQrId}) is already active for this participant.`,
+        participant,
+        participantName: participant?.participantName,
+      };
+    }
+
+    // 4. Rule: Check if physical QR is already assigned to a DIFFERENT active participant (Local)
     const existingOther = assignments.find(
       (a) =>
         a.active &&
@@ -931,6 +1013,8 @@ export const operationsApi = {
         station,
         operation: 'QR_ASSIGNMENT',
         registrationId: params.registrationId,
+        participantId: params.participantId,
+        participantName: participant?.participantName,
         physicalQrId: cleanQrId,
         result: 'DENIED',
         reason: `WRISTBAND ALREADY ASSIGNED to participant ${assignedName} (${assignedPartId})`,
@@ -943,13 +1027,46 @@ export const operationsApi = {
       };
     }
 
-    // 3. Rule: Check if participant already has an active physical QR
-    const existingMine = assignments.find(
-      (a) =>
-        a.active &&
-        a.participantId === params.participantId
-    );
+    // 5. Rule: Check live Supabase records for duplicate wristband or existing assignments
+    if (isSupabaseConfigured()) {
+      try {
+        const { data: dbWbLogs } = await supabase
+          .from('attendance_logs')
+          .select('*')
+          .eq('event_type', 'QR_ASSIGNMENT')
+          .eq('qr_token', cleanQrId)
+          .eq('attendance_status', 'SUCCESS')
+          .order('scan_timestamp', { ascending: false })
+          .limit(1);
 
+        if (dbWbLogs && dbWbLogs.length > 0) {
+          const dbOwner = dbWbLogs[0];
+          if (dbOwner.registration_id && dbOwner.registration_id !== params.participantId) {
+            await this.logAudit({
+              staffUser: params.staffId,
+              station,
+              operation: 'QR_ASSIGNMENT',
+              registrationId: params.registrationId,
+              participantId: params.participantId,
+              participantName: participant?.participantName,
+              physicalQrId: cleanQrId,
+              result: 'DENIED',
+              reason: `WRISTBAND ALREADY ASSIGNED to participant ${dbOwner.participant_name || dbOwner.registration_id} (${dbOwner.registration_id})`,
+            });
+
+            return {
+              state: 'QR_CONFLICT',
+              verbatimMessage: 'WRISTBAND ALREADY ASSIGNED',
+              details: `This physical wristband (${cleanQrId}) is already assigned to participant ${dbOwner.participant_name || dbOwner.registration_id} (${dbOwner.registration_id}).`,
+            };
+          }
+        }
+      } catch (dbCheckErr) {
+        console.warn('Supabase duplicate wristband pre-check notice:', dbCheckErr);
+      }
+    }
+
+    // 6. Rule: Check if participant already has a DIFFERENT active physical QR
     if (existingMine && existingMine.physicalQrId.toUpperCase() !== cleanQrId) {
       if (params.staffRole !== 'SUPER_ADMIN') {
         await this.logAudit({
@@ -957,6 +1074,8 @@ export const operationsApi = {
           station,
           operation: 'QR_ASSIGNMENT',
           registrationId: params.registrationId,
+          participantId: params.participantId,
+          participantName: participant?.participantName,
           physicalQrId: cleanQrId,
           result: 'DENIED',
           reason: `Participant already has active QR ${existingMine.physicalQrId}`,
@@ -971,11 +1090,7 @@ export const operationsApi = {
       existingMine.active = false;
     }
 
-    // 4. Fetch Participant Details
-    const profileLookup = await this.lookupRegistration({ queryStr: params.participantId });
-    const participant = profileLookup.data;
-
-    // 5. ATOMIC WRITE (UPDATE EXISTING ROW IN PLACE)
+    // 7. ATOMIC WRITE (UPDATE EXISTING ROW IN PLACE)
     const now = new Date().toISOString();
     const env: QrEnvironment = isTestQr ? 'TEST' : 'PRODUCTION';
 

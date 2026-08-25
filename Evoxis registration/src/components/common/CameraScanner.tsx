@@ -26,6 +26,12 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
   const readerElementId = 'evoxis-qr-reader-surface';
   const lastScannedTimeRef = useRef<number>(0);
 
+  // Keep fresh reference to onScan callback to eliminate stale closure bugs
+  const onScanRef = useRef(onScan);
+  useEffect(() => {
+    onScanRef.current = onScan;
+  }, [onScan]);
+
   // Hardware barcode scanner listener (Keyboard wedge)
   useEffect(() => {
     let buffer = '';
@@ -47,7 +53,7 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
       if (e.key === 'Enter') {
         if (buffer.trim().length >= 3) {
           e.preventDefault();
-          onScan(buffer.trim());
+          onScanRef.current(buffer.trim());
           buffer = '';
         }
       } else if (e.key.length === 1) {
@@ -57,7 +63,7 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onScan]);
+  }, []);
 
   // Enumerate cameras & start scanner
   useEffect(() => {
@@ -127,7 +133,7 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
           // Debounce same QR scan by 1.5s
           if (now - lastScannedTimeRef.current > 1500) {
             lastScannedTimeRef.current = now;
-            onScan(decodedText.trim());
+            onScanRef.current(decodedText.trim());
           }
         },
         () => {

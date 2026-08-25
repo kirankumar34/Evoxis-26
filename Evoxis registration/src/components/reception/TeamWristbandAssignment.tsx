@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   TeamPassProfile,
   TeamMemberRosterItem,
@@ -76,6 +76,11 @@ export const TeamWristbandAssignment: React.FC<TeamWristbandAssignmentProps> = (
     );
   }, [currentTeam, activeMemberId]);
 
+  const activeMemberRef = useRef(activeMember);
+  activeMemberRef.current = activeMember;
+  const currentTeamRef = useRef(currentTeam);
+  currentTeamRef.current = currentTeam;
+
   const assignedCount = currentTeam.members.filter((m) => Boolean(m.physicalQrId)).length;
   const totalMembers = currentTeam.members.length;
   const isAllAssigned = totalMembers > 0 && assignedCount === totalMembers;
@@ -83,7 +88,8 @@ export const TeamWristbandAssignment: React.FC<TeamWristbandAssignmentProps> = (
 
   // Refresh latest team state from database / storage
   const handleRefreshTeam = async () => {
-    const fresh = await operationsApi.getTeamPassProfile(currentTeam.registrationId);
+    const team = currentTeamRef.current || currentTeam;
+    const fresh = await operationsApi.getTeamPassProfile(team.registrationId);
     if (fresh.success && fresh.data) {
       setCurrentTeam(fresh.data);
       if (onUpdateTeam) onUpdateTeam(fresh.data);
@@ -95,7 +101,10 @@ export const TeamWristbandAssignment: React.FC<TeamWristbandAssignmentProps> = (
     const cleanQr = rawQr.trim().toUpperCase();
     if (!cleanQr) return;
 
-    if (!activeMember) {
+    const targetMember = activeMemberRef.current || activeMember;
+    const team = currentTeamRef.current || currentTeam;
+
+    if (!targetMember) {
       setErrorMessage('Please select a team member first');
       return;
     }
@@ -106,8 +115,8 @@ export const TeamWristbandAssignment: React.FC<TeamWristbandAssignmentProps> = (
 
     try {
       const res = await operationsApi.assignPhysicalQr({
-        participantId: activeMember.participantId,
-        registrationId: currentTeam.registrationId,
+        participantId: targetMember.participantId,
+        registrationId: team.registrationId,
         physicalQrId: cleanQr,
         physicalQrType: 'WRISTBAND',
         staffId,
@@ -117,18 +126,18 @@ export const TeamWristbandAssignment: React.FC<TeamWristbandAssignmentProps> = (
       });
 
       if (res.state === 'SUCCESS') {
-        setSuccessMessage(`Wristband ${cleanQr} assigned to ${activeMember.name}`);
+        setSuccessMessage(`Wristband ${cleanQr} assigned to ${targetMember.name}`);
         setManualInput('');
 
         // Refresh team profile immediately
-        const fresh = await operationsApi.getTeamPassProfile(currentTeam.registrationId);
+        const fresh = await operationsApi.getTeamPassProfile(team.registrationId);
         if (fresh.success && fresh.data) {
           setCurrentTeam(fresh.data);
           if (onUpdateTeam) onUpdateTeam(fresh.data);
 
           // Auto-advance to next unassigned member
           const nextUnassigned = fresh.data.members.find(
-            (m: TeamMemberRosterItem) => !m.physicalQrId && m.participantId !== activeMember.participantId
+            (m: TeamMemberRosterItem) => !m.physicalQrId && m.participantId !== targetMember.participantId
           );
           if (nextUnassigned) {
             setActiveMemberId(nextUnassigned.participantId);
