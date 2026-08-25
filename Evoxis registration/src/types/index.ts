@@ -126,6 +126,28 @@ export interface ParticipantProfile {
   // Team Pass metadata
   isTeamPass?: boolean;
   teamPassProfile?: TeamPassProfile;
+  teamEventContext?: EventTeamContext;
+}
+
+export interface EventTeamMemberRosterItem {
+  participantId: string;
+  registrationId: string;
+  name: string;
+  role: 'TEAM_HEAD' | 'TEAM_MEMBER';
+  isRegisteredForEvent: boolean;
+  attendanceStatus: 'Present' | 'Not Present';
+  checkinTime?: string;
+  physicalQrId?: string;
+}
+
+export interface EventTeamContext {
+  teamName: string;
+  registrationId: string;
+  eventId: string;
+  eventName: string;
+  totalMembers: number;
+  presentCount: number;
+  members: EventTeamMemberRosterItem[];
 }
 
 export type QrResolutionErrorCode =
@@ -220,6 +242,7 @@ export interface ScanOperationResponse {
   registeredEvents?: string[]; // for WRONG_EVENT scenario
   originalTime?: string;
   originalStation?: string;
+  teamEventContext?: EventTeamContext;
 }
 
 export interface PhysicalQrAssignment {

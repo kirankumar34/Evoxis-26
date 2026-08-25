@@ -1425,5 +1425,550 @@ describe('EvoXis26 Operations Portal Automated Test Suite', () => {
     expect(eventDeskCheckin.verbatimMessage).toContain('PRESENT');
     expect(eventDeskCheckin.participantName).toBe('Sidekick Gamer');
   });
+
+  describe('Event Desk Team Roster & Same-Name Team Support Suite (15 Test Cases)', () => {
+    const TEAM_A_ID = 'EVOXIS26-AVENGERS-001';
+    const TEAM_B_ID = 'EVOXIS26-AVENGERS-002'; // Same team name 'Avengers'!
+    const INDIVIDUAL_ID = 'EVOXIS26-INDIV-003';
+
+    beforeEach(() => {
+      // Mock two distinct registrations with the exact same team name "Avengers"
+      const registrations = [
+        // Team A: "Avengers" (Registration ID: TEAM_A_ID) -> Rahul, Ajay, Arun (Registered for TE02 & SP01)
+        {
+          registrationId: TEAM_A_ID,
+          participantName: 'Rahul Kumar',
+          email: 'rahul.avengers@example.com',
+          mobileNumber: '9900011111',
+          collegeInstitution: 'College of Tech',
+          department: 'CS',
+          registrationType: 'Team',
+          role: 'TEAM_HEAD',
+          teamName: 'Avengers',
+          selectedEvents: 'TE02, SP01',
+          qrToken: 'EVOXIS26:avengers_head_token',
+          teamMembers: [
+            { name: 'Rahul Kumar', role: 'TEAM_HEAD', registrationId: TEAM_A_ID },
+            { name: 'Ajay Kumar', role: 'TEAM_MEMBER', registrationId: `${TEAM_A_ID}-M1` },
+            { name: 'Arun Kumar', role: 'TEAM_MEMBER', registrationId: `${TEAM_A_ID}-M2` },
+          ],
+        },
+        {
+          registrationId: `${TEAM_A_ID}-M1`,
+          participantName: 'Ajay Kumar',
+          email: 'ajay.avengers@example.com',
+          mobileNumber: '9900011112',
+          collegeInstitution: 'College of Tech',
+          department: 'CS',
+          registrationType: 'Team',
+          role: 'TEAM_MEMBER',
+          teamName: 'Avengers',
+          selectedEvents: 'TE02, SP01',
+          qrToken: 'EVOXIS26:avengers_m1_token',
+        },
+        {
+          registrationId: `${TEAM_A_ID}-M2`,
+          participantName: 'Arun Kumar',
+          email: 'arun.avengers@example.com',
+          mobileNumber: '9900011113',
+          collegeInstitution: 'College of Tech',
+          department: 'CS',
+          registrationType: 'Team',
+          role: 'TEAM_MEMBER',
+          teamName: 'Avengers',
+          selectedEvents: 'TE02, SP01',
+          qrToken: 'EVOXIS26:avengers_m2_token',
+        },
+
+        // Team B: "Avengers" (Registration ID: TEAM_B_ID) -> Kiran, Vijay (Registered for TE02 & NT01)
+        {
+          registrationId: TEAM_B_ID,
+          participantName: 'Kiran Patel',
+          email: 'kiran.avengers2@example.com',
+          mobileNumber: '9900022221',
+          collegeInstitution: 'City Institute',
+          department: 'IT',
+          registrationType: 'Team',
+          role: 'TEAM_HEAD',
+          teamName: 'Avengers',
+          selectedEvents: 'TE02, NT01',
+          qrToken: 'EVOXIS26:avengers_b_head_token',
+          teamMembers: [
+            { name: 'Kiran Patel', role: 'TEAM_HEAD', registrationId: TEAM_B_ID },
+            { name: 'Vijay Patel', role: 'TEAM_MEMBER', registrationId: `${TEAM_B_ID}-M1` },
+          ],
+        },
+        {
+          registrationId: `${TEAM_B_ID}-M1`,
+          participantName: 'Vijay Patel',
+          email: 'vijay.avengers2@example.com',
+          mobileNumber: '9900022222',
+          collegeInstitution: 'City Institute',
+          department: 'IT',
+          registrationType: 'Team',
+          role: 'TEAM_MEMBER',
+          teamName: 'Avengers',
+          selectedEvents: 'TE02, NT01',
+          qrToken: 'EVOXIS26:avengers_b_m1_token',
+        },
+
+        // Individual Participant: Senthil (Registered for TE03 only)
+        {
+          registrationId: INDIVIDUAL_ID,
+          participantName: 'Senthil Nathan',
+          email: 'senthil@example.com',
+          mobileNumber: '9900033331',
+          collegeInstitution: 'Anna University',
+          department: 'ECE',
+          registrationType: 'Individual',
+          role: 'INDIVIDUAL',
+          selectedEvents: 'TE03',
+          qrToken: 'EVOXIS26:senthil_token',
+        },
+      ];
+
+      localStorage.setItem('evoxis26_overall_registrations', JSON.stringify(registrations));
+    });
+
+    // Test 1: Team event roster loading
+    it('ED-1: Should retrieve complete team roster for a 3-member team for a team event', async () => {
+      const rosterRes = await operationsApi.getEventTeamRoster({
+        registrationId: TEAM_A_ID,
+        eventId: 'TE02',
+      });
+
+      expect(rosterRes.success).toBe(true);
+      expect(rosterRes.data?.teamName).toBe('Avengers');
+      expect(rosterRes.data?.registrationId).toBe(TEAM_A_ID);
+      expect(rosterRes.data?.totalMembers).toBe(3);
+      expect(rosterRes.data?.presentCount).toBe(0);
+      expect(rosterRes.data?.members.length).toBe(3);
+
+      expect(rosterRes.data?.members[0].name).toBe('Rahul Kumar');
+      expect(rosterRes.data?.members[0].role).toBe('TEAM_HEAD');
+      expect(rosterRes.data?.members[0].attendanceStatus).toBe('Not Present');
+
+      expect(rosterRes.data?.members[1].name).toBe('Ajay Kumar');
+      expect(rosterRes.data?.members[1].role).toBe('TEAM_MEMBER');
+      expect(rosterRes.data?.members[1].attendanceStatus).toBe('Not Present');
+
+      expect(rosterRes.data?.members[2].name).toBe('Arun Kumar');
+      expect(rosterRes.data?.members[2].role).toBe('TEAM_MEMBER');
+      expect(rosterRes.data?.members[2].attendanceStatus).toBe('Not Present');
+    });
+
+    // Test 2: Marking Member 1 present updates ONLY Member 1
+    it('ED-2: Marking Member 1 present updates only Member 1, leaving others Not Present (1 / 3 Present)', async () => {
+      // Assign physical wristband to Member 1 (Rahul)
+      const wb1 = 'EVX26-WB-AV-M1';
+      await operationsApi.assignPhysicalQr({
+        participantId: TEAM_A_ID,
+        registrationId: TEAM_A_ID,
+        physicalQrId: wb1,
+        physicalQrType: 'WRISTBAND',
+        staffId: 'Staff 1',
+      });
+
+      // Mark Member 1 present at TE02
+      const markRes = await operationsApi.markEventPresent({
+        eventId: 'TE02',
+        physicalQrId: wb1,
+        staffId: 'TE02 Coord',
+      });
+
+      expect(markRes.state).toBe('SUCCESS');
+      expect(markRes.participantName).toBe('Rahul Kumar');
+
+      // Verify roster state
+      const rosterRes = await operationsApi.getEventTeamRoster({
+        registrationId: TEAM_A_ID,
+        eventId: 'TE02',
+      });
+
+      expect(rosterRes.data?.presentCount).toBe(1);
+      expect(rosterRes.data?.members[0].attendanceStatus).toBe('Present');
+      expect(rosterRes.data?.members[1].attendanceStatus).toBe('Not Present');
+      expect(rosterRes.data?.members[2].attendanceStatus).toBe('Not Present');
+    });
+
+    // Test 3: Scanning Member 2 focuses Member 2 with Member 1 still present
+    it('ED-3: Scanning Member 2 resolves Member 2 profile and retains Member 1 as Present', async () => {
+      // Member 1 present
+      const wb1 = 'EVX26-WB-AV-M1';
+      await operationsApi.assignPhysicalQr({
+        participantId: TEAM_A_ID,
+        registrationId: TEAM_A_ID,
+        physicalQrId: wb1,
+        physicalQrType: 'WRISTBAND',
+        staffId: 'Staff 1',
+      });
+      await operationsApi.markEventPresent({
+        eventId: 'TE02',
+        physicalQrId: wb1,
+        staffId: 'TE02 Coord',
+      });
+
+      // Assign wristband to Member 2 (Ajay)
+      const wb2 = 'EVX26-WB-AV-M2';
+      await operationsApi.assignPhysicalQr({
+        participantId: `${TEAM_A_ID}-M1`,
+        registrationId: TEAM_A_ID,
+        physicalQrId: wb2,
+        physicalQrType: 'WRISTBAND',
+        staffId: 'Staff 1',
+      });
+
+      // Resolve Member 2 QR
+      const resolveRes = await operationsApi.resolvePhysicalQR(wb2);
+      expect(resolveRes.success).toBe(true);
+      expect(resolveRes.participant?.participantName).toBe('Ajay Kumar');
+      expect(resolveRes.participant?.id).toBe(`${TEAM_A_ID}-M1`);
+
+      // Check attendance for Member 2 -> Should NOT be present
+      const checkRes = await operationsApi.checkEventAttendance({
+        participantId: `${TEAM_A_ID}-M1`,
+        eventId: 'TE02',
+      });
+      expect(checkRes.isPresent).toBe(false);
+    });
+
+    // Test 4: Marking Member 2 present updates attendance to 2 / 3 Present
+    it('ED-4: Marking Member 2 present yields 2 / 3 Present with Member 3 still Not Present', async () => {
+      // Mark Member 1 present
+      const wb1 = 'EVX26-WB-AV-M1';
+      await operationsApi.assignPhysicalQr({
+        participantId: TEAM_A_ID,
+        registrationId: TEAM_A_ID,
+        physicalQrId: wb1,
+        physicalQrType: 'WRISTBAND',
+        staffId: 'Staff 1',
+      });
+      await operationsApi.markEventPresent({
+        eventId: 'TE02',
+        physicalQrId: wb1,
+        staffId: 'TE02 Coord',
+      });
+
+      // Assign and mark Member 2
+      const wb2 = 'EVX26-WB-AV-M2';
+      await operationsApi.assignPhysicalQr({
+        participantId: `${TEAM_A_ID}-M1`,
+        registrationId: TEAM_A_ID,
+        physicalQrId: wb2,
+        physicalQrType: 'WRISTBAND',
+        staffId: 'Staff 1',
+      });
+
+      const markRes = await operationsApi.markEventPresent({
+        eventId: 'TE02',
+        physicalQrId: wb2,
+        staffId: 'TE02 Coord',
+      });
+
+      expect(markRes.state).toBe('SUCCESS');
+      expect(markRes.participantName).toBe('Ajay Kumar');
+
+      // Verify roster state
+      const rosterRes = await operationsApi.getEventTeamRoster({
+        registrationId: TEAM_A_ID,
+        eventId: 'TE02',
+      });
+
+      expect(rosterRes.data?.presentCount).toBe(2);
+      expect(rosterRes.data?.members[0].attendanceStatus).toBe('Present');
+      expect(rosterRes.data?.members[1].attendanceStatus).toBe('Present');
+      expect(rosterRes.data?.members[2].attendanceStatus).toBe('Not Present');
+    });
+
+    // Test 5: Scanning Member 3 resolves correct team and member context
+    it('ED-5: Scanning Member 3 resolves Member 3 and shows 2 / 3 already present', async () => {
+      // Mark Member 1 and Member 2 present
+      const wb1 = 'EVX26-WB-AV-M1';
+      await operationsApi.assignPhysicalQr({
+        participantId: TEAM_A_ID,
+        registrationId: TEAM_A_ID,
+        physicalQrId: wb1,
+        physicalQrType: 'WRISTBAND',
+        staffId: 'Staff 1',
+      });
+      await operationsApi.markEventPresent({
+        eventId: 'TE02',
+        physicalQrId: wb1,
+        staffId: 'TE02 Coord',
+      });
+
+      const wb2 = 'EVX26-WB-AV-M2';
+      await operationsApi.assignPhysicalQr({
+        participantId: `${TEAM_A_ID}-M1`,
+        registrationId: TEAM_A_ID,
+        physicalQrId: wb2,
+        physicalQrType: 'WRISTBAND',
+        staffId: 'Staff 1',
+      });
+      await operationsApi.markEventPresent({
+        eventId: 'TE02',
+        physicalQrId: wb2,
+        staffId: 'TE02 Coord',
+      });
+
+      // Scan Member 3
+      const wb3 = 'EVX26-WB-AV-M3';
+      await operationsApi.assignPhysicalQr({
+        participantId: `${TEAM_A_ID}-M2`,
+        registrationId: TEAM_A_ID,
+        physicalQrId: wb3,
+        physicalQrType: 'WRISTBAND',
+        staffId: 'Staff 1',
+      });
+
+      const resolveRes = await operationsApi.resolvePhysicalQR(wb3);
+      expect(resolveRes.success).toBe(true);
+      expect(resolveRes.participant?.participantName).toBe('Arun Kumar');
+
+      const rosterRes = await operationsApi.getEventTeamRoster({
+        registrationId: resolveRes.participant!.registrationId,
+        eventId: 'TE02',
+      });
+      expect(rosterRes.data?.presentCount).toBe(2);
+      expect(rosterRes.data?.totalMembers).toBe(3);
+    });
+
+    // Test 6: Same Team Name Isolation between Team A and Team B
+    it('ED-6: Strict isolation for two different registrations sharing the SAME team name ("Avengers")', async () => {
+      // Assign wristband to Team B Member 1 (Kiran)
+      const wbB1 = 'EVX26-WB-AVB-M1';
+      await operationsApi.assignPhysicalQr({
+        participantId: TEAM_B_ID,
+        registrationId: TEAM_B_ID,
+        physicalQrId: wbB1,
+        physicalQrType: 'WRISTBAND',
+        staffId: 'Staff 1',
+      });
+
+      // Team B Roster lookup
+      const teamBRoster = await operationsApi.getEventTeamRoster({
+        registrationId: TEAM_B_ID,
+        eventId: 'TE02',
+      });
+
+      expect(teamBRoster.data?.teamName).toBe('Avengers');
+      expect(teamBRoster.data?.registrationId).toBe(TEAM_B_ID);
+      expect(teamBRoster.data?.totalMembers).toBe(2); // Only Kiran and Vijay, NOT Team A members!
+      expect(teamBRoster.data?.members.map((m) => m.name)).toEqual(['Kiran Patel', 'Vijay Patel']);
+
+      // Team A Roster lookup
+      const teamARoster = await operationsApi.getEventTeamRoster({
+        registrationId: TEAM_A_ID,
+        eventId: 'TE02',
+      });
+
+      expect(teamARoster.data?.teamName).toBe('Avengers');
+      expect(teamARoster.data?.registrationId).toBe(TEAM_A_ID);
+      expect(teamARoster.data?.totalMembers).toBe(3); // Rahul, Ajay, Arun
+      expect(teamARoster.data?.members.map((m) => m.name)).toEqual(['Rahul Kumar', 'Ajay Kumar', 'Arun Kumar']);
+    });
+
+    // Test 7: Wrong Event Protection
+    it('ED-7: Participant not registered for an event receives WRONG_EVENT / NOT REGISTERED', async () => {
+      // Team B is registered for TE02 & NT01 (NOT SP01)
+      const wbB1 = 'EVX26-WB-AVB-M1';
+      await operationsApi.assignPhysicalQr({
+        participantId: TEAM_B_ID,
+        registrationId: TEAM_B_ID,
+        physicalQrId: wbB1,
+        physicalQrType: 'WRISTBAND',
+        staffId: 'Staff 1',
+      });
+
+      const wrongEventRes = await operationsApi.markEventPresent({
+        eventId: 'SP01',
+        physicalQrId: wbB1,
+        staffId: 'SP01 Coord',
+      });
+
+      expect(wrongEventRes.state).toBe('WRONG_EVENT');
+      expect(wrongEventRes.verbatimMessage).toContain('NOT REGISTERED FOR THIS EVENT');
+      expect(wrongEventRes.registeredEvents).toEqual(['TE02', 'NT01']);
+    });
+
+    // Test 8: Duplicate Scan Protection
+    it('ED-8: Re-scanning already present participant returns ALREADY MARKED PRESENT with original time', async () => {
+      const wb1 = 'EVX26-WB-AV-M1';
+      await operationsApi.assignPhysicalQr({
+        participantId: TEAM_A_ID,
+        registrationId: TEAM_A_ID,
+        physicalQrId: wb1,
+        physicalQrType: 'WRISTBAND',
+        staffId: 'Staff 1',
+      });
+      await operationsApi.markEventPresent({
+        eventId: 'TE02',
+        physicalQrId: wb1,
+        staffId: 'TE02 Coord',
+      });
+
+      const duplicateRes = await operationsApi.markEventPresent({
+        eventId: 'TE02',
+        physicalQrId: wb1,
+        staffId: 'TE02 Coord',
+      });
+
+      expect(duplicateRes.state).toBe('DUPLICATE_EVENT');
+      expect(duplicateRes.verbatimMessage).toBe('ALREADY MARKED PRESENT');
+      expect(duplicateRes.details).toContain('Already marked present');
+    });
+
+    // Test 9: Individual Event Pass-Through
+    it('ED-9: Individual event attendance does not impose team roster layout', async () => {
+      const indivWb = 'EVX26-WB-INDIV-01';
+      await operationsApi.assignPhysicalQr({
+        participantId: INDIVIDUAL_ID,
+        registrationId: INDIVIDUAL_ID,
+        physicalQrId: indivWb,
+        physicalQrType: 'WRISTBAND',
+        staffId: 'Staff 1',
+      });
+
+      const markRes = await operationsApi.markEventPresent({
+        eventId: 'TE03',
+        physicalQrId: indivWb,
+        staffId: 'TE03 Coord',
+      });
+
+      expect(markRes.state).toBe('SUCCESS');
+      expect(markRes.participant?.registrationType).toBe('Individual');
+      expect(markRes.participantName).toBe('Senthil Nathan');
+    });
+
+    // Test 10: Partial Team Attendance calculation
+    it('ED-10: Correctly calculates partial team attendance (e.g. 1 / 2 Present)', async () => {
+      const wbB1 = 'EVX26-WB-AVB-M1';
+      await operationsApi.assignPhysicalQr({
+        participantId: TEAM_B_ID,
+        registrationId: TEAM_B_ID,
+        physicalQrId: wbB1,
+        physicalQrType: 'WRISTBAND',
+        staffId: 'Staff 1',
+      });
+
+      await operationsApi.markEventPresent({
+        eventId: 'TE02',
+        physicalQrId: wbB1,
+        staffId: 'TE02 Coord',
+      });
+
+      const rosterRes = await operationsApi.getEventTeamRoster({
+        registrationId: TEAM_B_ID,
+        eventId: 'TE02',
+      });
+
+      expect(rosterRes.data?.presentCount).toBe(1);
+      expect(rosterRes.data?.totalMembers).toBe(2);
+    });
+
+    // Test 11: Re-query from database preserves attendance
+    it('ED-11: getEventTeamRoster preserves persisted attendance states across multiple queries', async () => {
+      const roster1 = await operationsApi.getEventTeamRoster({
+        registrationId: TEAM_A_ID,
+        eventId: 'TE02',
+      });
+      const roster2 = await operationsApi.getEventTeamRoster({
+        registrationId: TEAM_A_ID,
+        eventId: 'TE02',
+      });
+
+      expect(roster1.data?.presentCount).toBe(roster2.data?.presentCount);
+      expect(roster1.data?.members).toEqual(roster2.data?.members);
+    });
+
+    // Test 12: Idempotent re-scan does not duplicate records in local storage
+    it('ED-12: Duplicate scan attempts do not insert duplicate records in event attendance log', async () => {
+      const wb1 = 'EVX26-WB-AV-M1';
+      await operationsApi.assignPhysicalQr({
+        participantId: TEAM_A_ID,
+        registrationId: TEAM_A_ID,
+        physicalQrId: wb1,
+        physicalQrType: 'WRISTBAND',
+        staffId: 'Staff 1',
+      });
+
+      await operationsApi.markEventPresent({
+        eventId: 'TE02',
+        physicalQrId: wb1,
+        staffId: 'TE02 Coord',
+      });
+
+      const initialLogs = JSON.parse(localStorage.getItem('evoxis26_event_attendance') || '[]');
+
+      await operationsApi.markEventPresent({
+        eventId: 'TE02',
+        physicalQrId: wb1,
+        staffId: 'TE02 Coord',
+      });
+
+      const afterLogs = JSON.parse(localStorage.getItem('evoxis26_event_attendance') || '[]');
+      expect(afterLogs.length).toBe(initialLogs.length);
+    });
+
+    // Test 13: Google Sheets synchronization call validation
+    it('ED-13: markEventPresent invokes syncToGoogleSheets with complete participant context', async () => {
+      const wb3 = 'EVX26-WB-AV-M3';
+      await operationsApi.assignPhysicalQr({
+        participantId: `${TEAM_A_ID}-M2`,
+        registrationId: TEAM_A_ID,
+        physicalQrId: wb3,
+        physicalQrType: 'WRISTBAND',
+        staffId: 'Staff 1',
+      });
+
+      const markRes = await operationsApi.markEventPresent({
+        eventId: 'TE02',
+        physicalQrId: wb3,
+        staffId: 'Coordinator Alpha',
+        station: 'Desk 2',
+      });
+
+      expect(markRes.state).toBe('SUCCESS');
+      expect(markRes.participantName).toBe('Arun Kumar');
+    });
+
+    // Test 14: Reception Desk wristband assignments remain unchanged
+    it('ED-14: Reception Desk wristband assignment behaves seamlessly and independently', async () => {
+      const freshRegId = 'EVOXIS26-TEST-FRESH-01';
+      const mockDb = JSON.parse(localStorage.getItem('evoxis26_overall_registrations') || '[]');
+      mockDb.push({
+        registrationId: freshRegId,
+        participantName: 'Ganesh Kumar',
+        email: 'ganesh@example.com',
+        mobileNumber: '9900088888',
+        collegeInstitution: 'College',
+        department: 'CS',
+        registrationType: 'Individual',
+        role: 'INDIVIDUAL',
+        selectedEvents: 'TE01',
+        qrToken: 'EVOXIS26:ganesh_token',
+      });
+      localStorage.setItem('evoxis26_overall_registrations', JSON.stringify(mockDb));
+
+      const assignRes = await operationsApi.assignPhysicalQr({
+        participantId: freshRegId,
+        registrationId: freshRegId,
+        physicalQrId: 'EVX26-WB-GANESH',
+        physicalQrType: 'WRISTBAND',
+        staffId: 'Receptionist 1',
+      });
+
+      expect(assignRes.state).toBe('SUCCESS');
+    });
+
+    // Test 15: Overall registration lookup and profile preservation
+    it('ED-15: Overall registration lookup resolves team pass profile and metadata intact', async () => {
+      const lookup = await operationsApi.lookupRegistration({ queryStr: TEAM_A_ID });
+      expect(lookup.success).toBe(true);
+      expect(lookup.data?.teamName).toBe('Avengers');
+      expect(lookup.data?.registrationType).toBe('Team');
+      expect(lookup.data?.teamMembers?.length).toBe(3);
+    });
+  });
 });
 

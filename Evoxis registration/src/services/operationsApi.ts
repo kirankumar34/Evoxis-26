@@ -19,6 +19,8 @@ import {
   TeamOperationalSummary,
   TeamPassProfile,
   TeamMemberRosterItem,
+  EventTeamContext,
+  EventTeamMemberRosterItem,
 } from '../types';
 import { OFFICIAL_EVENTS } from '../config/events';
 import { syncToGoogleSheets } from './sheetsSync';
@@ -51,6 +53,9 @@ const saveLocalArray = <T>(key: string, arr: T[]) => {
     console.warn('LocalStorage save error:', e);
   }
 };
+
+// Helper: in-flight concurrency lock
+const activeEventCheckinLocks = new Set<string>();
 
 // Helper: QR token validator
 export function isValidQRToken(token: string): boolean {
@@ -1353,6 +1358,141 @@ export const operationsApi = {
   },
 
   /**
+   * Resolve complete Team Roster for a specific Event Desk
+   * Fetches all registered team members for the specified team registration and event,
+   * with their individual attendance status (Present vs Not Present).
+   */
+  async getEventTeamRoster(params: {
+    registrationId: string;
+    eventId: string;
+  }): Promise<{ success: boolean; data?: EventTeamContext; errorMessage?: string }> {
+    const rawRegId = params.registrationId.trim();
+    const cleanEventId = params.eventId.trim().toUpperCase();
+    const baseTeamRegId = rawRegId.replace(/-M\d+$/i, '');
+
+    // 1. Get canonical team registration via lookupRegistration (try base ID first, fallback to raw)
+    let regLookup = await this.lookupRegistration({ queryStr: baseTeamRegId });
+    if (!regLookup.success || !regLookup.data) {
+      regLookup = await this.lookupRegistration({ queryStr: rawRegId });
+    }
+
+    if (!regLookup.success || !regLookup.data) {
+      return {
+        success: false,
+        errorMessage: `Team registration ${rawRegId} not found`,
+      };
+    }
+
+    const regData = regLookup.data;
+    const cleanRegId = regData.registrationId || baseTeamRegId;
+    const teamName = regData.teamName || `${regData.participantName}'s Team`;
+    const eventMeta = OFFICIAL_EVENTS.find((e) => e.eventId.toUpperCase() === cleanEventId);
+    const eventTitle = eventMeta?.title || cleanEventId;
+
+    // 2. Resolve members
+    let rawMembers: Array<{
+      name: string;
+      role: 'TEAM_HEAD' | 'TEAM_MEMBER';
+      participantId: string;
+      selectedEvents: string[];
+      physicalQrId?: string;
+    }> = [];
+
+    if (regData.teamPassProfile && regData.teamPassProfile.members && regData.teamPassProfile.members.length > 0) {
+      rawMembers = regData.teamPassProfile.members.map((m) => ({
+        name: m.name,
+        role: (m.role === 'TEAM_HEAD' ? 'TEAM_HEAD' : 'TEAM_MEMBER') as 'TEAM_HEAD' | 'TEAM_MEMBER',
+        participantId: m.participantId,
+        selectedEvents: regData.selectedEvents,
+        physicalQrId: m.physicalQrId,
+      }));
+    } else if (regData.teamMembers && regData.teamMembers.length > 0) {
+      rawMembers = regData.teamMembers.map((tm, idx) => ({
+        name: tm.name,
+        role: (tm.role === 'TEAM_HEAD' || idx === 0 ? 'TEAM_HEAD' : 'TEAM_MEMBER') as 'TEAM_HEAD' | 'TEAM_MEMBER',
+        participantId: tm.registrationId || (idx === 0 ? cleanRegId : `${cleanRegId}-M${idx}`),
+        selectedEvents: regData.selectedEvents,
+        physicalQrId: undefined,
+      }));
+    } else {
+      rawMembers = [
+        {
+          name: regData.participantName,
+          role: 'TEAM_HEAD',
+          participantId: regData.id || cleanRegId,
+          selectedEvents: regData.selectedEvents,
+          physicalQrId: regData.physicalQrId,
+        },
+      ];
+    }
+
+    // 3. Hydrate live attendance for each member for this event
+    const eventLogs = getLocalArray<any>(STORAGE_KEYS.EVENT_ATTENDANCE);
+    
+    let dbEventLogs: any[] = [];
+    if (isSupabaseConfigured()) {
+      try {
+        const { data: logs } = await supabase
+          .from('attendance_logs')
+          .select('*')
+          .eq('event_id', cleanEventId)
+          .eq('attendance_status', 'SUCCESS')
+          .or(`registration_id.eq.${cleanRegId},registration_id.ilike.${cleanRegId}-M%`);
+        
+        if (logs) dbEventLogs = logs;
+      } catch (err) {
+        console.warn('Supabase getEventTeamRoster logs error:', err);
+      }
+    }
+
+    const rosterItems: EventTeamMemberRosterItem[] = [];
+
+    for (const m of rawMembers) {
+      const isRegForEvt = m.selectedEvents.some((e) => e.toUpperCase() === cleanEventId);
+
+      const localLog = eventLogs.find(
+        (el) =>
+          (el.participantId === m.participantId || (!el.participantId && el.registrationId === m.participantId)) &&
+          el.eventId.toUpperCase() === cleanEventId &&
+          el.attendanceStatus === 'Present'
+      );
+
+      const dbLog = dbEventLogs.find(
+        (dl) => dl.registration_id === m.participantId
+      );
+
+      const isPresent = Boolean(localLog || dbLog);
+      const checkinTime = localLog?.checkinTime || dbLog?.scan_timestamp || undefined;
+
+      rosterItems.push({
+        participantId: m.participantId,
+        registrationId: cleanRegId,
+        name: m.name,
+        role: m.role,
+        isRegisteredForEvent: isRegForEvt,
+        attendanceStatus: isPresent ? 'Present' : 'Not Present',
+        checkinTime,
+        physicalQrId: m.physicalQrId,
+      });
+    }
+
+    const presentCount = rosterItems.filter((m) => m.attendanceStatus === 'Present').length;
+
+    return {
+      success: true,
+      data: {
+        teamName,
+        registrationId: cleanRegId,
+        eventId: cleanEventId,
+        eventName: eventTitle,
+        totalMembers: rosterItems.length,
+        presentCount,
+        members: rosterItems,
+      },
+    };
+  },
+
+  /**
    * Check if participant is already marked present for a specific event
    */
   async checkEventAttendance(params: {
@@ -1368,8 +1508,9 @@ export const operationsApi = {
     const eventLogs = getLocalArray<any>(STORAGE_KEYS.EVENT_ATTENDANCE);
     const existingLocal = eventLogs.find(
       (el) =>
-        (el.participantId === params.participantId || el.registrationId === params.participantId) &&
-        el.eventId.toUpperCase() === cleanEventId
+        (el.participantId === params.participantId || (!el.participantId && el.registrationId === params.participantId)) &&
+        el.eventId.toUpperCase() === cleanEventId &&
+        el.attendanceStatus === 'Present'
     );
 
     if (existingLocal) {
@@ -1483,148 +1624,224 @@ export const operationsApi = {
 
     const participant = resolved.participant;
 
-    // 2. Check if participant is registered for this event
-    const isRegistered = participant.selectedEvents.some((e) => e.toUpperCase() === eventId);
-
-    if (!isRegistered && !params.isAdminOverride) {
-      await this.logAudit({
-        staffUser: params.staffId,
-        station,
-        operation: 'EVENT_CHECKIN',
-        registrationId: participant.registrationId,
-        participantId: participant.id,
-        participantName: participant.participantName,
-        eventId,
-        eventName: eventTitle,
-        physicalQrId: cleanQr,
-        result: 'DENIED',
-        reason: `Not registered for ${eventId}. Registered events: ${participant.selectedEvents.join(', ')}`,
-      });
-
-      return {
-        state: 'WRONG_EVENT',
-        verbatimMessage: 'PARTICIPANT FOUND — NOT REGISTERED FOR THIS EVENT',
-        registeredEvents: participant.selectedEvents,
-        details: 'You are not registered for this event. Please proceed to one of your registered event desks.',
-        participant,
-      };
-    }
-
-    // 3. Check idempotency for this event
-    const eventLogs = getLocalArray<any>(STORAGE_KEYS.EVENT_ATTENDANCE);
-    const existing = eventLogs.find(
-      (el) =>
-        (el.participantId === participant.id || el.registrationId === participant.registrationId) &&
-        el.eventId.toUpperCase() === eventId
-    );
-
-    if (existing) {
-      await this.logAudit({
-        staffUser: params.staffId,
-        station,
-        operation: 'EVENT_CHECKIN',
-        registrationId: participant.registrationId,
-        participantId: participant.id,
-        participantName: participant.participantName,
-        eventId,
-        eventName: eventTitle,
-        physicalQrId: cleanQr,
-        result: 'DUPLICATE',
-        reason: 'Already present for this event',
-      });
-
+    // Concurrency Lock for in-flight requests
+    const checkinLockKey = `${participant.id}_${eventId}`;
+    if (activeEventCheckinLocks.has(checkinLockKey)) {
       return {
         state: 'DUPLICATE_EVENT',
         verbatimMessage: 'ALREADY MARKED PRESENT',
-        originalTime: existing.checkinTime,
-        originalStation: existing.station,
-        details: `Already marked present at ${new Date(existing.checkinTime).toLocaleTimeString()} (${existing.station})`,
+        details: 'Concurrent check-in already processing for this participant',
         participant,
       };
     }
+    activeEventCheckinLocks.add(checkinLockKey);
 
-    // 4. Record attendance
-    const now = new Date().toISOString();
-    eventLogs.push({
-      id: 'EVT-ATT-' + Math.random().toString(36).substring(2, 9),
-      participantId: participant.id,
-      registrationId: participant.registrationId,
-      participantName: participant.participantName,
-      eventId,
-      eventName: eventTitle,
-      attendanceStatus: 'Present',
-      checkinTime: now,
-      checkinBy: params.staffId,
-      station,
-      isOverride: !!params.isAdminOverride,
-      overrideReason: params.overrideReason,
-    });
-    saveLocalArray(STORAGE_KEYS.EVENT_ATTENDANCE, eventLogs);
+    try {
+      // 2. Check if participant is registered for this event
+      const isRegistered = participant.selectedEvents.some((e) => e.toUpperCase() === eventId);
 
-    // Update Supabase event_registrations and attendance_logs if live
-    if (isSupabaseConfigured()) {
-      try {
-        await supabase.from('attendance_logs').insert([
-          {
-            attendance_id: 'AUD-EVT-' + Math.random().toString(36).substring(2, 9),
-            registration_id: participant.id,
-            participant_name: participant.participantName,
-            event_id: eventId,
-            event_name: eventTitle,
-            event_type: 'EVENT_CHECKIN',
-            attendance_date: now.split('T')[0],
-            attendance_time: new Date(now).toLocaleTimeString('en-US'),
-            attendance_location: station,
-            attendance_status: 'SUCCESS',
-            participation_status: 'Present',
-            verified_by: params.staffId,
-            qr_token: cleanQr,
-            scan_timestamp: now,
-          },
-        ]);
-        await supabase
-          .from('event_registrations')
-          .update({ attendance_status: 'Present', participation_status: 'Present' })
-          .match({ registration_id: participant.registrationId, event_id: eventId });
-      } catch (err) {
-        console.warn('Supabase event check-in write notice:', err);
+      if (!isRegistered && !params.isAdminOverride) {
+        await this.logAudit({
+          staffUser: params.staffId,
+          station,
+          operation: 'EVENT_CHECKIN',
+          registrationId: participant.registrationId,
+          participantId: participant.id,
+          participantName: participant.participantName,
+          eventId,
+          eventName: eventTitle,
+          physicalQrId: cleanQr,
+          result: 'DENIED',
+          reason: `Not registered for ${eventId}. Registered events: ${participant.selectedEvents.join(', ')}`,
+        });
+
+        return {
+          state: 'WRONG_EVENT',
+          verbatimMessage: 'PARTICIPANT FOUND — NOT REGISTERED FOR THIS EVENT',
+          registeredEvents: participant.selectedEvents,
+          details: 'You are not registered for this event. Please proceed to one of your registered event desks.',
+          participant,
+        };
       }
+
+      // 3. Check idempotency for this event (Strict participant-level)
+      const eventLogs = getLocalArray<any>(STORAGE_KEYS.EVENT_ATTENDANCE);
+      const existing = eventLogs.find(
+        (el) =>
+          (el.participantId === participant.id || (!el.participantId && el.registrationId === participant.id)) &&
+          el.eventId.toUpperCase() === eventId &&
+          el.attendanceStatus === 'Present'
+      );
+
+      if (existing) {
+        await this.logAudit({
+          staffUser: params.staffId,
+          station,
+          operation: 'EVENT_CHECKIN',
+          registrationId: participant.registrationId,
+          participantId: participant.id,
+          participantName: participant.participantName,
+          eventId,
+          eventName: eventTitle,
+          physicalQrId: cleanQr,
+          result: 'DUPLICATE',
+          reason: 'Already present for this event',
+        });
+
+        let teamCtx: EventTeamContext | undefined = undefined;
+        if (participant.teamName || participant.registrationType === 'Team') {
+          const tr = await this.getEventTeamRoster({ registrationId: participant.registrationId, eventId });
+          if (tr.success) teamCtx = tr.data;
+        }
+
+        return {
+          state: 'DUPLICATE_EVENT',
+          verbatimMessage: 'ALREADY MARKED PRESENT',
+          originalTime: existing.checkinTime,
+          originalStation: existing.station,
+          details: `Already marked present at ${new Date(existing.checkinTime).toLocaleTimeString()} (${existing.station})`,
+          participant,
+          teamEventContext: teamCtx,
+        };
+      }
+
+      // Live Supabase idempotency check
+      if (isSupabaseConfigured()) {
+        try {
+          const { data: dbLogs } = await supabase
+            .from('attendance_logs')
+            .select('*')
+            .match({ registration_id: participant.id, event_id: eventId, attendance_status: 'SUCCESS' })
+            .limit(1);
+
+          if (dbLogs && dbLogs.length > 0) {
+            await this.logAudit({
+              staffUser: params.staffId,
+              station,
+              operation: 'EVENT_CHECKIN',
+              registrationId: participant.registrationId,
+              participantId: participant.id,
+              participantName: participant.participantName,
+              eventId,
+              eventName: eventTitle,
+              physicalQrId: cleanQr,
+              result: 'DUPLICATE',
+              reason: 'Already present for this event in Supabase',
+            });
+
+            let teamCtx: EventTeamContext | undefined = undefined;
+            if (participant.teamName || participant.registrationType === 'Team') {
+              const tr = await this.getEventTeamRoster({ registrationId: participant.registrationId, eventId });
+              if (tr.success) teamCtx = tr.data;
+            }
+
+            return {
+              state: 'DUPLICATE_EVENT',
+              verbatimMessage: 'ALREADY MARKED PRESENT',
+              originalTime: dbLogs[0].scan_timestamp,
+              originalStation: dbLogs[0].attendance_location,
+              details: `Already marked present at ${new Date(dbLogs[0].scan_timestamp).toLocaleTimeString()} (${dbLogs[0].attendance_location})`,
+              participant,
+              teamEventContext: teamCtx,
+            };
+          }
+        } catch (err) {
+          console.warn('Supabase event check-in duplicate check notice:', err);
+        }
+      }
+
+      // 4. Record attendance strictly for this participant
+      const now = new Date().toISOString();
+      eventLogs.push({
+        id: 'EVT-ATT-' + Math.random().toString(36).substring(2, 9),
+        participantId: participant.id,
+        registrationId: participant.registrationId,
+        participantName: participant.participantName,
+        eventId,
+        eventName: eventTitle,
+        attendanceStatus: 'Present',
+        checkinTime: now,
+        checkinBy: params.staffId,
+        station,
+        isOverride: !!params.isAdminOverride,
+        overrideReason: params.overrideReason,
+      });
+      saveLocalArray(STORAGE_KEYS.EVENT_ATTENDANCE, eventLogs);
+
+      // Update Supabase event_registrations and attendance_logs if live
+      if (isSupabaseConfigured()) {
+        try {
+          await supabase.from('attendance_logs').insert([
+            {
+              attendance_id: 'AUD-EVT-' + Math.random().toString(36).substring(2, 9),
+              registration_id: participant.id,
+              participant_name: participant.participantName,
+              event_id: eventId,
+              event_name: eventTitle,
+              event_type: 'EVENT_CHECKIN',
+              attendance_date: now.split('T')[0],
+              attendance_time: new Date(now).toLocaleTimeString('en-US'),
+              attendance_location: station,
+              attendance_status: 'SUCCESS',
+              participation_status: 'Present',
+              verified_by: params.staffId,
+              qr_token: cleanQr,
+              scan_timestamp: now,
+            },
+          ]);
+          await supabase
+            .from('event_registrations')
+            .update({ attendance_status: 'Present', participation_status: 'Present' })
+            .match({ registration_id: participant.id, event_id: eventId });
+        } catch (err) {
+          console.warn('Supabase event check-in write notice:', err);
+        }
+      }
+
+      await this.logAudit({
+        staffUser: params.staffId,
+        station,
+        operation: 'EVENT_CHECKIN',
+        registrationId: participant.registrationId,
+        participantId: participant.id,
+        participantName: participant.participantName,
+        eventId,
+        eventName: eventTitle,
+        physicalQrId: cleanQr,
+        result: 'SUCCESS',
+        reason: params.isAdminOverride ? `Admin Override: ${params.overrideReason}` : 'Event check-in verified',
+      });
+
+      syncToGoogleSheets({
+        action: 'markAttendance',
+        registrationId: participant.id,
+        participantId: participant.id,
+        participantName: participant.participantName,
+        physicalQrId: cleanQr,
+        eventId,
+        eventName: eventTitle,
+        station,
+        verifiedBy: params.staffId,
+      });
+
+      let teamCtx: EventTeamContext | undefined = undefined;
+      if (participant.teamName || participant.registrationType === 'Team') {
+        const tr = await this.getEventTeamRoster({ registrationId: participant.registrationId, eventId });
+        if (tr.success) teamCtx = tr.data;
+      }
+
+      return {
+        state: 'SUCCESS',
+        verbatimMessage: '✓ PRESENT',
+        timestamp: now,
+        details: `${participant.participantName} verified for ${eventTitle}`,
+        participant,
+        participantName: participant.participantName,
+        teamEventContext: teamCtx,
+      };
+    } finally {
+      activeEventCheckinLocks.delete(checkinLockKey);
     }
-
-    await this.logAudit({
-      staffUser: params.staffId,
-      station,
-      operation: 'EVENT_CHECKIN',
-      registrationId: participant.registrationId,
-      participantId: participant.id,
-      participantName: participant.participantName,
-      eventId,
-      eventName: eventTitle,
-      physicalQrId: cleanQr,
-      result: 'SUCCESS',
-      reason: params.isAdminOverride ? `Admin Override: ${params.overrideReason}` : 'Event check-in verified',
-    });
-
-    syncToGoogleSheets({
-      action: 'markAttendance',
-      registrationId: participant.id,
-      participantId: participant.id,
-      participantName: participant.participantName,
-      physicalQrId: cleanQr,
-      eventId,
-      eventName: eventTitle,
-      station,
-      verifiedBy: params.staffId,
-    });
-
-    return {
-      state: 'SUCCESS',
-      verbatimMessage: '✓ PRESENT',
-      timestamp: now,
-      details: `${participant.participantName} verified for ${eventTitle}`,
-      participant,
-      participantName: participant.participantName,
-    };
   },
 
   /**
