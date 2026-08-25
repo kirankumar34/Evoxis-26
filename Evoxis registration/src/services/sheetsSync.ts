@@ -6,7 +6,13 @@
 const APPS_SCRIPT_URL = import.meta.env.VITE_APPS_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbxATuX68Uzi7ozu1OSHQtyKM8m78K66IZ7l42aobpKrTrc7qWegj6vIoM1NGlLajX7F/exec';
 
 export interface SheetsSyncPayload {
-  action: 'markAttendance' | 'assignPhysicalQr' | 'syncCampusCheckin' | 'generateQrInventory';
+  action:
+    | 'markEventAttendance'
+    | 'markAttendance'
+    | 'markReceptionAttendance'
+    | 'assignPhysicalQr'
+    | 'syncCampusCheckin'
+    | 'generateQrInventory';
   registrationId?: string;
   participantId?: string;
   participantName?: string;
@@ -22,6 +28,7 @@ export interface SheetsSyncPayload {
   eventId?: string;
   eventName?: string;
   physicalQrId?: string;
+  qrToken?: string;
   environment?: string;
   count?: number;
   qrType?: string;
@@ -37,8 +44,14 @@ export const syncToGoogleSheets = async (payload: SheetsSyncPayload): Promise<bo
     return false;
   }
 
+  // Normalize action: if event attendance with eventId, ensure 'markEventAttendance'
+  let targetAction = payload.action;
+  if (targetAction === 'markAttendance' && payload.eventId) {
+    targetAction = 'markEventAttendance';
+  }
+
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 3000);
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
 
   try {
     const response = await fetch(APPS_SCRIPT_URL, {
@@ -49,6 +62,8 @@ export const syncToGoogleSheets = async (payload: SheetsSyncPayload): Promise<bo
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({
         ...payload,
+        action: targetAction,
+        qrToken: payload.qrToken || payload.physicalQrId || '',
         timestamp: payload.timestamp || new Date().toISOString(),
       }),
     });

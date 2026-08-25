@@ -1436,7 +1436,7 @@ export const operationsApi = {
           .from('attendance_logs')
           .select('*')
           .eq('event_id', cleanEventId)
-          .eq('attendance_status', 'SUCCESS')
+          .in('attendance_status', ['Present', 'SUCCESS'])
           .or(`registration_id.eq.${cleanRegId},registration_id.ilike.${cleanRegId}-M%`);
         
         if (logs) dbEventLogs = logs;
@@ -1454,7 +1454,7 @@ export const operationsApi = {
         (el) =>
           (el.participantId === m.participantId || (!el.participantId && el.registrationId === m.participantId)) &&
           el.eventId.toUpperCase() === cleanEventId &&
-          el.attendanceStatus === 'Present'
+          (el.attendanceStatus === 'Present' || el.attendanceStatus === 'SUCCESS')
       );
 
       const dbLog = dbEventLogs.find(
@@ -1510,7 +1510,7 @@ export const operationsApi = {
       (el) =>
         (el.participantId === params.participantId || (!el.participantId && el.registrationId === params.participantId)) &&
         el.eventId.toUpperCase() === cleanEventId &&
-        el.attendanceStatus === 'Present'
+        (el.attendanceStatus === 'Present' || el.attendanceStatus === 'SUCCESS')
     );
 
     if (existingLocal) {
@@ -1527,7 +1527,9 @@ export const operationsApi = {
         const { data: logs } = await supabase
           .from('attendance_logs')
           .select('*')
-          .match({ registration_id: params.participantId, event_id: cleanEventId, attendance_status: 'SUCCESS' })
+          .eq('registration_id', params.participantId)
+          .eq('event_id', cleanEventId)
+          .in('attendance_status', ['Present', 'SUCCESS'])
           .limit(1);
 
         if (logs && logs.length > 0) {
@@ -1536,6 +1538,24 @@ export const operationsApi = {
             checkinTime: logs[0].scan_timestamp || `${logs[0].attendance_date} ${logs[0].attendance_time}`,
             station: logs[0].attendance_location,
             checkedInBy: logs[0].verified_by,
+          };
+        }
+
+        // Also verify event_registrations
+        const { data: evtRegs } = await supabase
+          .from('event_registrations')
+          .select('*')
+          .eq('registration_id', params.participantId)
+          .eq('event_id', cleanEventId)
+          .eq('attendance_status', 'Present')
+          .limit(1);
+
+        if (evtRegs && evtRegs.length > 0) {
+          return {
+            isPresent: true,
+            checkinTime: evtRegs[0].created_at,
+            station: 'Event Desk',
+            checkedInBy: 'Event Coordinator',
           };
         }
       } catch (err) {
@@ -1547,7 +1567,7 @@ export const operationsApi = {
   },
 
   /**
-   * Mark Event Attendance at Event Desk (Enforces event registration eligibility & idempotency)
+   * Mark Event Attendance at Event Desk (Enforces event registration eligibility, live database persistence & verification)
    */
   async markEventPresent(params: {
     eventId: string;
@@ -1689,7 +1709,7 @@ export const operationsApi = {
         (el) =>
           (el.participantId === participant.id || (!el.participantId && el.registrationId === participant.id)) &&
           el.eventId.toUpperCase() === eventId &&
-          el.attendanceStatus === 'Present'
+          (el.attendanceStatus === 'Present' || el.attendanceStatus === 'SUCCESS')
       );
 
       if (existing) {
@@ -1730,7 +1750,9 @@ export const operationsApi = {
           const { data: dbLogs } = await supabase
             .from('attendance_logs')
             .select('*')
-            .match({ registration_id: participant.id, event_id: eventId, attendance_status: 'SUCCESS' })
+            .eq('registration_id', participant.id)
+            .eq('event_id', eventId)
+            .in('attendance_status', ['Present', 'SUCCESS'])
             .limit(1);
 
           if (dbLogs && dbLogs.length > 0) {
@@ -1769,10 +1791,84 @@ export const operationsApi = {
         }
       }
 
-      // 4. Record attendance strictly for this participant
+      // 4. Perform live database write to Supabase FIRST with read-back verification
       const now = new Date().toISOString();
+      const attendanceId = 'ATT-EVT-' + Math.random().toString(36).substring(2, 9).toUpperCase();
+      const attDate = now.split('T')[0];
+      const attTime = new Date(now).toLocaleTimeString('en-US');
+
+      if (isSupabaseConfigured()) {
+        // A. Insert into attendance_logs
+        const { error: insErr } = await supabase.from('attendance_logs').insert([
+          {
+            attendance_id: attendanceId,
+            registration_id: participant.id,
+            participant_name: participant.participantName,
+            event_id: eventId,
+            event_name: eventTitle,
+            event_type: eventMeta?.category || 'Technical',
+            attendance_date: attDate,
+            attendance_time: attTime,
+            attendance_location: station,
+            attendance_status: 'Present',
+            participation_status: 'Present',
+            verified_by: params.staffId,
+            qr_token: cleanQr || participant.digitalQrToken || participant.id,
+            scan_timestamp: now,
+          },
+        ]);
+
+        if (insErr) {
+          console.error('[OperationsApi] Supabase attendance_logs write failed:', insErr);
+          await this.logAudit({
+            staffUser: params.staffId,
+            station,
+            operation: 'EVENT_CHECKIN',
+            registrationId: participant.registrationId,
+            participantId: participant.id,
+            participantName: participant.participantName,
+            eventId,
+            eventName: eventTitle,
+            physicalQrId: cleanQr,
+            result: 'ERROR',
+            reason: `Database insert failed: ${insErr.message}`,
+          });
+
+          return {
+            state: 'OFFLINE_ERROR',
+            verbatimMessage: 'ATTENDANCE NOT SAVED',
+            details: `Database write could not be completed: ${insErr.message}`,
+            participant,
+          };
+        }
+
+        // B. Read-back verification to confirm attendance_logs record is persistent on disk
+        const { data: verifyLog, error: verifyErr } = await supabase
+          .from('attendance_logs')
+          .select('attendance_id, registration_id, event_id, attendance_status')
+          .eq('attendance_id', attendanceId)
+          .single();
+
+        if (verifyErr || !verifyLog) {
+          console.error('[OperationsApi] Read-back verification failed for attendance_id:', attendanceId, verifyErr);
+          return {
+            state: 'OFFLINE_ERROR',
+            verbatimMessage: 'ATTENDANCE NOT SAVED',
+            details: 'Database could not confirm the attendance record upon read-back.',
+            participant,
+          };
+        }
+
+        // C. Update event_registrations table
+        await supabase
+          .from('event_registrations')
+          .update({ attendance_status: 'Present', participation_status: 'Present' })
+          .match({ registration_id: participant.id, event_id: eventId });
+      }
+
+      // 5. Update local cache only after database confirms persistence
       eventLogs.push({
-        id: 'EVT-ATT-' + Math.random().toString(36).substring(2, 9),
+        id: attendanceId,
         participantId: participant.id,
         registrationId: participant.registrationId,
         participantName: participant.participantName,
@@ -1787,36 +1883,6 @@ export const operationsApi = {
       });
       saveLocalArray(STORAGE_KEYS.EVENT_ATTENDANCE, eventLogs);
 
-      // Update Supabase event_registrations and attendance_logs if live
-      if (isSupabaseConfigured()) {
-        try {
-          await supabase.from('attendance_logs').insert([
-            {
-              attendance_id: 'AUD-EVT-' + Math.random().toString(36).substring(2, 9),
-              registration_id: participant.id,
-              participant_name: participant.participantName,
-              event_id: eventId,
-              event_name: eventTitle,
-              event_type: 'EVENT_CHECKIN',
-              attendance_date: now.split('T')[0],
-              attendance_time: new Date(now).toLocaleTimeString('en-US'),
-              attendance_location: station,
-              attendance_status: 'SUCCESS',
-              participation_status: 'Present',
-              verified_by: params.staffId,
-              qr_token: cleanQr,
-              scan_timestamp: now,
-            },
-          ]);
-          await supabase
-            .from('event_registrations')
-            .update({ attendance_status: 'Present', participation_status: 'Present' })
-            .match({ registration_id: participant.id, event_id: eventId });
-        } catch (err) {
-          console.warn('Supabase event check-in write notice:', err);
-        }
-      }
-
       await this.logAudit({
         staffUser: params.staffId,
         station,
@@ -1828,19 +1894,22 @@ export const operationsApi = {
         eventName: eventTitle,
         physicalQrId: cleanQr,
         result: 'SUCCESS',
-        reason: params.isAdminOverride ? `Admin Override: ${params.overrideReason}` : 'Event check-in verified',
+        reason: params.isAdminOverride ? `Admin Override: ${params.overrideReason}` : 'Event check-in verified & persisted',
       });
 
+      // 6. Asynchronously sync to Google Sheets mirror
       syncToGoogleSheets({
-        action: 'markAttendance',
+        action: 'markEventAttendance',
         registrationId: participant.id,
         participantId: participant.id,
         participantName: participant.participantName,
         physicalQrId: cleanQr,
+        qrToken: participant.digitalQrToken || cleanQr,
         eventId,
         eventName: eventTitle,
         station,
         verifiedBy: params.staffId,
+        timestamp: now,
       });
 
       let teamCtx: EventTeamContext | undefined = undefined;

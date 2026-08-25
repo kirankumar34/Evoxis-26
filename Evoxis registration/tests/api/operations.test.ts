@@ -13,11 +13,78 @@ Object.defineProperty(globalThis, 'localStorage', {
   writable: true,
 });
 
-// Polyfill fast fetch mock for Google Apps Script sync
-globalThis.fetch = async () => ({
-  ok: true,
-  json: async () => ({ success: true }),
-  text: async () => JSON.stringify({ success: true }),
+// Polyfill fast fetch mock for Google Apps Script sync & Supabase in test runner
+globalThis.fetch = (async (url: any, options: any) => {
+  const urlStr = String(url || '');
+  const method = (options?.method || 'GET').toUpperCase();
+
+  if (urlStr.includes('script.google.com')) {
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({ success: true }),
+      text: async () => JSON.stringify({ success: true }),
+    };
+  }
+
+  // Handle Supabase PostgREST requests in unit test runner
+  if (urlStr.includes('supabase.co')) {
+    if (method === 'GET') {
+      // Return empty array for lookups so unit tests use seeded localStorage records
+      return {
+        ok: true,
+        status: 200,
+        headers: new Headers({
+          'content-type': 'application/json',
+          'content-range': '0-0/0',
+        }),
+        json: async () => [],
+        text: async () => '[]',
+      };
+    }
+
+    if (method === 'POST') {
+      // Parse posted body if available to echo back representation
+      let bodyData: any = [{ attendance_id: 'ATT-MOCK-' + Date.now() }];
+      try {
+        if (options?.body) {
+          const parsed = JSON.parse(options.body);
+          bodyData = Array.isArray(parsed) ? parsed : [parsed];
+        }
+      } catch (e) {}
+
+      return {
+        ok: true,
+        status: 201,
+        headers: new Headers({
+          'content-type': 'application/json',
+          'content-range': `0-${bodyData.length - 1}/${bodyData.length}`,
+          preference_applied: 'return=representation',
+        }),
+        json: async () => bodyData,
+        text: async () => JSON.stringify(bodyData),
+      };
+    }
+
+    // PATCH / DELETE
+    return {
+      ok: true,
+      status: 200,
+      headers: new Headers({
+        'content-type': 'application/json',
+        'content-range': '0-0/1',
+      }),
+      json: async () => [{ success: true }],
+      text: async () => JSON.stringify([{ success: true }]),
+    };
+  }
+
+  return {
+    ok: true,
+    status: 200,
+    json: async () => ({ success: true }),
+    text: async () => JSON.stringify({ success: true }),
+  };
 }) as any;
 
 import { operationsApi } from '../../src/services/operationsApi';
@@ -2012,6 +2079,83 @@ describe('EvoXis26 Operations Portal Automated Test Suite', () => {
       expect(roster.data?.members[0].attendanceStatus).toBe('Not Present');
       expect(roster.data?.members[1].attendanceStatus).toBe('Not Present');
       expect(roster.data?.members[2].attendanceStatus).toBe('Present');
+    });
+
+    // Test 18: Database persistence writes canonical ID and prevents duplicate scans
+    it('ED-18: Repeated scan returns DUPLICATE_EVENT and ALREADY MARKED PRESENT with original timestamp', async () => {
+      const wb1 = 'EVX26-WB-AV-M1';
+      await operationsApi.assignPhysicalQr({
+        participantId: TEAM_A_ID,
+        registrationId: TEAM_A_ID,
+        physicalQrId: wb1,
+        physicalQrType: 'WRISTBAND',
+        staffId: 'Staff 1',
+      });
+
+      const firstMark = await operationsApi.markEventPresent({
+        eventId: 'TE02',
+        physicalQrId: wb1,
+        staffId: 'Coordinator 1',
+        station: 'Desk 1',
+      });
+      expect(firstMark.state).toBe('SUCCESS');
+      expect(firstMark.verbatimMessage).toBe('✓ PRESENT');
+
+      const secondMark = await operationsApi.markEventPresent({
+        eventId: 'TE02',
+        physicalQrId: wb1,
+        staffId: 'Coordinator 2',
+        station: 'Desk 1',
+      });
+      expect(secondMark.state).toBe('DUPLICATE_EVENT');
+      expect(secondMark.verbatimMessage).toBe('ALREADY MARKED PRESENT');
+      expect(secondMark.details).toContain('Already marked present');
+    });
+
+    // Test 19: Unregistered participant is denied with WRONG_EVENT and creates no attendance log
+    it('ED-19: Unregistered participant is denied with WRONG_EVENT and creates no attendance record', async () => {
+      const wrongMark = await operationsApi.markEventPresent({
+        eventId: 'SP04', // Team A only registered for TE02, NT01
+        participantId: TEAM_A_ID,
+        staffId: 'Coordinator SP04',
+      });
+
+      expect(wrongMark.state).toBe('WRONG_EVENT');
+      expect(wrongMark.verbatimMessage).toContain('NOT REGISTERED FOR THIS EVENT');
+
+      const attCheck = await operationsApi.checkEventAttendance({
+        participantId: TEAM_A_ID,
+        eventId: 'SP04',
+      });
+      expect(attCheck.isPresent).toBe(false);
+    });
+
+    // Test 20: Team attendance assigns attendance strictly to individual member
+    it('ED-20: Team attendance assigns attendance strictly to individual member without cross-marking team', async () => {
+      const markHead = await operationsApi.markEventPresent({
+        eventId: 'TE02',
+        participantId: TEAM_A_ID,
+        staffId: 'Coordinator 1',
+      });
+      expect(markHead.state).toBe('SUCCESS');
+
+      const headStatus = await operationsApi.checkEventAttendance({
+        participantId: TEAM_A_ID,
+        eventId: 'TE02',
+      });
+      expect(headStatus.isPresent).toBe(true);
+
+      const m1Status = await operationsApi.checkEventAttendance({
+        participantId: `${TEAM_A_ID}-M1`,
+        eventId: 'TE02',
+      });
+      expect(m1Status.isPresent).toBe(false);
+
+      const m2Status = await operationsApi.checkEventAttendance({
+        participantId: `${TEAM_A_ID}-M2`,
+        eventId: 'TE02',
+      });
+      expect(m2Status.isPresent).toBe(false);
     });
   });
 });
