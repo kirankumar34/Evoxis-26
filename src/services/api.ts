@@ -124,6 +124,8 @@ function generateMockQRToken(regId: string): string {
   return `EVOXIS26:${hex}${regId.replace(/[^0-9]/g, '')}`;
 }
 
+const inFlightRegistrations = new Map<string, Promise<any>>();
+
 /**
  * Main API Service Client Supporting Supabase + Google Apps Script + Local Storage
  */
@@ -176,8 +178,32 @@ export const api = {
     };
     message?: string;
   }> {
+    if (!payload.fullName || !payload.fullName.trim()) {
+      return { success: false, message: 'Full Name is required' };
+    }
+    if (!payload.email || !payload.email.trim() || !/\S+@\S+\.\S+/.test(payload.email)) {
+      return { success: false, message: 'Valid email is required' };
+    }
+    if (!payload.phone || !payload.phone.trim() || !/^\d{10}$/.test(payload.phone.replace(/[^0-9]/g, ''))) {
+      return { success: false, message: 'Valid 10-digit phone number is required' };
+    }
+    if (!payload.collegeName || !payload.collegeName.trim()) {
+      return { success: false, message: 'College Name is required' };
+    }
+    if (!payload.selectedEventIds || payload.selectedEventIds.length === 0) {
+      return { success: false, message: 'Please select at least one event.' };
+    }
+
     const cleanEmail = payload.email.trim().toLowerCase();
     const cleanPhone = payload.phone.trim();
+    const inFlightKey = `${cleanEmail}:${cleanPhone}`;
+
+    if (inFlightRegistrations.has(inFlightKey)) {
+      const inFlightRes = await inFlightRegistrations.get(inFlightKey)!;
+      return { ...inFlightRes, isDuplicate: true };
+    }
+
+    const executeRegistration = async () => {
     const isTeam = Boolean(payload.isTeam || (payload.teamMembers && payload.teamMembers.length > 0) || payload.teamName);
     const safeTeamName = payload.teamName?.trim() || (isTeam ? `${payload.fullName}'s Team` : '');
     const referralSource = (payload.referralSource || 'Not Specified').trim();
@@ -255,13 +281,13 @@ export const api = {
     // =========================================================================
     // STEP A: SUPABASE DATABASE WRITE (when configured and live)
     // =========================================================================
-    if (isLiveProduction && (backendType === 'SUPABASE' || isSupabaseConfigured())) {
+    if (backendType === 'SUPABASE' && isSupabaseConfigured()) {
       console.log('[EvoXis26 API] 🚀 Submitting registration to Supabase PostgreSQL Database:', payload);
       try {
         // 1. Duplicate check in Supabase
         const { data: existingRecords, error: checkErr } = await supabase
           .from('overall_registrations')
-          .select('registration_id, email, mobile_number, qr_token, participant_name, college_institution, department, selected_events, registration_date, registration_status, team_name, team_members')
+          .select('registration_id, email, mobile_number, qr_token, participant_name, college_institution, department, year, gender, selected_events, registration_date, registration_status, team_name, team_members')
           .or(`email.eq.${cleanEmail},mobile_number.eq.${cleanPhone}`);
 
         if (!checkErr && existingRecords && existingRecords.length > 0) {
@@ -294,6 +320,20 @@ export const api = {
                   registrationDate: active.registration_date,
                   teamName: active.team_name || undefined,
                   teamMembers: active.team_members || [],
+                  participants: Array.isArray(active.team_members) && active.team_members.length > 0
+                    ? active.team_members
+                    : [{
+                        name: active.participant_name,
+                        email: active.email,
+                        phone: active.mobile_number,
+                        college: active.college_institution,
+                        department: active.department,
+                        year: active.year || '3rd Year',
+                        gender: active.gender || 'Not Specified',
+                        role: active.team_name ? 'TEAM_HEAD' : 'INDIVIDUAL',
+                        registrationId: active.registration_id,
+                        qrToken: active.qr_token,
+                      }],
                 },
               };
             }
@@ -422,6 +462,48 @@ export const api = {
         console.log(`[EvoXis26 API] ✅ Supabase persisted ${masterRows.length} participant record(s) and ${eventRows.length} event record(s) for ${assignedRegId}`);
       } catch (err: any) {
         console.error('[EvoXis26 API] ❌ Supabase live write failed:', err);
+        // If error is code 23505 (unique key collision from rapid concurrent submit), recover by fetching existing record
+        if (err?.code === '23505') {
+          try {
+            const { data: recs } = await supabase
+              .from('overall_registrations')
+              .select('registration_id, email, mobile_number, qr_token, participant_name, college_institution, department, year, gender, selected_events, registration_date, registration_status, team_name, team_members')
+              .or(`email.eq.${cleanEmail},mobile_number.eq.${cleanPhone}`)
+              .limit(1);
+
+            if (recs && recs.length > 0) {
+              const active = recs[0];
+              const existingEvents = active.selected_events.split(',').map((s: string) => s.trim()) as EventId[];
+              return {
+                success: true,
+                isDuplicate: true,
+                databaseSuccess: true,
+                sheetsSyncSuccess: true,
+                emailSuccess: true,
+                message: `Already registered for event(s): ${existingEvents.join(', ')}`,
+                data: {
+                  registrationId: active.registration_id,
+                  qrToken: active.qr_token,
+                  participantName: active.participant_name,
+                  email: active.email,
+                  mobileNumber: active.mobile_number,
+                  college: active.college_institution,
+                  department: active.department,
+                  selectedEvents: existingEvents,
+                  totalEvents: existingEvents.length,
+                  referralSource: referralSource,
+                  referralSourceOther: referralSourceOther || undefined,
+                  registrationDate: active.registration_date,
+                  teamName: active.team_name || undefined,
+                  teamMembers: active.team_members || [],
+                  participants: Array.isArray(active.team_members) && active.team_members.length > 0 ? active.team_members : undefined,
+                },
+              };
+            }
+          } catch (recoveryErr) {
+            console.warn('[EvoXis26 API] Concurrent recovery error:', recoveryErr);
+          }
+        }
         return {
           success: false,
           databaseSuccess: false,
@@ -621,6 +703,15 @@ export const api = {
       },
       message: 'Registration confirmed successfully.',
     };
+    };
+
+    const taskPromise = executeRegistration();
+    inFlightRegistrations.set(inFlightKey, taskPromise);
+    taskPromise.finally(() => {
+      inFlightRegistrations.delete(inFlightKey);
+    });
+
+    return taskPromise;
   },
 
   /**
