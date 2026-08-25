@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { operationsApi } from '../services/operationsApi';
@@ -7,6 +7,7 @@ import {
   ScanOperationResponse,
   ParticipantProfile,
   EventTeamContext,
+  EventTeamMemberRosterItem,
 } from '../types';
 import { getEventById } from '../config/events';
 import { CameraScanner } from '../components/common/CameraScanner';
@@ -47,6 +48,7 @@ export const EventScanPage: React.FC = () => {
   const [scannedPhysicalQr, setScannedPhysicalQr] = useState<string>('');
   const [resolvedParticipant, setResolvedParticipant] = useState<ParticipantProfile | null>(null);
   const [teamContext, setTeamContext] = useState<EventTeamContext | null>(null);
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [attendanceWorkflow, setAttendanceWorkflow] = useState<AttendanceWorkflowState>('IDLE');
   const [attendanceTimestamp, setAttendanceTimestamp] = useState<string>('');
 
@@ -63,6 +65,34 @@ export const EventScanPage: React.FC = () => {
   >([]);
 
   const isSuperAdmin = hasRole(['SUPER_ADMIN']);
+
+  // Active target member derived from teamContext or resolvedParticipant
+  const activeMember: EventTeamMemberRosterItem | null = useMemo(() => {
+    if (isTeamEvent && teamContext && teamContext.members.length > 0) {
+      const match = teamContext.members.find(
+        (m) => m.participantId === (selectedMemberId || resolvedParticipant?.id)
+      );
+      if (match) return match;
+    }
+    if (resolvedParticipant) {
+      return {
+        participantId: resolvedParticipant.id,
+        registrationId: resolvedParticipant.registrationId,
+        name: resolvedParticipant.participantName,
+        role: (resolvedParticipant.role === 'TEAM_HEAD' ? 'TEAM_HEAD' : 'TEAM_MEMBER') as any,
+        isRegisteredForEvent: resolvedParticipant.selectedEvents.some(
+          (e) => e.trim().toUpperCase() === eventId.trim().toUpperCase()
+        ),
+        attendanceStatus:
+          attendanceWorkflow === 'ALREADY_PRESENT' || attendanceWorkflow === 'MARKED_SUCCESS'
+            ? 'Present'
+            : 'Not Present',
+        physicalQrId: scannedPhysicalQr,
+        checkinTime: attendanceTimestamp,
+      };
+    }
+    return null;
+  }, [isTeamEvent, teamContext, selectedMemberId, resolvedParticipant, attendanceWorkflow, scannedPhysicalQr, attendanceTimestamp, eventId]);
 
   /**
    * Step 1: Scan & Resolve Physical QR -> Validate Event Registration -> Check Attendance & Team Roster
@@ -81,6 +111,7 @@ export const EventScanPage: React.FC = () => {
       if (!resolution.success || !resolution.participant) {
         setResolvedParticipant(null);
         setTeamContext(null);
+        setSelectedMemberId(null);
         setAttendanceWorkflow('IDLE');
         const errCode = resolution.errorCode || 'QR_NOT_FOUND';
 
@@ -118,6 +149,7 @@ export const EventScanPage: React.FC = () => {
 
       const participant = resolution.participant;
       setResolvedParticipant(participant);
+      setSelectedMemberId(participant.id);
 
       // 2. Check if participant is registered for the current event
       const isRegistered = participant.selectedEvents.some(
@@ -183,6 +215,7 @@ export const EventScanPage: React.FC = () => {
     } catch (err: any) {
       setResolvedParticipant(null);
       setTeamContext(null);
+      setSelectedMemberId(null);
       setAttendanceWorkflow('IDLE');
       setScanResult({
         state: 'OFFLINE_ERROR',
@@ -198,15 +231,46 @@ export const EventScanPage: React.FC = () => {
   };
 
   /**
+   * Handle selecting a team member from the interactive roster
+   */
+  const handleSelectMember = (member: EventTeamMemberRosterItem) => {
+    setSelectedMemberId(member.participantId);
+    setScanResult(null);
+
+    if (!member.isRegisteredForEvent && !isAdminOverride) {
+      setAttendanceWorkflow('NOT_REGISTERED');
+      setScanResult({
+        state: 'WRONG_EVENT',
+        verbatimMessage: 'PARTICIPANT FOUND — NOT REGISTERED FOR THIS EVENT',
+        details: `${member.name} (${member.participantId}) is not registered for ${eventId}.`,
+        participant: resolvedParticipant || undefined,
+      });
+    } else if (member.attendanceStatus === 'Present') {
+      setAttendanceWorkflow('ALREADY_PRESENT');
+      setAttendanceTimestamp(
+        member.checkinTime ? new Date(member.checkinTime).toLocaleTimeString() : ''
+      );
+    } else {
+      setAttendanceWorkflow('ELIGIBLE');
+      setAttendanceTimestamp('');
+    }
+  };
+
+  /**
    * Step 2: When coordinator clicks [ MARK AS PRESENT ] button
    */
   const handleMarkPresent = async () => {
-    if (!resolvedParticipant || !scannedPhysicalQr) return;
+    if (!resolvedParticipant) return;
+
+    const targetId = selectedMemberId || resolvedParticipant.id;
+    const targetName = activeMember?.name || resolvedParticipant.participantName;
+    const targetQr = activeMember?.physicalQrId || (targetId === resolvedParticipant.id ? scannedPhysicalQr : undefined);
 
     setIsMarking(true);
     try {
       const response = await operationsApi.markEventPresent({
-        physicalQrId: scannedPhysicalQr,
+        physicalQrId: targetQr,
+        participantId: targetId,
         eventId,
         staffId: user?.name || 'Event Coordinator',
         station: `${currentStation} (${eventId})`,
@@ -226,24 +290,46 @@ export const EventScanPage: React.FC = () => {
         setAttendanceTimestamp(timeNow);
         audio.playSuccess();
 
-        // Refresh team roster if in team mode
+        // Update local teamContext directly for instantaneous UI feedback
+        if (teamContext) {
+          const updatedMembers = teamContext.members.map((m) =>
+            m.participantId === targetId
+              ? {
+                  ...m,
+                  attendanceStatus: 'Present' as const,
+                  checkinTime: response.timestamp || new Date().toISOString(),
+                }
+              : m
+          );
+          const presentCount = updatedMembers.filter((m) => m.attendanceStatus === 'Present').length;
+          setTeamContext({
+            ...teamContext,
+            members: updatedMembers,
+            presentCount,
+          });
+        }
+
+        // Background sync to ensure all data layers are hydrated
         if (response.teamEventContext) {
           setTeamContext(response.teamEventContext);
         } else if (isTeamEvent && resolvedParticipant.registrationId) {
-          const freshTeam = await operationsApi.getEventTeamRoster({
-            registrationId: resolvedParticipant.registrationId,
-            eventId,
-          });
-          if (freshTeam.success && freshTeam.data) {
-            setTeamContext(freshTeam.data);
-          }
+          operationsApi
+            .getEventTeamRoster({
+              registrationId: resolvedParticipant.registrationId,
+              eventId,
+            })
+            .then((freshTeam) => {
+              if (freshTeam.success && freshTeam.data) {
+                setTeamContext(freshTeam.data);
+              }
+            });
         }
 
         // Update Desk Check-in History (This Session) ONLY after successful mark
         setRecentEventScans((prev) => [
           {
-            name: resolvedParticipant.participantName,
-            regId: resolvedParticipant.id,
+            name: targetName,
+            regId: targetId,
             eventId,
             time: timeNow,
             state: 'PRESENT',
@@ -278,6 +364,7 @@ export const EventScanPage: React.FC = () => {
     setScannedPhysicalQr('');
     setResolvedParticipant(null);
     setTeamContext(null);
+    setSelectedMemberId(null);
     setAttendanceWorkflow('IDLE');
     setAttendanceTimestamp('');
     setScanResult(null);
@@ -453,37 +540,52 @@ export const EventScanPage: React.FC = () => {
                 {/* Team Members Registered for this Event */}
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between text-xs font-mono text-slate-400 px-1">
-                    <span className="font-bold uppercase tracking-wider text-[11px] text-slate-300">
-                      TEAM MEMBERS REGISTERED FOR THIS EVENT ({teamContext.members.length}):
+                    <span className="font-bold uppercase tracking-wider text-[11px] text-slate-300 flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>TEAM MEMBERS REGISTERED FOR THIS EVENT ({teamContext.members.length}):</span>
+                    </span>
+                    <span className="text-[10px] text-cyan-400 font-mono">
+                      Click any member to select
                     </span>
                   </div>
 
-                  <div className="space-y-2 max-h-[260px] overflow-y-auto pr-1">
+                  <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
                     {teamContext.members.map((member, idx) => {
+                      const isSelected = member.participantId === (selectedMemberId || resolvedParticipant.id);
                       const isCurrentlyScanned = member.participantId === resolvedParticipant.id;
                       const isMemberPresent = member.attendanceStatus === 'Present';
 
                       return (
                         <div
                           key={member.participantId}
-                          className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
-                            isCurrentlyScanned
-                              ? 'bg-gradient-to-r from-cyan-950/70 to-slate-900 border-cyan-400 shadow-lg shadow-cyan-950/50 ring-2 ring-cyan-500/40'
-                              : 'bg-slate-950/50 border-slate-800/80 hover:border-slate-700'
+                          onClick={() => handleSelectMember(member)}
+                          role="button"
+                          tabIndex={0}
+                          className={`p-3.5 rounded-2xl border transition-all cursor-pointer select-none flex items-center justify-between gap-3 text-left ${
+                            isSelected
+                              ? 'bg-gradient-to-r from-cyan-950/90 to-slate-900 border-cyan-400 shadow-xl shadow-cyan-950/60 ring-2 ring-cyan-500/50'
+                              : 'bg-slate-950/50 border-slate-800/80 hover:border-slate-600 hover:bg-slate-900/60'
                           }`}
                         >
                           <div className="flex items-center gap-3 min-w-0">
-                            <span className="text-xs font-mono font-bold text-slate-500 w-5 text-center">
-                              {idx + 1}.
-                            </span>
+                            <div className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-mono font-bold ${
+                              isSelected ? 'bg-cyan-500 text-slate-950' : 'bg-slate-800 text-slate-300'
+                            }`}>
+                              {idx + 1}
+                            </div>
                             <div className="min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <span className="font-bold text-sm text-white truncate">
                                   {member.name}
                                 </span>
+                                {isSelected && (
+                                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-400 text-slate-950 font-black uppercase tracking-wider shadow-sm shadow-cyan-500/50">
+                                    ACTIVE TARGET
+                                  </span>
+                                )}
                                 {isCurrentlyScanned && (
-                                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500 text-slate-950 font-black uppercase tracking-wider animate-pulse">
-                                    CURRENTLY SCANNED
+                                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-cyan-300 font-bold border border-cyan-500/40 uppercase tracking-wider">
+                                    SCANNED QR
                                   </span>
                                 )}
                               </div>
@@ -503,16 +605,20 @@ export const EventScanPage: React.FC = () => {
                             </div>
                           </div>
 
-                          <div className="shrink-0">
+                          <div className="shrink-0 flex items-center gap-2">
                             {isMemberPresent ? (
                               <span className="text-xs font-mono px-2.5 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40 flex items-center gap-1.5">
                                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                                 <span>Present</span>
                               </span>
                             ) : (
-                              <span className="text-xs font-mono px-2.5 py-1 rounded-xl bg-slate-900 text-slate-400 font-bold border border-slate-800 flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
-                                <span>Not Present</span>
+                              <span className={`text-xs font-mono px-2.5 py-1 rounded-xl font-bold border flex items-center gap-1.5 ${
+                                isSelected
+                                  ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                                  : 'bg-slate-900 text-slate-400 border-slate-800'
+                              }`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-cyan-400' : 'bg-slate-500'}`}></span>
+                                <span>{isSelected ? 'Ready to Mark' : 'Not Present'}</span>
                               </span>
                             )}
                           </div>
@@ -527,18 +633,18 @@ export const EventScanPage: React.FC = () => {
                   <div className="p-3.5 rounded-2xl bg-cyan-950/40 border border-cyan-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-wider block">
-                        CURRENTLY SCANNED ATTENDEE
+                        CONFIRMING ATTENDANCE FOR (SELECTED TARGET)
                       </span>
                       <p className="text-base font-bold text-white tracking-tight">
-                        {resolvedParticipant.participantName}
+                        {activeMember?.name || resolvedParticipant.participantName}
                       </p>
                       <p className="text-xs font-mono text-cyan-300">
-                        {resolvedParticipant.id} ({resolvedParticipant.role?.replace('_', ' ') || 'TEAM MEMBER'})
+                        {activeMember?.participantId || resolvedParticipant.id} ({activeMember?.role?.replace('_', ' ') || resolvedParticipant.role?.replace('_', ' ') || 'TEAM MEMBER'})
                       </p>
                     </div>
-                    {scannedPhysicalQr && (
+                    {(activeMember?.physicalQrId || (selectedMemberId === resolvedParticipant.id && scannedPhysicalQr)) && (
                       <span className="text-xs font-mono px-2.5 py-1 rounded-xl bg-slate-900 text-cyan-300 border border-slate-700 font-bold self-start sm:self-auto">
-                        QR: {scannedPhysicalQr}
+                        QR: {activeMember?.physicalQrId || scannedPhysicalQr}
                       </span>
                     )}
                   </div>
@@ -551,7 +657,7 @@ export const EventScanPage: React.FC = () => {
                         <span>NOT REGISTERED FOR THIS EVENT</span>
                       </div>
                       <p className="text-xs font-mono text-rose-300/80">
-                        This participant is not registered for {eventId}. Direct attendee to their registered desks ({resolvedParticipant.selectedEvents.join(', ')}).
+                        <strong>{activeMember?.name || resolvedParticipant.participantName}</strong> is not registered for {eventId}. Direct attendee to their registered desks.
                       </p>
                     </div>
                   )}
@@ -562,7 +668,7 @@ export const EventScanPage: React.FC = () => {
                       <div className="p-3 rounded-xl bg-emerald-950/30 border border-emerald-500/40 text-emerald-300 text-xs font-mono flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                         <span>
-                          Eligible to mark attendance for <strong>{resolvedParticipant.participantName}</strong>
+                          Eligible to mark attendance for <strong>{activeMember?.name || resolvedParticipant.participantName}</strong>
                         </span>
                       </div>
 
@@ -580,7 +686,7 @@ export const EventScanPage: React.FC = () => {
                         ) : (
                           <>
                             <CheckCircle2 className="w-6 h-6" />
-                            <span>MARK AS PRESENT</span>
+                            <span>MARK {activeMember?.name?.toUpperCase() || resolvedParticipant.participantName.toUpperCase()} AS PRESENT</span>
                           </>
                         )}
                       </button>
@@ -596,7 +702,7 @@ export const EventScanPage: React.FC = () => {
                           <span>ALREADY MARKED PRESENT</span>
                         </div>
                         <div className="grid grid-cols-2 gap-1 text-[11px] text-amber-300/80 pt-1">
-                          <div>Attendee: <strong className="text-white">{resolvedParticipant.participantName}</strong></div>
+                          <div>Attendee: <strong className="text-white">{activeMember?.name || resolvedParticipant.participantName}</strong></div>
                           <div>Event: <strong className="text-white">{eventId}</strong></div>
                           {attendanceTimestamp && (
                             <div className="col-span-2">
@@ -611,7 +717,7 @@ export const EventScanPage: React.FC = () => {
                         className="w-full py-3.5 px-6 rounded-2xl bg-slate-800 border border-slate-700 text-slate-400 font-bold text-sm flex items-center justify-center gap-2 cursor-not-allowed"
                       >
                         <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                        <span>✓ PRESENT</span>
+                        <span>✓ {activeMember?.name || resolvedParticipant.participantName} IS ALREADY PRESENT</span>
                       </button>
                     </div>
                   )}
@@ -622,12 +728,12 @@ export const EventScanPage: React.FC = () => {
                       <div className="p-4 rounded-2xl bg-emerald-950/50 border border-emerald-400 text-emerald-200 space-y-2 font-mono text-xs shadow-lg shadow-emerald-950/50">
                         <div className="flex items-center gap-2 font-black text-sm text-emerald-300">
                           <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                          <span>✓ PRESENT MARKED</span>
+                          <span>✓ ATTENDANCE RECORDED</span>
                         </div>
                         <div className="grid grid-cols-2 gap-1.5 text-[11px] text-emerald-200/90 pt-1 border-t border-emerald-500/30">
-                          <div>Participant: <strong className="text-white">{resolvedParticipant.participantName}</strong></div>
+                          <div>Participant: <strong className="text-white">{activeMember?.name || resolvedParticipant.participantName}</strong></div>
                           <div>Event: <strong className="text-white">{eventId}</strong></div>
-                          <div>Registration ID: <strong className="text-white">{resolvedParticipant.id}</strong></div>
+                          <div>Registration ID: <strong className="text-white">{activeMember?.participantId || resolvedParticipant.id}</strong></div>
                           <div>Time: <strong className="text-white">{attendanceTimestamp || 'Just Now'}</strong></div>
                         </div>
                       </div>
@@ -637,7 +743,7 @@ export const EventScanPage: React.FC = () => {
                         className="w-full py-3.5 px-6 rounded-2xl bg-emerald-950/40 border border-emerald-500/50 text-emerald-400 font-bold text-sm flex items-center justify-center gap-2 cursor-not-allowed"
                       >
                         <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                        <span>✓ PRESENT</span>
+                        <span>✓ {activeMember?.name || resolvedParticipant.participantName} MARKED PRESENT</span>
                       </button>
                     </div>
                   )}

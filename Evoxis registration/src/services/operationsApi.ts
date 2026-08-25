@@ -1551,78 +1551,97 @@ export const operationsApi = {
    */
   async markEventPresent(params: {
     eventId: string;
-    physicalQrId: string;
+    physicalQrId?: string;
+    participantId?: string;
     staffId: string;
     station?: string;
     portalMode?: 'TEST' | 'PRODUCTION';
     isAdminOverride?: boolean;
     overrideReason?: string;
   }): Promise<ScanOperationResponse> {
-    const cleanQr = params.physicalQrId.trim().toUpperCase();
+    let cleanQr = (params.physicalQrId || '').trim().toUpperCase();
+    const cleanParticipantId = (params.participantId || '').trim();
     const eventId = params.eventId.trim().toUpperCase();
     const station = params.station || `Event Desk (${eventId})`;
     const portalMode =
       params.portalMode || (station.toUpperCase().includes('TEST') ? 'TEST' : 'PRODUCTION');
 
-    if (!cleanQr) {
-      return {
-        state: 'INVALID_QR',
-        verbatimMessage: 'INVALID QR',
-        details: 'QR code cannot be empty',
-      };
-    }
-
     // Lookup event title
     const eventMeta = OFFICIAL_EVENTS.find((e) => e.eventId.toUpperCase() === eventId);
     const eventTitle = eventMeta?.title || eventId;
 
-    // 1. Resolve participant via single shared resolver
-    const resolved = await this.resolvePhysicalQR(cleanQr, portalMode);
+    let participant: ParticipantProfile | null = null;
 
-    if (!resolved.success || !resolved.participant) {
-      const errCode = resolved.errorCode;
-      let state: ScanResultState = 'NOT_FOUND';
-      let msg = 'PARTICIPANT NOT FOUND';
-
-      if (errCode === 'INVALID_QR_FORMAT') {
-        state = 'INVALID_QR';
-        msg = 'INVALID QR';
-      } else if (errCode === 'QR_NOT_FOUND') {
-        state = 'QR_NOT_FOUND';
-        msg = 'QR NOT FOUND IN INVENTORY';
-      } else if (errCode === 'QR_NOT_ASSIGNED') {
-        state = 'UNASSIGNED_QR';
-        msg = 'QR NOT ASSIGNED';
-      } else if (errCode === 'QR_REVOKED') {
-        state = 'QR_REVOKED';
-        msg = 'QR REVOKED';
-      } else if (errCode === 'TEST_QR_IN_PRODUCTION_MODE') {
-        state = 'TEST_QR_IN_PROD';
-        msg = 'TEST QR DETECTED';
-      } else if (errCode === 'PRODUCTION_QR_IN_TEST_MODE') {
-        state = 'PROD_QR_IN_TEST';
-        msg = 'PRODUCTION QR IN TEST MODE';
+    // 1. If participantId is explicitly provided (e.g. member selected from team roster)
+    if (cleanParticipantId) {
+      const pLookup = await this.lookupRegistration({ queryStr: cleanParticipantId });
+      if (pLookup.success && pLookup.data) {
+        participant = pLookup.data;
+        if (!cleanQr && participant.physicalQrId) {
+          cleanQr = participant.physicalQrId;
+        } else if (!cleanQr) {
+          cleanQr = participant.id;
+        }
       }
-
-      await this.logAudit({
-        staffUser: params.staffId,
-        station,
-        operation: 'EVENT_CHECKIN',
-        eventId,
-        eventName: eventTitle,
-        physicalQrId: cleanQr,
-        result: 'ERROR',
-        reason: resolved.errorMessage || 'Resolver failure',
-      });
-
-      return {
-        state,
-        verbatimMessage: msg,
-        details: resolved.errorMessage || `No active registration found for QR ${cleanQr}`,
-      };
     }
 
-    const participant = resolved.participant;
+    // 2. Otherwise resolve participant via physical QR code
+    if (!participant) {
+      if (!cleanQr) {
+        return {
+          state: 'INVALID_QR',
+          verbatimMessage: 'INVALID QR',
+          details: 'QR code or participant ID must be provided',
+        };
+      }
+
+      const resolved = await this.resolvePhysicalQR(cleanQr, portalMode);
+
+      if (!resolved.success || !resolved.participant) {
+        const errCode = resolved.errorCode;
+        let state: ScanResultState = 'NOT_FOUND';
+        let msg = 'PARTICIPANT NOT FOUND';
+
+        if (errCode === 'INVALID_QR_FORMAT') {
+          state = 'INVALID_QR';
+          msg = 'INVALID QR';
+        } else if (errCode === 'QR_NOT_FOUND') {
+          state = 'QR_NOT_FOUND';
+          msg = 'QR NOT FOUND IN INVENTORY';
+        } else if (errCode === 'QR_NOT_ASSIGNED') {
+          state = 'UNASSIGNED_QR';
+          msg = 'QR NOT ASSIGNED';
+        } else if (errCode === 'QR_REVOKED') {
+          state = 'QR_REVOKED';
+          msg = 'QR REVOKED';
+        } else if (errCode === 'TEST_QR_IN_PRODUCTION_MODE') {
+          state = 'TEST_QR_IN_PROD';
+          msg = 'TEST QR DETECTED';
+        } else if (errCode === 'PRODUCTION_QR_IN_TEST_MODE') {
+          state = 'PROD_QR_IN_TEST';
+          msg = 'PRODUCTION QR IN TEST MODE';
+        }
+
+        await this.logAudit({
+          staffUser: params.staffId,
+          station,
+          operation: 'EVENT_CHECKIN',
+          eventId,
+          eventName: eventTitle,
+          physicalQrId: cleanQr,
+          result: 'ERROR',
+          reason: resolved.errorMessage || 'Resolver failure',
+        });
+
+        return {
+          state,
+          verbatimMessage: msg,
+          details: resolved.errorMessage || `No active registration found for QR ${cleanQr}`,
+        };
+      }
+
+      participant = resolved.participant;
+    }
 
     // Concurrency Lock for in-flight requests
     const checkinLockKey = `${participant.id}_${eventId}`;

@@ -1969,6 +1969,50 @@ describe('EvoXis26 Operations Portal Automated Test Suite', () => {
       expect(lookup.data?.registrationType).toBe('Team');
       expect(lookup.data?.teamMembers?.length).toBe(3);
     });
+
+    // Test 16: Direct participantId support for roster-selected member
+    it('ED-16: markEventPresent supports direct participantId parameter for roster-selected member', async () => {
+      // Mark Member 2 directly by participantId without needing physicalQrId
+      const markMember2 = await operationsApi.markEventPresent({
+        eventId: 'TE02',
+        participantId: `${TEAM_A_ID}-M1`,
+        staffId: 'Coordinator',
+      });
+
+      expect(markMember2.state).toBe('SUCCESS');
+      expect(markMember2.participantName).toBe('Ajay Kumar');
+
+      // Member 2 is Present, Member 1 and Member 3 remain Not Present
+      const roster = await operationsApi.getEventTeamRoster({
+        registrationId: TEAM_A_ID,
+        eventId: 'TE02',
+      });
+      expect(roster.data?.presentCount).toBe(1);
+      expect(roster.data?.members[0].attendanceStatus).toBe('Not Present');
+      expect(roster.data?.members[1].attendanceStatus).toBe('Present');
+      expect(roster.data?.members[2].attendanceStatus).toBe('Not Present');
+    });
+
+    // Test 17: Sequential manual selection of roster members updates attendance cleanly
+    it('ED-17: Selecting and marking member 3 directly marks member 3 without altering other members', async () => {
+      const markMember3 = await operationsApi.markEventPresent({
+        eventId: 'TE02',
+        participantId: `${TEAM_A_ID}-M2`,
+        staffId: 'Coordinator',
+      });
+
+      expect(markMember3.state).toBe('SUCCESS');
+      expect(markMember3.participantName).toBe('Arun Kumar');
+
+      const roster = await operationsApi.getEventTeamRoster({
+        registrationId: TEAM_A_ID,
+        eventId: 'TE02',
+      });
+      expect(roster.data?.presentCount).toBe(1);
+      expect(roster.data?.members[0].attendanceStatus).toBe('Not Present');
+      expect(roster.data?.members[1].attendanceStatus).toBe('Not Present');
+      expect(roster.data?.members[2].attendanceStatus).toBe('Present');
+    });
   });
 });
 
