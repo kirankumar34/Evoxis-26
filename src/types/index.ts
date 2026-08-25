@@ -113,6 +113,18 @@ export interface TeamMember {
   role?: 'TEAM_HEAD' | 'TEAM_MEMBER' | 'INDIVIDUAL';
 }
 
+export const REFERRAL_SOURCES = [
+  'School Friend',
+  'College Friend',
+  'College Staff',
+  'Instagram Post',
+  'By College',
+  'Other Social Media Platform',
+  'Other',
+] as const;
+
+export type ReferralSourceOption = (typeof REFERRAL_SOURCES)[number];
+
 export interface RegistrationFormData {
   fullName: string;
   email: string;
@@ -125,6 +137,8 @@ export interface RegistrationFormData {
   isTeam?: boolean;
   teamName?: string;
   teamMembers?: TeamMember[];
+  referralSource?: string;
+  referralSourceOther?: string;
   transactionId?: string;
   agreedToRules: boolean;
 }
@@ -151,6 +165,8 @@ export interface OverallRegistrationRecord {
   paymentStatus: 'Free' | 'Paid' | 'Pending';
   qrToken: string; // HMAC token e.g. "EVOXIS26:a8f9..."
   qrStatus: 'Active' | 'Revoked';
+  referralSource?: string;
+  referralSourceOther?: string;
   emailStatus: 'Sent' | 'Failed' | 'Pending';
   smsStatus: 'Sent' | 'Failed' | 'Pending' | 'Disabled';
   whatsappStatus: 'Sent' | 'Failed' | 'Pending' | 'Disabled';

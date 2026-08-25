@@ -63,6 +63,8 @@ export interface ParticipantProfile {
   teamMembers?: TeamMemberInfo[];
   selectedEvents: string[];
   registeredEvents: RegisteredEventInfo[];
+  referralSource?: string;
+  referralSourceOther?: string;
   
   // Operational State
   digitalQrToken: string;

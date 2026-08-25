@@ -15,10 +15,23 @@ const registrationSchema = z.object({
     .array(z.string())
     .min(1, 'Please select at least 1 event to participate in')
     .max(5, 'You can select up to 5 events'),
+  referralSource: z.string().min(1, 'Please tell us how you heard about EvoXis 26.'),
+  referralSourceOther: z.string().optional(),
   isTeam: z.boolean().default(false),
   teamName: z.string().optional(),
   teamMembers: z.array(z.string()).optional(),
-});
+}).refine(
+  (data) => {
+    if (data.referralSource === 'Other') {
+      return Boolean(data.referralSourceOther && data.referralSourceOther.trim().length > 0);
+    }
+    return true;
+  },
+  {
+    message: 'Please specify how you heard about EvoXis 26.',
+    path: ['referralSourceOther'],
+  }
+);
 
 describe('AC2: Form Validation & Field Constraints', () => {
   it('passes validation for valid participant data', () => {
@@ -31,6 +44,7 @@ describe('AC2: Form Validation & Field Constraints', () => {
       yearOfStudy: '3rd Year',
       gender: 'Male',
       selectedEventIds: ['TE01', 'NT01'],
+      referralSource: 'Instagram Post',
       isTeam: false,
     };
 
@@ -47,6 +61,7 @@ describe('AC2: Form Validation & Field Constraints', () => {
       department: '',
       yearOfStudy: '',
       selectedEventIds: [],
+      referralSource: '',
     };
 
     const result = registrationSchema.safeParse(invalidData);
@@ -60,6 +75,7 @@ describe('AC2: Form Validation & Field Constraints', () => {
       expect(errorMap.department).toBeDefined();
       expect(errorMap.yearOfStudy).toBeDefined();
       expect(errorMap.selectedEventIds).toBeDefined();
+      expect(errorMap.referralSource).toBeDefined();
     }
   });
 
@@ -133,6 +149,36 @@ describe('AC2: Form Validation & Field Constraints', () => {
     if (!result.success) {
       expect(result.error.flatten().fieldErrors.selectedEventIds?.[0]).toContain('up to 5 events');
     }
+  });
+
+  it('accepts referral source Other when other text is specified', () => {
+    const result = registrationSchema.safeParse({
+      fullName: 'Test User',
+      email: 'test@example.com',
+      phone: '9840112345',
+      collegeName: 'Sriram Engineering College',
+      department: 'CSE',
+      yearOfStudy: '2nd Year',
+      selectedEventIds: ['TE01'],
+      referralSource: 'Other',
+      referralSourceOther: 'WhatsApp Group',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects referral source Other when other text is empty', () => {
+    const result = registrationSchema.safeParse({
+      fullName: 'Test User',
+      email: 'test@example.com',
+      phone: '9840112345',
+      collegeName: 'Sriram Engineering College',
+      department: 'CSE',
+      yearOfStudy: '2nd Year',
+      selectedEventIds: ['TE01'],
+      referralSource: 'Other',
+      referralSourceOther: '',
+    });
+    expect(result.success).toBe(false);
   });
 
   it('deduplicates duplicate event selections cleanly', () => {

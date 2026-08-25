@@ -32,6 +32,9 @@ export const RegistrationSuccessPage: React.FC = () => {
     college?: string;
     department?: string;
     selectedEvents?: EventId[];
+    totalEvents?: number;
+    referralSource?: string;
+    referralSourceOther?: string;
     isDuplicate?: boolean;
     teamName?: string;
     teamMembers?: Array<{
@@ -67,6 +70,8 @@ export const RegistrationSuccessPage: React.FC = () => {
   const college = regState?.college || 'Sriram Engineering College';
   const department = regState?.department || 'Department of Computing';
   const selectedEvents = regState?.selectedEvents || (['TE01', 'NT05', 'SP02'] as EventId[]);
+  const referralSource = regState?.referralSource || 'Instagram Post';
+  const referralSourceOther = regState?.referralSourceOther;
   const teamName = regState?.teamName;
   const teamMembers = regState?.teamMembers || [];
 
@@ -189,6 +194,12 @@ export const RegistrationSuccessPage: React.FC = () => {
                   <span className="text-xs text-slate-400 block mb-0.5">Event Date</span>
                   <span className="font-medium text-cyan-300 flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5" /> September 26, 2026
+                  </span>
+                </div>
+                <div className="col-span-2 pt-2 border-t border-slate-800/80 flex items-center justify-between">
+                  <span className="text-xs text-slate-400">How you heard about us:</span>
+                  <span className="text-xs font-mono font-bold text-cyan-400 px-2.5 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/30">
+                    {referralSource === 'Other' && referralSourceOther ? `Other: ${referralSourceOther}` : referralSource}
                   </span>
                 </div>
               </div>

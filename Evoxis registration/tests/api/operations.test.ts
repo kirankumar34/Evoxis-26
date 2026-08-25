@@ -871,19 +871,19 @@ describe('EvoXis26 Operations Portal Automated Test Suite', () => {
   });
 
   test('22. Event Desk two-step inspection and [ MARK AS PRESENT ] action with duplicate protection', async () => {
-    const testRegId = 'EVOXIS26-TEST-MARK-00022';
+    const testRegId = `EVOXIS26-TEST-MARK-${Date.now()}-00022`;
     // 1. Seed Participant test15 with multi-events (SP01, SP02, NT05, SP04)
     const seed = JSON.parse(localStorage.getItem('evoxis26_overall_registrations') || '[]');
     seed.push({
       registrationId: testRegId,
       participantName: 'test15',
-      email: 'test15@sec.edu',
+      email: `test15_${Date.now()}@sec.edu`,
       mobileNumber: '9888877777',
       collegeInstitution: 'SEC',
       selectedEvents: 'SP01, SP02, NT05, SP04',
       role: 'INDIVIDUAL',
       teamName: 'Team Spidey',
-      qrToken: 'EVOXIS26:test15token22',
+      qrToken: `EVOXIS26:test15token22_${Date.now()}`,
     });
     localStorage.setItem('evoxis26_overall_registrations', JSON.stringify(seed));
 
@@ -942,19 +942,19 @@ describe('EvoXis26 Operations Portal Automated Test Suite', () => {
   });
 
   test('23. Multi-event attendance tracking: separate status per event (SP01, SP02 vs unregistered TE01)', async () => {
-    const testRegId = 'EVOXIS26-TEST-MARK-00023';
+    const testRegId = `EVOXIS26-TEST-MARK-${Date.now()}-00023`;
     // 1. Seed Participant test15 with multi-events (SP01, SP02, NT05, SP04)
     const seed = JSON.parse(localStorage.getItem('evoxis26_overall_registrations') || '[]');
     seed.push({
       registrationId: testRegId,
       participantName: 'test15',
-      email: 'test15@sec.edu',
+      email: `test15_${Date.now()}@sec.edu`,
       mobileNumber: '9888877777',
       collegeInstitution: 'SEC',
       selectedEvents: 'SP01, SP02, NT05, SP04',
       role: 'INDIVIDUAL',
       teamName: 'Team Spidey',
-      qrToken: 'EVOXIS26:test15token23',
+      qrToken: `EVOXIS26:test15token23_${Date.now()}`,
     });
     localStorage.setItem('evoxis26_overall_registrations', JSON.stringify(seed));
 

@@ -29,6 +29,8 @@ CREATE TABLE IF NOT EXISTS public.overall_registrations (
     payment_status TEXT NOT NULL DEFAULT 'Free',
     qr_token TEXT UNIQUE NOT NULL,
     qr_status TEXT NOT NULL DEFAULT 'Active',
+    referral_source TEXT,
+    referral_source_other TEXT,
     email_status TEXT NOT NULL DEFAULT 'Sent',
     sms_status TEXT NOT NULL DEFAULT 'Sent',
     whatsapp_status TEXT NOT NULL DEFAULT 'Sent',

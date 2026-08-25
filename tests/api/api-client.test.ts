@@ -313,4 +313,170 @@ describe('AC3, AC4, AC6, AC7, AC8: Full API Client & Database Service Layer', ()
     expect(memberLookupById.success).toBe(true);
     expect(memberLookupById.data?.participantName).toBe('Kumar V');
   });
+
+  // =========================================================================
+  // PROMPT 10 COMPLIANCE TESTS (TEST CASES 1 - 7)
+  // =========================================================================
+
+  it('12. Prompt 10 TEST 1 — Single Event (TE01) + Referral (Instagram Post)', async () => {
+    const payload: RegistrationFormData = {
+      fullName: 'Test Participant 1',
+      email: 'test1@example.com',
+      phone: '9840100001',
+      collegeName: 'Sriram Engineering College',
+      department: 'CSBS',
+      yearOfStudy: '3rd Year',
+      gender: 'Male',
+      selectedEventIds: ['TE01'],
+      referralSource: 'Instagram Post',
+      agreedToRules: true,
+    };
+
+    const res = await api.registerParticipant(payload);
+    expect(res.success).toBe(true);
+    expect(res.data?.selectedEvents).toEqual(['TE01']);
+    expect(res.data?.totalEvents).toBe(1);
+    expect(res.data?.referralSource).toBe('Instagram Post');
+
+    const lookup = await api.getRegistration({ registrationId: res.data!.registrationId });
+    expect(lookup.success).toBe(true);
+    expect(lookup.data?.referralSource).toBe('Instagram Post');
+    expect(lookup.data?.events.length).toBe(1);
+    expect(lookup.data?.events[0].eventId).toBe('TE01');
+  });
+
+  it('13. Prompt 10 TEST 2 — Multiple Events (TE01, TE02, NT01) + Referral (College Friend)', async () => {
+    const payload: RegistrationFormData = {
+      fullName: 'Kiran Kumar',
+      email: 'kiran.multi@example.com',
+      phone: '9840100002',
+      collegeName: 'Sriram Engineering College',
+      department: 'CSBS',
+      yearOfStudy: '3rd Year',
+      gender: 'Male',
+      selectedEventIds: ['TE01', 'TE02', 'NT01'],
+      referralSource: 'College Friend',
+      agreedToRules: true,
+    };
+
+    const res = await api.registerParticipant(payload);
+    expect(res.success).toBe(true);
+    expect(res.data?.selectedEvents).toEqual(['TE01', 'TE02', 'NT01']);
+    expect(res.data?.totalEvents).toBe(3);
+    expect(res.data?.referralSource).toBe('College Friend');
+
+    const lookup = await api.getRegistration({ registrationId: res.data!.registrationId });
+    expect(lookup.success).toBe(true);
+    expect(lookup.data?.referralSource).toBe('College Friend');
+    expect(lookup.data?.events.length).toBe(3);
+    expect(lookup.data?.events.map((e) => e.eventId)).toEqual(['TE01', 'TE02', 'NT01']);
+  });
+
+  it('14. Prompt 10 TEST 3 — Other Referral Source (Other + WhatsApp Group)', async () => {
+    const payload: RegistrationFormData = {
+      fullName: 'Participant Other',
+      email: 'other@example.com',
+      phone: '9840100003',
+      collegeName: 'Sriram Engineering College',
+      department: 'IT',
+      yearOfStudy: '2nd Year',
+      gender: 'Female',
+      selectedEventIds: ['TE01'],
+      referralSource: 'Other',
+      referralSourceOther: 'WhatsApp Group',
+      agreedToRules: true,
+    };
+
+    const res = await api.registerParticipant(payload);
+    expect(res.success).toBe(true);
+    expect(res.data?.referralSource).toBe('Other');
+    expect(res.data?.referralSourceOther).toBe('WhatsApp Group');
+
+    const lookup = await api.getRegistration({ registrationId: res.data!.registrationId });
+    expect(lookup.success).toBe(true);
+    expect(lookup.data?.referralSource).toBe('Other');
+    expect(lookup.data?.referralSourceOther).toBe('WhatsApp Group');
+  });
+
+  it('15. Prompt 10 TEST 6 — Team Registration with Multiple Events and Referral Source', async () => {
+    const payload: RegistrationFormData = {
+      fullName: 'Dhoni M S',
+      email: 'dhoni@csk.com',
+      phone: '9840700007',
+      collegeName: 'CSK Academy',
+      department: 'Sports Analytics',
+      yearOfStudy: '4th Year',
+      gender: 'Male',
+      selectedEventIds: ['TE01', 'TE02'],
+      isTeam: true,
+      teamName: 'Team CSK',
+      teamMembers: [
+        {
+          name: 'Jadeja R',
+          email: 'jadeja@csk.com',
+          phone: '9840700008',
+          college: 'CSK Academy',
+          department: 'Sports Analytics',
+          year: '4th Year',
+          gender: 'Male',
+          role: 'TEAM_MEMBER',
+        },
+      ],
+      referralSource: 'College Staff',
+      agreedToRules: true,
+    };
+
+    const res = await api.registerParticipant(payload);
+    expect(res.success).toBe(true);
+    expect(res.data?.teamName).toBe('Team CSK');
+    expect(res.data?.referralSource).toBe('College Staff');
+    expect(res.data?.participants?.length).toBe(2);
+    expect(res.data?.selectedEvents).toEqual(['TE01', 'TE02']);
+    expect(res.data?.totalEvents).toBe(2);
+
+    // Team head & member both queryable
+    const headLookup = await api.getRegistration({ email: 'dhoni@csk.com' });
+    expect(headLookup.success).toBe(true);
+    expect(headLookup.data?.events.length).toBe(2);
+
+    const memberLookup = await api.getRegistration({ email: 'jadeja@csk.com' });
+    expect(memberLookup.success).toBe(true);
+    expect(memberLookup.data?.events.length).toBe(2);
+  });
+
+  it('16. Prompt 10 TEST 7 — Event Desk verifies each registered event independently', async () => {
+    const payload: RegistrationFormData = {
+      fullName: 'Multi Attendee',
+      email: 'multi.desk@example.com',
+      phone: '9840100099',
+      collegeName: 'Sriram Engineering College',
+      department: 'CSE',
+      yearOfStudy: '3rd Year',
+      selectedEventIds: ['TE01', 'TE02', 'NT01'],
+      referralSource: 'Instagram Post',
+      agreedToRules: true,
+    };
+
+    const res = await api.registerParticipant(payload);
+    const qrToken = res.data!.qrToken;
+
+    // At TE01 Desk -> ALLOW CHECK-IN
+    const te01Check = await api.checkEventRegistration(qrToken, 'TE01');
+    expect(te01Check.success).toBe(true);
+    expect(te01Check.registered).toBe(true);
+    const te01Mark = await api.markEventAttendance(qrToken, 'TE01', 'TE01 Coord');
+    expect(te01Mark.success).toBe(true);
+
+    // At TE02 Desk -> ALLOW CHECK-IN
+    const te02Check = await api.checkEventRegistration(qrToken, 'TE02');
+    expect(te02Check.success).toBe(true);
+    expect(te02Check.registered).toBe(true);
+    const te02Mark = await api.markEventAttendance(qrToken, 'TE02', 'TE02 Coord');
+    expect(te02Mark.success).toBe(true);
+
+    // At TE05 Desk -> NOT REGISTERED FOR THIS EVENT
+    const te05Check = await api.checkEventRegistration(qrToken, 'TE05');
+    expect(te05Check.success).toBe(true);
+    expect(te05Check.registered).toBe(false);
+  });
 });

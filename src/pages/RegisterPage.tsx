@@ -35,6 +35,8 @@ export const RegisterPage: React.FC = () => {
     isTeam: false,
     teamName: '',
     teamMembers: [],
+    referralSource: '',
+    referralSourceOther: '',
     agreedToRules: true,
   });
 
@@ -161,6 +163,12 @@ export const RegisterPage: React.FC = () => {
       newErrors.teamName = 'Team Name is required for team events.';
     }
 
+    if (!formData.referralSource || formData.referralSource.trim() === '') {
+      newErrors.referralSource = 'Please tell us how you heard about EvoXis 26.';
+    } else if (formData.referralSource === 'Other' && (!formData.referralSourceOther || !formData.referralSourceOther.trim())) {
+      newErrors.referralSourceOther = 'Please specify how you heard about EvoXis 26.';
+    }
+
     if (!formData.agreedToRules) {
       newErrors.agreedToRules = 'You must agree to the symposium code of conduct.';
     }
@@ -174,7 +182,7 @@ export const RegisterPage: React.FC = () => {
     setServerError(null);
 
     if (!validateForm()) {
-      const firstError = document.querySelector('.error-message');
+      const firstError = document.querySelector('.error-message') || document.querySelector('.text-red-400');
       firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
@@ -196,6 +204,9 @@ export const RegisterPage: React.FC = () => {
             college: result.data.college,
             department: result.data.department,
             selectedEvents: result.data.selectedEvents,
+            totalEvents: result.data.totalEvents,
+            referralSource: (result.data as any).referralSource || formData.referralSource,
+            referralSourceOther: (result.data as any).referralSourceOther || formData.referralSourceOther,
             isDuplicate: result.isDuplicate,
             teamName: result.data.teamName,
             teamMembers: result.data.teamMembers,
@@ -609,7 +620,75 @@ export const RegisterPage: React.FC = () => {
             )}
           </div>
 
-          {/* STEP 3: CODE OF CONDUCT & SUBMIT */}
+          {/* STEP 3: HOW DID YOU KNOW ABOUT THIS EVENT? */}
+          <div className="p-6 sm:p-8 rounded-2xl bg-cyber-card border border-cyan-500/20 shadow-glass">
+            <div className="mb-6 pb-4 border-b border-slate-800">
+              <h2 className="text-xl font-display font-bold text-white flex items-center gap-2">
+                <span className="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 flex items-center justify-center text-sm font-mono font-black">
+                  3
+                </span>
+                How Did You Know About This Event? *
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">
+                Help us understand how you discovered EvoXis'26 national symposium.
+              </p>
+            </div>
+
+            <div className="space-y-4 max-w-xl">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                  Referral Source *
+                </label>
+                <select
+                  name="referralSource"
+                  value={formData.referralSource || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 rounded-xl bg-slate-900/80 border border-slate-700/80 text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-sm"
+                >
+                  <option value="">Select an option ▼</option>
+                  <option value="School Friend">School Friend</option>
+                  <option value="College Friend">College Friend</option>
+                  <option value="College Staff">College Staff</option>
+                  <option value="Instagram Post">Instagram Post</option>
+                  <option value="By College">By College</option>
+                  <option value="Other Social Media Platform">Other Social Media Platform</option>
+                  <option value="Other">Other</option>
+                </select>
+                {errors.referralSource && (
+                  <p className="error-message text-red-400 text-xs mt-1.5 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" /> {errors.referralSource}
+                  </p>
+                )}
+              </div>
+
+              {formData.referralSource === 'Other' && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="pt-2"
+                >
+                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                    Please Specify *
+                  </label>
+                  <input
+                    type="text"
+                    name="referralSourceOther"
+                    value={formData.referralSourceOther || ''}
+                    onChange={handleInputChange}
+                    placeholder="e.g. YouTube / WhatsApp Group / Friend referral"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-900/80 border border-slate-700/80 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-sm"
+                  />
+                  {errors.referralSourceOther && (
+                    <p className="error-message text-red-400 text-xs mt-1.5 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5" /> {errors.referralSourceOther}
+                    </p>
+                  )}
+                </motion.div>
+              )}
+            </div>
+          </div>
+
+          {/* STEP 4: CODE OF CONDUCT & SUBMIT */}
           <div className="p-6 rounded-2xl bg-cyber-card border border-cyan-500/20 flex flex-col sm:flex-row items-center justify-between gap-6">
             <label className="flex items-start gap-3 cursor-pointer select-none">
               <input

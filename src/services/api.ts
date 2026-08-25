@@ -158,6 +158,8 @@ export const api = {
       department: string;
       selectedEvents: EventId[];
       totalEvents: number;
+      referralSource?: string;
+      referralSourceOther?: string;
       registrationDate: string;
       teamName?: string;
       teamMembers?: TeamMember[];
@@ -178,6 +180,8 @@ export const api = {
     const cleanPhone = payload.phone.trim();
     const isTeam = Boolean(payload.isTeam || (payload.teamMembers && payload.teamMembers.length > 0) || payload.teamName);
     const safeTeamName = payload.teamName?.trim() || (isTeam ? `${payload.fullName}'s Team` : '');
+    const referralSource = (payload.referralSource || 'Not Specified').trim();
+    const referralSourceOther = payload.referralSourceOther?.trim() || null;
 
     // 1. Normalize Team Head and all Co-Members into a structured participant roster
     const teamHeadParticipant: {
@@ -257,7 +261,7 @@ export const api = {
         // 1. Duplicate check in Supabase
         const { data: existingRecords, error: checkErr } = await supabase
           .from('overall_registrations')
-          .select('registration_id, email, mobile_number, qr_token, participant_name, college_institution, department, selected_events, registration_date, registration_status, team_name, team_members')
+          .select('registration_id, email, mobile_number, qr_token, participant_name, college_institution, department, selected_events, referral_source, referral_source_other, registration_date, registration_status, team_name, team_members')
           .or(`email.eq.${cleanEmail},mobile_number.eq.${cleanPhone}`);
 
         if (!checkErr && existingRecords && existingRecords.length > 0) {
@@ -285,6 +289,8 @@ export const api = {
                   department: active.department,
                   selectedEvents: existingEvents,
                   totalEvents: existingEvents.length,
+                  referralSource: active.referral_source || referralSource,
+                  referralSourceOther: active.referral_source_other || undefined,
                   registrationDate: active.registration_date,
                   teamName: active.team_name || undefined,
                   teamMembers: active.team_members || [],
@@ -325,6 +331,8 @@ export const api = {
             payment_status: 'Free',
             qr_token: memberQrToken,
             qr_status: 'Active',
+            referral_source: referralSource,
+            referral_source_other: referralSourceOther,
             email_status: 'Sent',
             sms_status: 'Sent',
             whatsapp_status: 'Sent',
@@ -438,6 +446,8 @@ export const api = {
             yearOfStudy: p.year,
             gender: p.gender,
             selectedEventIds: payload.selectedEventIds,
+            referralSource: referralSource,
+            referralSourceOther: referralSourceOther || undefined,
             teamMembers: normalizedTeamMembers,
             participants: allParticipants,
           };
@@ -507,6 +517,8 @@ export const api = {
               department: existing.department,
               selectedEvents: existingEvents,
               totalEvents: existingEvents.length,
+              referralSource: existing.referralSource || referralSource,
+              referralSourceOther: existing.referralSourceOther || undefined,
               registrationDate: existing.registrationDate,
               teamName: existing.teamName,
               teamMembers: existing.teamMembers,
@@ -543,6 +555,8 @@ export const api = {
           paymentStatus: 'Free',
           qrToken: memberQrToken,
           qrStatus: 'Active',
+          referralSource: referralSource,
+          referralSourceOther: referralSourceOther || undefined,
           emailStatus: 'Sent',
           smsStatus: 'Sent',
           whatsappStatus: 'Sent',
@@ -583,6 +597,8 @@ export const api = {
         department: payload.department.trim(),
         selectedEvents: payload.selectedEventIds,
         totalEvents: payload.selectedEventIds.length,
+        referralSource: referralSource,
+        referralSourceOther: referralSourceOther || undefined,
         registrationDate: regDate,
         teamName: safeTeamName || undefined,
         teamMembers: normalizedTeamMembers,
@@ -666,6 +682,8 @@ export const api = {
               paymentStatus: match.payment_status,
               qrToken: match.qr_token,
               qrStatus: match.qr_status,
+              referralSource: match.referral_source || undefined,
+              referralSourceOther: match.referral_source_other || undefined,
               emailStatus: match.email_status,
               smsStatus: match.sms_status,
               whatsappStatus: match.whatsapp_status,

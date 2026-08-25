@@ -73,7 +73,7 @@ function setupEvoXis26Sheets() {
     'Registration ID', 'Registration Date', 'Registration Time', 'Participant Name', 'Email',
     'Mobile Number', 'College/Institution', 'Department', 'Year', 'Gender',
     'Registration Type', 'Selected Events', 'Total Events', 'Total Amount', 'Payment Status',
-    'QR Token', 'QR Status', 'Email Status', 'SMS Status', 'WhatsApp Status',
+    'QR Token', 'QR Status', 'Referral Source', 'Referral Source Other', 'Email Status', 'SMS Status', 'WhatsApp Status',
     'Overall Attendance Status', 'Registration Status'
   ], primaryHeaderColor, headerFontColor);
 
@@ -434,6 +434,9 @@ function registerParticipant(payload) {
     Logger.log('👥 [registerParticipant] Total participants in registration: ' + allParticipants.length);
 
     // 4. Write Master Records to Overall_Registration_Details (One Row per Participant)
+    const referralSource = (payload.referralSource || 'Not Specified').trim();
+    const referralSourceOther = (payload.referralSourceOther || '').trim();
+
     allParticipants.forEach((p) => {
       const pRegType = p.role === 'TEAM_HEAD'
         ? ('Team (Head - ' + safeTeamName + ')')
@@ -459,6 +462,8 @@ function registerParticipant(payload) {
         'Free',
         qrToken,
         'Active',
+        referralSource,
+        referralSourceOther,
         p.role === 'TEAM_HEAD' ? 'Pending' : 'N/A',
         'Pending',
         'Pending',
@@ -1197,10 +1202,10 @@ function validateAdmin(params) {
 function sendRegistrationEmail(ss, regData) {
   const { registrationId, fullName, email, collegeName, department, selectedEvents, qrToken } = regData;
 
-  const eventNames = selectedEvents.map(eid => {
+  const eventListHtml = selectedEvents.map(eid => {
     const found = OFFICIAL_EVENTS.find(e => e.eventId === eid);
-    return found ? found.eventName + ' (' + eid + ')' : eid;
-  }).join(', ');
+    return '• ' + eid + ' — ' + (found ? found.eventName : eid);
+  }).join('<br>');
 
   const qrImageUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(qrToken);
 
@@ -1221,7 +1226,7 @@ function sendRegistrationEmail(ss, regData) {
             <tr><td style="padding: 6px 0; color: #94a3b8;">Participant Name:</td><td>${fullName}</td></tr>
             <tr><td style="padding: 6px 0; color: #94a3b8;">College:</td><td>${collegeName}</td></tr>
             <tr><td style="padding: 6px 0; color: #94a3b8;">Department:</td><td>${department}</td></tr>
-            <tr><td style="padding: 6px 0; color: #94a3b8;">Events:</td><td style="color: #38BDF8;">${eventNames}</td></tr>
+            <tr><td style="padding: 6px 0; color: #94a3b8; vertical-align: top;">Registered Events:</td><td style="color: #38BDF8; font-weight: 600; line-height: 1.6;">${eventListHtml}</td></tr>
             <tr><td style="padding: 6px 0; color: #94a3b8;">Date & Venue:</td><td>Sept 26, 2026 • Sriram Engg College</td></tr>
           </table>
         </div>
