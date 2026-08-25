@@ -109,22 +109,23 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister, eventD
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto"
+          className="flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4 max-w-lg mx-auto w-full px-2"
         >
           <button
+            type="button"
             onClick={onOpenRegister}
-            className="cyber-button w-full sm:w-auto px-8 py-4 rounded-xl font-display font-black text-base text-black bg-gradient-to-r from-cyan-400 via-sky-400 to-purple-400 hover:from-cyan-300 hover:to-purple-300 shadow-glow-cyan flex items-center justify-center gap-2 transition-all hover:scale-105"
+            className="cyber-button w-full sm:w-auto min-h-[52px] px-8 py-4 rounded-2xl font-display font-black text-sm sm:text-base text-black bg-gradient-to-r from-cyan-400 via-sky-400 to-purple-400 hover:from-cyan-300 hover:to-purple-300 shadow-glow-cyan flex items-center justify-center gap-2.5 transition-all hover:scale-105 active:scale-[0.98]"
           >
-            <Sparkles className="w-5 h-5" />
+            <Sparkles className="w-5 h-5 flex-shrink-0" />
             <span>REGISTER FOR EVENTS</span>
-            <ArrowRight className="w-4 h-4 ml-1" />
+            <ArrowRight className="w-4 h-4 ml-0.5 flex-shrink-0" />
           </button>
 
           <a
             href="#events"
-            className="w-full sm:w-auto px-8 py-4 rounded-xl font-display font-bold text-base text-slate-200 bg-slate-900/80 hover:bg-slate-800/90 border border-slate-700/80 hover:border-cyan-500/50 flex items-center justify-center gap-2 transition-all hover:scale-105"
+            className="w-full sm:w-auto min-h-[50px] px-7 py-3.5 rounded-2xl font-display font-bold text-sm sm:text-base text-slate-300 bg-slate-900/80 hover:bg-slate-800/90 border border-slate-700/80 hover:border-cyan-500/50 flex items-center justify-center gap-2 transition-all hover:scale-105"
           >
-            <Award className="w-5 h-5 text-cyan-400" />
+            <Award className="w-4 h-4 text-cyan-400 flex-shrink-0" />
             <span>Explore 16 Events</span>
           </a>
         </motion.div>

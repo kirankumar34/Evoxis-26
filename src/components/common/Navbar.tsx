@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, Sparkles, Calendar, MapPin, Award, Layers, QrCode } from 'lucide-react';
 import { MobileDrawer } from './MobileDrawer';
+import { useRegistrationModal } from '@/context/RegistrationModalContext';
 
 export const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { openRegisterModal } = useRegistrationModal();
 
   const isHomePage = location.pathname === '/';
 
@@ -61,7 +63,7 @@ export const Navbar: React.FC = () => {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
+          <nav className="hidden lg:flex items-center gap-1 xl:gap-2 mr-4">
             {navLinks.map((link) => {
               if (link.isRoute) {
                 return (
@@ -95,20 +97,24 @@ export const Navbar: React.FC = () => {
             })}
           </nav>
 
-          {/* CTA & Mobile Hamburger */}
-          <div className="flex items-center gap-3">
-            <Link
-              to="/register"
-              className="cyber-button relative inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-display font-bold text-sm text-black bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-400 hover:from-cyan-300 hover:to-sky-300 shadow-glow-cyan transition-all hover:scale-[1.03] active:scale-[0.98]"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>Register Now</span>
-            </Link>
+          {/* Right Header Actions */}
+          <div className="flex items-center">
+            {/* Desktop Only: Single Primary CTA */}
+            <div className="hidden lg:block">
+              <button
+                type="button"
+                onClick={() => openRegisterModal()}
+                className="cyber-button relative inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-display font-bold text-xs xl:text-sm text-black bg-gradient-to-r from-cyan-400 via-sky-400 to-purple-400 hover:from-cyan-300 hover:to-purple-300 shadow-glow-cyan transition-all hover:scale-[1.03] active:scale-[0.98]"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>REGISTER FOR EVENTS</span>
+              </button>
+            </div>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Header: Uncluttered Menu Trigger */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 rounded-xl text-slate-300 hover:text-white bg-slate-800/60 border border-slate-700/50 hover:border-cyan-500/50 transition-colors"
+              className="lg:hidden p-2.5 rounded-xl text-slate-300 hover:text-white bg-slate-800/70 border border-slate-700 hover:border-cyan-500/50 transition-colors"
               aria-label="Open Mobile Menu"
             >
               <Menu className="w-6 h-6" />

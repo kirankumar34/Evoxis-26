@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { EventItem } from '@/types';
+import React from 'react';
 import { HeroSection } from '@/components/hero/HeroSection';
 import { DepartmentsSection } from '@/components/departments/DepartmentsSection';
 import { EventsSection } from '@/components/events/EventsSection';
@@ -8,29 +7,18 @@ import { VenueSection } from '@/components/venue/VenueSection';
 import { GallerySection } from '@/components/gallery/GallerySection';
 import { SponsorsSection } from '@/components/sponsors/SponsorsSection';
 import { FAQSection } from '@/components/faqs/FAQSection';
-import { RegistrationModal } from '@/components/registration/RegistrationModal';
+import { useRegistrationModal } from '@/context/RegistrationModalContext';
 
 export const HomePage: React.FC = () => {
-  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
-  const [registerEvent, setRegisterEvent] = useState<EventItem | null>(null);
-
+  const { openRegisterModal } = useRegistrationModal();
   const eventDate = import.meta.env.VITE_EVENT_DATE || '2026-09-26T09:00:00+05:30';
-
-  const handleOpenRegister = (event: EventItem | null = null) => {
-    setRegisterEvent(event);
-    setIsRegisterOpen(true);
-  };
-
-  const handleCloseRegister = () => {
-    setIsRegisterOpen(false);
-  };
 
   return (
     <div>
       {/* 1. Hero Section & Countdown */}
       <HeroSection
         eventDate={eventDate}
-        onOpenRegister={() => handleOpenRegister(null)}
+        onOpenRegister={() => openRegisterModal(null)}
       />
 
       {/* 2. Co-Hosting Departments Showcase */}
@@ -38,7 +26,7 @@ export const HomePage: React.FC = () => {
 
       {/* 3. Filterable 16 Events Catalog */}
       <EventsSection
-        onOpenRegisterForEvent={(event) => handleOpenRegister(event)}
+        onOpenRegisterForEvent={(event) => openRegisterModal(event)}
       />
 
       {/* 4. Interactive Master Day Schedule */}
@@ -55,13 +43,6 @@ export const HomePage: React.FC = () => {
 
       {/* 8. Frequently Asked Questions */}
       <FAQSection />
-
-      {/* Global Interactive Registration Modal */}
-      <RegistrationModal
-        isOpen={isRegisterOpen}
-        onClose={handleCloseRegister}
-        initialEvent={registerEvent}
-      />
     </div>
   );
 };

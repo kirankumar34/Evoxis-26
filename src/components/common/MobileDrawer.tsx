@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles } from 'lucide-react';
+import { useRegistrationModal } from '@/context/RegistrationModalContext';
 
 interface NavLinkItem {
   name: string;
@@ -21,6 +22,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   onClose,
   navLinks,
 }) => {
+  const { openRegisterModal } = useRegistrationModal();
   return (
     <AnimatePresence>
       {isOpen && (
@@ -123,14 +125,17 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
 
             {/* Bottom Actions */}
             <div className="pt-6 border-t border-slate-800">
-              <Link
-                to="/register"
-                onClick={onClose}
-                className="w-full py-3.5 px-4 rounded-xl font-display font-bold text-black bg-gradient-to-r from-cyan-400 via-sky-400 to-purple-400 shadow-glow-cyan flex items-center justify-center gap-2"
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  openRegisterModal();
+                }}
+                className="w-full min-h-[48px] py-3.5 px-4 rounded-xl font-display font-black text-sm text-black bg-gradient-to-r from-cyan-400 via-sky-400 to-purple-400 shadow-glow-cyan flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
               >
                 <Sparkles className="w-4 h-4" />
-                <span>Register for Events</span>
-              </Link>
+                <span>REGISTER FOR EVENTS</span>
+              </button>
             </div>
           </motion.div>
         </div>
