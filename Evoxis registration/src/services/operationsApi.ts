@@ -66,9 +66,11 @@ export function isValidQRToken(token: string): boolean {
     /^TEAM:[0-9A-Za-z_-]+$/i.test(clean) ||
     /^EVOXIS26:[a-f0-9]{6,16}:[0-9]{1,10}(-[0-9A-Za-z]+)?$/i.test(clean) ||
     /^EVOXIS26:[a-f0-9]{6,16}:[0-9A-Za-z_-]+$/i.test(clean) ||
-    /^EVOXIS26:[a-f0-9]{6,35}(-[0-9A-Za-z]+)?$/i.test(clean) ||
+    /^EVOXIS26:[a-f0-9]{8,35}(-[0-9A-Za-z]+)?$/i.test(clean) ||
+    /^EVOXIS26:[a-f0-9]{8}\d{5,8}(-M\d+|\d)?$/i.test(clean) ||
     /^EVOXIS26:PAX:[0-9A-Za-z_-]+:[a-f0-9]+$/i.test(clean) ||
-    /^EVOXIS26-[0-9A-Za-z_-]+$/i.test(clean)
+    /^EVOXIS26-[0-9A-Za-z_-]+$/i.test(clean) ||
+    /^EVX26-[0-9A-Za-z_-]+$/i.test(clean)
   );
 }
 
@@ -79,7 +81,11 @@ export function parseQRString(qrString: string): {
   registrationId?: string;
   isTeamPass?: boolean;
 } {
+  if (!isValidQRToken(qrString)) {
+    return { valid: false, token: qrString };
+  }
   const token = (qrString || '').trim();
+
   if (token.toUpperCase().startsWith('EVOXIS26:TEAM:') || token.toUpperCase().startsWith('TEAM:')) {
     const rawId = token.replace(/^EVOXIS26:TEAM:/i, '').replace(/^TEAM:/i, '').trim();
     const padded = /^\d{1,5}$/.test(rawId) ? rawId.padStart(5, '0') : rawId;
@@ -92,15 +98,46 @@ export function parseQRString(qrString: string): {
   }
 
   if (token.includes(':')) {
-    const parts = token.split(':');
-    const numeric = parts.length >= 3 ? parts[2] : parts[1].replace(/[^0-9]/g, '');
-    const padded = numeric && !numeric.includes('M') ? numeric.padStart(5, '0') : numeric;
-    return {
-      valid: true,
-      token,
-      isTeamPass: false,
-      registrationId: padded ? (padded.startsWith('EVOXIS') ? padded : `EVOXIS26-${padded}`) : undefined,
-    };
+    const afterPrefix = token.replace(/^EVOXIS26:/i, '');
+
+    // Pattern 1: Hex hash followed by colon: EVOXIS26:<hex>:<regId>
+    if (afterPrefix.includes(':')) {
+      const parts = afterPrefix.split(':');
+      const rest = parts.slice(1).join(':');
+      if (rest.startsWith('EVOXIS26')) return { valid: true, token, isTeamPass: false, registrationId: rest };
+      if (/^\d{1,5}$/.test(rest)) return { valid: true, token, isTeamPass: false, registrationId: `EVOXIS26-${rest.padStart(5, '0')}` };
+      if (/^\d{1,5}-M\d+$/i.test(rest)) {
+        const [seq, m] = rest.split('-');
+        return { valid: true, token, isTeamPass: false, registrationId: `EVOXIS26-${seq.padStart(5, '0')}-${m.toUpperCase()}` };
+      }
+      return { valid: true, token, isTeamPass: false, registrationId: `EVOXIS26-${rest}` };
+    }
+
+    // Pattern 2: Hex hash (8 chars) concatenated with 26XXXXX or 26XXXXX-M...: EVOXIS26:31fd673726001742 or EVOXIS26:0c6c91092600174-M2
+    const hex8Match = afterPrefix.match(/^([a-f0-9]{8})26(\d{5})(-M\d+|\d)?$/i);
+    if (hex8Match) {
+      const seq = hex8Match[2]; // e.g. '00174'
+      const memberSuffix = hex8Match[3]; // e.g. '2' or '-M2'
+      if (memberSuffix) {
+        const mNum = memberSuffix.replace(/[^0-9]/g, '');
+        return { valid: true, token, isTeamPass: false, registrationId: `EVOXIS26-${seq}-M${mNum}` };
+      }
+      return { valid: true, token, isTeamPass: false, registrationId: `EVOXIS26-${seq}` };
+    }
+
+    // Pattern 3: Hex hash concatenated with XXXXX: EVOXIS26:<8hex><5digits>
+    const hexConcatMatch = afterPrefix.match(/^([a-f0-9]{8})(\d{5})(-M\d+)?$/i);
+    if (hexConcatMatch) {
+      const seq = hexConcatMatch[2];
+      const m = hexConcatMatch[3] ? hexConcatMatch[3].toUpperCase() : '';
+      return { valid: true, token, isTeamPass: false, registrationId: `EVOXIS26-${seq}${m}` };
+    }
+
+    // Pattern 4: Strip hex if present and extract EVOXIS26-XXXXX
+    const matchReg = afterPrefix.match(/EVOXIS26-(\d{5})(-M\d+)?/i);
+    if (matchReg) {
+      return { valid: true, token, isTeamPass: false, registrationId: matchReg[0].toUpperCase() };
+    }
   }
 
   return { valid: true, token, isTeamPass: false, registrationId: token };

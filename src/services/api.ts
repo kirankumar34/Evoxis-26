@@ -12,6 +12,7 @@ import {
 } from '@/types';
 import { EVENTS } from '@/data/events';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { parseQRString } from '@/lib/qr';
 
 const APPS_SCRIPT_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_APPS_SCRIPT_URL) || '';
 
@@ -738,13 +739,44 @@ export const api = {
     // 1. Supabase Lookup
     if (this.getBackendType() === 'SUPABASE') {
       try {
-        let req = supabase.from('overall_registrations').select('*');
-        if (query.registrationId) req = req.eq('registration_id', query.registrationId.trim().toUpperCase());
-        else if (query.email) req = req.eq('email', query.email.trim().toLowerCase());
-        else if (query.mobile) req = req.eq('mobile_number', query.mobile.trim());
-        else if (query.qrToken) req = req.eq('qr_token', query.qrToken.trim());
+        let records: any[] | null = null;
+        let error: any = null;
 
-        const { data: records, error } = await req;
+        if (query.registrationId) {
+          const res = await supabase.from('overall_registrations').select('*').eq('registration_id', query.registrationId.trim().toUpperCase());
+          records = res.data;
+          error = res.error;
+        } else if (query.email) {
+          const res = await supabase.from('overall_registrations').select('*').eq('email', query.email.trim().toLowerCase());
+          records = res.data;
+          error = res.error;
+        } else if (query.mobile) {
+          const res = await supabase.from('overall_registrations').select('*').eq('mobile_number', query.mobile.trim());
+          records = res.data;
+          error = res.error;
+        } else if (query.qrToken) {
+          const cleanToken = query.qrToken.trim();
+          const parsed = parseQRString(cleanToken);
+          const parsedId = parsed.registrationId;
+
+          const res = await supabase
+            .from('overall_registrations')
+            .select('*')
+            .or(`qr_token.eq.${cleanToken}${parsedId ? `,registration_id.eq.${parsedId},qr_token.eq.${parsedId}` : ''}`);
+          records = res.data;
+          error = res.error;
+
+          if (!records || records.length === 0) {
+            const res2 = await supabase
+              .from('overall_registrations')
+              .select('*')
+              .eq('registration_id', cleanToken.toUpperCase());
+            if (res2.data && res2.data.length > 0) {
+              records = res2.data;
+            }
+          }
+        }
+
         if (error) throw error;
 
         if (records && records.length > 0) {
@@ -874,10 +906,13 @@ export const api = {
     if (this.getBackendType() === 'SUPABASE') {
       try {
         const cleanToken = qrToken.trim();
+        const parsed = parseQRString(cleanToken);
+        const parsedId = parsed.registrationId;
+
         let { data: records, error } = await supabase
           .from('overall_registrations')
           .select('*')
-          .eq('qr_token', cleanToken);
+          .or(`qr_token.eq.${cleanToken}${parsedId ? `,registration_id.eq.${parsedId},qr_token.eq.${parsedId}` : ''}`);
 
         if (!error && (!records || records.length === 0)) {
           const resId = await supabase
