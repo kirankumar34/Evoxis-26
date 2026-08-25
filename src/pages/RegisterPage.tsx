@@ -10,6 +10,7 @@ import {
   Trash2,
   Loader2,
   ArrowRight,
+  X,
 } from 'lucide-react';
 import { EVENTS } from '@/data/events';
 import { EventId, EventCategory, RegistrationFormData, TeamMember } from '@/types';
@@ -156,7 +157,7 @@ export const RegisterPage: React.FC = () => {
     if (!formData.department.trim()) newErrors.department = 'Department is required.';
 
     if (selectedEventIds.length === 0) {
-      newErrors.events = 'Please select at least 1 event to register.';
+      newErrors.events = 'Please select at least one event.';
     }
 
     if (formData.isTeam && !formData.teamName?.trim()) {
@@ -265,31 +266,60 @@ export const RegisterPage: React.FC = () => {
                   <span className="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 flex items-center justify-center text-sm font-mono font-black">
                     1
                   </span>
-                  Select Your Events (Multi-Select Enabled)
+                  <span>SELECT EVENTS (16 COMPETITIONS) *</span>
                 </h2>
                 <p className="text-xs text-slate-400 mt-1">
                   You can register for multiple events across Technical, Non-Technical & Special tracks.
                 </p>
               </div>
 
-              {/* Category Filter Pills */}
-              <div className="flex items-center gap-1.5 p-1 bg-slate-900/80 rounded-xl border border-slate-800 self-start">
-                {(['All', 'Technical', 'Non-Technical', 'Special'] as const).map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                      selectedCategory === cat
-                        ? 'bg-cyan-500 text-black font-bold shadow-glow-sm'
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
+              {/* Category Filter Pills & Counter */}
+              <div className="flex items-center gap-2 self-start flex-wrap">
+                <span className="px-3 py-1 rounded-lg text-xs font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                  {selectedEventIds.length} Selected
+                </span>
+                <div className="flex items-center gap-1.5 p-1 bg-slate-900/80 rounded-xl border border-slate-800">
+                  {(['All', 'Technical', 'Non-Technical', 'Special'] as const).map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                        selectedCategory === cat
+                          ? 'bg-cyan-500 text-black font-bold shadow-glow-sm'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
+
+            {/* Selected Events Chips Bar */}
+            {selectedEventIds.length > 0 && (
+              <div className="mb-6 p-3 rounded-xl bg-slate-900/90 border border-cyan-500/30 flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-mono text-cyan-400 font-bold uppercase tracking-wider mr-1">
+                  Selected ({selectedEventIds.length}):
+                </span>
+                {selectedEventIds.map((eid) => {
+                  const found = EVENTS.find((e) => e.eventId === eid);
+                  return (
+                    <span
+                      key={eid}
+                      onClick={() => toggleEventSelection(eid)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 cursor-pointer hover:bg-red-500/20 hover:border-red-500/40 hover:text-red-300 transition-colors"
+                      title="Click to remove"
+                    >
+                      <span>{eid}</span>
+                      <span className="text-slate-300 font-normal">({found ? found.title : eid})</span>
+                      <X className="w-3.5 h-3.5 ml-1" />
+                    </span>
+                  );
+                })}
+              </div>
+            )}
 
             {errors.events && (
               <p className="error-message text-red-400 text-xs font-medium mb-4 flex items-center gap-1.5">

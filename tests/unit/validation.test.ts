@@ -13,7 +13,7 @@ const registrationSchema = z.object({
   gender: z.string().optional(),
   selectedEventIds: z
     .array(z.string())
-    .min(1, 'Please select at least 1 event to participate in')
+    .min(1, 'Please select at least one event.')
     .max(5, 'You can select up to 5 events'),
   referralSource: z.string().min(1, 'Please tell us how you heard about EvoXis 26.'),
   referralSourceOther: z.string().optional(),
@@ -131,7 +131,7 @@ describe('AC2: Form Validation & Field Constraints', () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.flatten().fieldErrors.selectedEventIds?.[0]).toContain('at least 1 event');
+      expect(result.error.flatten().fieldErrors.selectedEventIds?.[0]).toContain('Please select at least one event.');
     }
   });
 
