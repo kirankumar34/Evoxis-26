@@ -17,12 +17,23 @@ export function generateQRString(registrationId: string): string {
 }
 
 /**
+ * Generate dedicated Team Pass QR token string
+ */
+export function generateTeamPassToken(registrationId: string): string {
+  const numericPart = registrationId.includes('-')
+    ? registrationId.split('-')[1]
+    : registrationId.replace(/[^0-9]/g, '');
+  return `EVOXIS26:TEAM:${numericPart || registrationId}`;
+}
+
+/**
  * Validate if a given string follows the EVOXIS26 token format
  */
 export function isValidQRToken(token: string): boolean {
   if (!token || typeof token !== 'string') return false;
   const clean = token.trim();
   return (
+    /^EVOXIS26:TEAM:[0-9A-Za-z_-]+$/i.test(clean) ||
     /^EVOXIS26:[a-f0-9]{6,16}:[0-9]{1,10}(-[0-9A-Za-z]+)?$/i.test(clean) ||
     /^EVOXIS26:[a-f0-9]{6,16}:[0-9A-Za-z_-]+$/i.test(clean) ||
     /^EVOXIS26:[a-f0-9]{6,35}(-[0-9A-Za-z]+)?$/i.test(clean) ||
@@ -33,11 +44,21 @@ export function isValidQRToken(token: string): boolean {
 /**
  * Parse QR string and extract metadata
  */
-export function parseQRString(qrString: string): { valid: boolean; token: string; registrationId?: string } {
+export function parseQRString(qrString: string): { valid: boolean; token: string; registrationId?: string; isTeamPass?: boolean } {
   if (!isValidQRToken(qrString)) {
     return { valid: false, token: qrString };
   }
   const token = qrString.trim();
+  if (token.toUpperCase().startsWith('EVOXIS26:TEAM:')) {
+    const rawId = token.substring('EVOXIS26:TEAM:'.length).trim();
+    const padded = /^\d{1,5}$/.test(rawId) ? rawId.padStart(5, '0') : rawId;
+    return {
+      valid: true,
+      token,
+      isTeamPass: true,
+      registrationId: padded.startsWith('EVOXIS') ? padded : `EVOXIS26-${padded}`,
+    };
+  }
   if (token.includes(':')) {
     const parts = token.split(':');
     const numeric = parts.length >= 3 ? parts[2] : parts[1].replace(/[^0-9]/g, '');
@@ -45,6 +66,7 @@ export function parseQRString(qrString: string): { valid: boolean; token: string
     return {
       valid: true,
       token,
+      isTeamPass: false,
       registrationId: padded ? (padded.startsWith('EVOXIS') ? padded : `EVOXIS26-${padded}`) : undefined,
     };
   }

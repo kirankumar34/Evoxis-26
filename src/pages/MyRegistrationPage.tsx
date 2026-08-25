@@ -50,6 +50,19 @@ export const MyRegistrationPage: React.FC = () => {
   // Compute active roster
   const fullRoster = registrationData
     ? [
+        ...(registrationData.teamName
+          ? [
+              {
+                name: `${registrationData.teamName} (Master Team Pass)`,
+                role: 'TEAM_HEAD' as const,
+                registrationId: registrationData.registrationId,
+                qrToken: `EVOXIS26:TEAM:${registrationData.registrationId.replace(/[^0-9]/g, '')}`,
+                department: registrationData.department,
+                college: registrationData.collegeInstitution,
+                isMasterTeamPass: true,
+              },
+            ]
+          : []),
         {
           name: registrationData.participantName,
           role: registrationData.teamName ? ('TEAM_HEAD' as const) : ('INDIVIDUAL' as const),

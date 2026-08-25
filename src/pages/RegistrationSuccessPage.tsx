@@ -121,6 +121,11 @@ export const RegistrationSuccessPage: React.FC = () => {
   useEffect(() => {
     const generateAllRosterQRs = async () => {
       const urls: Record<string, string> = {};
+      if (isTeam) {
+        const teamToken = `EVOXIS26:TEAM:${registrationId.replace(/[^0-9]/g, '')}`;
+        const teamUrl = await generateQRCodeDataUrl(teamToken, { width: 400, margin: 2 });
+        urls[`TEAM-${registrationId}`] = teamUrl;
+      }
       for (const m of fullRoster) {
         const url = await generateQRCodeDataUrl(m.qrToken, { width: 400, margin: 2 });
         urls[m.registrationId] = url;
@@ -131,7 +136,7 @@ export const RegistrationSuccessPage: React.FC = () => {
       }
     };
     generateAllRosterQRs();
-  }, [registrationId, qrToken]);
+  }, [registrationId, qrToken, isTeam]);
 
   const handleCopyId = () => {
     navigator.clipboard.writeText(registrationId);
@@ -345,100 +350,190 @@ export const RegistrationSuccessPage: React.FC = () => {
           <div className="lg:col-span-5 space-y-5">
             {isTeam ? (
               /* Team QR Passes Container */
-              <div className="p-6 rounded-2xl bg-gradient-to-b from-slate-900 to-cyber-card border border-cyan-500/30 shadow-glow-cyan/30 text-center space-y-5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-widest text-left">
-                    Team Member QR Passes
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleDownloadAllMemberQRs}
-                    disabled={isDownloadingAll}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold font-display bg-purple-500/20 text-purple-300 border border-purple-500/40 hover:bg-purple-500/30 transition-colors"
+              <div className="space-y-4">
+                {/* Master Team Pass */}
+                <div className="p-6 rounded-2xl bg-gradient-to-b from-slate-900 via-cyan-950/20 to-cyber-card border-2 border-cyan-500/50 shadow-glow-cyan text-center space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 uppercase tracking-widest flex items-center gap-1.5 shadow-neon-cyan">
+                      <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                      MASTER TEAM PASS
+                    </span>
+                    <span className="text-xs font-mono text-slate-400">
+                      {fullRoster.length} Members
+                    </span>
+                  </div>
+
+                  <div>
+                    <h4 className="text-lg font-bold text-white tracking-tight">
+                      {teamName || 'Team Pass'}
+                    </h4>
+                    <p className="text-xs text-slate-300 font-mono mt-0.5">
+                      Use at Reception Desk to assign wristbands for the entire team
+                    </p>
+                  </div>
+
+                  {/* Master Team QR Code Frame */}
+                  <div
+                    className="p-3 bg-white rounded-2xl shadow-2xl inline-block cursor-pointer group relative"
+                    onClick={() => {
+                      const tToken = `EVOXIS26:TEAM:${registrationId.replace(/[^0-9]/g, '')}`;
+                      setViewingQR({
+                        id: registrationId,
+                        name: `${teamName || 'Team'} (Master Team Pass)`,
+                        url: qrUrlsMap[`TEAM-${registrationId}`] || qrDataUrl,
+                        token: tToken,
+                      });
+                    }}
                   >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>{isDownloadingAll ? 'Downloading All...' : 'DOWNLOAD ALL MEMBER QRs'}</span>
-                  </button>
+                    {qrUrlsMap[`TEAM-${registrationId}`] || qrDataUrl ? (
+                      <img
+                        src={qrUrlsMap[`TEAM-${registrationId}`] || qrDataUrl}
+                        alt="Master Team Pass QR"
+                        className="w-44 h-44 mx-auto transition-transform group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-44 h-44 bg-slate-100 flex items-center justify-center">
+                        <QrCode className="w-10 h-10 text-slate-400 animate-pulse" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                      <span className="text-xs font-mono font-bold text-white bg-black/80 px-3 py-1.5 rounded-lg">
+                        Click to Enlarge
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-xs font-mono font-bold text-cyan-400">
+                    TOKEN: EVOXIS26:TEAM:{registrationId.replace(/[^0-9]/g, '')}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const tToken = `EVOXIS26:TEAM:${registrationId.replace(/[^0-9]/g, '')}`;
+                        setViewingQR({
+                          id: registrationId,
+                          name: `${teamName || 'Team'} (Master Team Pass)`,
+                          url: qrUrlsMap[`TEAM-${registrationId}`] || qrDataUrl,
+                          token: tToken,
+                        });
+                      }}
+                      className="py-2.5 px-3 rounded-xl text-xs font-bold font-mono bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center justify-center gap-1.5"
+                    >
+                      <Eye className="w-4 h-4 text-cyan-400" />
+                      <span>View Pass</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const tToken = `EVOXIS26:TEAM:${registrationId.replace(/[^0-9]/g, '')}`;
+                        handleDownloadSingleQR(tToken, `${registrationId}-TEAM-PASS`, `${teamName || 'Team'} Master Pass`);
+                      }}
+                      className="py-2.5 px-3 rounded-xl text-xs font-bold font-mono bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-neon-cyan flex items-center justify-center gap-1.5"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>Download Team QR</span>
+                    </button>
+                  </div>
                 </div>
 
-                <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
-                  {fullRoster.map((m, idx) => {
-                    const mUrl = qrUrlsMap[m.registrationId];
-                    return (
-                      <div
-                        key={m.registrationId}
-                        className="p-4 rounded-xl bg-slate-900 border border-cyan-500/20 text-center flex flex-col items-center"
-                      >
-                        <div className="w-full flex items-center justify-between mb-2">
-                          <span className="font-bold text-white text-xs truncate max-w-[140px]">
-                            {idx + 1}. {m.name}
-                          </span>
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                            m.role === 'TEAM_HEAD'
-                              ? 'bg-cyan-500/20 text-cyan-300'
-                              : 'bg-purple-500/20 text-purple-300'
-                          }`}>
-                            {m.role}
-                          </span>
-                        </div>
+                {/* Individual Member Passes Container */}
+                <div className="p-6 rounded-2xl bg-gradient-to-b from-slate-900 to-cyber-card border border-cyan-500/30 shadow-glow-cyan/30 text-center space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono font-bold text-slate-300 uppercase tracking-widest text-left">
+                      Individual Member Passes
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleDownloadAllMemberQRs}
+                      disabled={isDownloadingAll}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold font-display bg-purple-500/20 text-purple-300 border border-purple-500/40 hover:bg-purple-500/30 transition-colors"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>{isDownloadingAll ? 'Downloading...' : 'DOWNLOAD ALL'}</span>
+                    </button>
+                  </div>
 
+                  <div className="space-y-4 max-h-[420px] overflow-y-auto pr-1">
+                    {fullRoster.map((m, idx) => {
+                      const mUrl = qrUrlsMap[m.registrationId];
+                      return (
                         <div
-                          className="p-2.5 bg-white rounded-xl shadow-lg my-2 cursor-pointer group relative inline-block"
-                          onClick={() => setViewingQR({ id: m.registrationId, name: m.name, url: mUrl, token: m.qrToken })}
+                          key={m.registrationId}
+                          className="p-4 rounded-xl bg-slate-900 border border-cyan-500/20 text-center flex flex-col items-center"
                         >
-                          {mUrl ? (
-                            <img
-                              src={mUrl}
-                              alt={`QR for ${m.name}`}
-                              className="w-36 h-36 mx-auto transition-transform group-hover:scale-105"
-                            />
-                          ) : (
-                            <div className="w-36 h-36 bg-slate-100 flex items-center justify-center">
-                              <QrCode className="w-8 h-8 text-slate-400 animate-pulse" />
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                            <span className="text-[10px] font-mono font-bold text-white bg-black/70 px-2 py-1 rounded">
-                              Enlarge
+                          <div className="w-full flex items-center justify-between mb-2">
+                            <span className="font-bold text-white text-xs truncate max-w-[140px]">
+                              {idx + 1}. {m.name}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                              m.role === 'TEAM_HEAD'
+                                ? 'bg-cyan-500/20 text-cyan-300'
+                                : 'bg-purple-500/20 text-purple-300'
+                            }`}>
+                              {m.role}
                             </span>
                           </div>
-                        </div>
 
-                        <span className="text-[10px] font-mono font-bold text-cyan-400 mb-3">
-                          {m.registrationId}
-                        </span>
-
-                        <div className="grid grid-cols-2 gap-2 w-full">
-                          <button
-                            type="button"
+                          <div
+                            className="p-2.5 bg-white rounded-xl shadow-lg my-2 cursor-pointer group relative inline-block"
                             onClick={() => setViewingQR({ id: m.registrationId, name: m.name, url: mUrl, token: m.qrToken })}
-                            className="py-2 px-2.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 flex items-center justify-center gap-1 transition-colors"
                           >
-                            <Eye className="w-3.5 h-3.5 text-cyan-400" />
-                            <span>View</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDownloadSingleQR(m.qrToken, m.registrationId, m.name)}
-                            className="py-2 px-2.5 rounded-lg text-xs font-bold font-display bg-gradient-to-r from-cyan-400 to-sky-400 text-black shadow-glow-cyan flex items-center justify-center gap-1 transition-transform hover:scale-105"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                            <span>Download</span>
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                            {mUrl ? (
+                              <img
+                                src={mUrl}
+                                alt={`QR for ${m.name}`}
+                                className="w-32 h-32 mx-auto transition-transform group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className="w-32 h-32 bg-slate-100 flex items-center justify-center">
+                                <QrCode className="w-8 h-8 text-slate-400 animate-pulse" />
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                              <span className="text-[10px] font-mono font-bold text-white bg-black/70 px-2 py-1 rounded">
+                                Enlarge
+                              </span>
+                            </div>
+                          </div>
 
-                <button
-                  onClick={handleDownloadPass}
-                  disabled={isDownloadingPass}
-                  className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-display font-bold text-sm text-black bg-gradient-to-r from-cyan-400 via-sky-400 to-purple-400 shadow-glow-cyan transition-all hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>{isDownloadingPass ? 'Generating Pass...' : 'Download Registration Details'}</span>
-                </button>
+                          <span className="text-[10px] font-mono font-bold text-cyan-400 mb-2">
+                            {m.registrationId}
+                          </span>
+
+                          <div className="grid grid-cols-2 gap-2 w-full">
+                            <button
+                              type="button"
+                              onClick={() => setViewingQR({ id: m.registrationId, name: m.name, url: mUrl, token: m.qrToken })}
+                              className="py-1.5 px-2.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 flex items-center justify-center gap-1 transition-colors"
+                            >
+                              <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                              <span>View</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDownloadSingleQR(m.qrToken, m.registrationId, m.name)}
+                              className="py-1.5 px-2.5 rounded-lg text-xs font-bold font-display bg-gradient-to-r from-cyan-400 to-sky-400 text-black shadow-glow-cyan flex items-center justify-center gap-1 transition-transform hover:scale-105"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                              <span>Download</span>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <button
+                    onClick={handleDownloadPass}
+                    disabled={isDownloadingPass}
+                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-display font-bold text-sm text-black bg-gradient-to-r from-cyan-400 via-sky-400 to-purple-400 shadow-glow-cyan transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>{isDownloadingPass ? 'Generating Pass...' : 'Download Registration Details'}</span>
+                  </button>
+                </div>
               </div>
             ) : (
               /* Individual QR Pass Container */

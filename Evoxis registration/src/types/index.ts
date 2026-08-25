@@ -36,6 +36,47 @@ export interface TeamMemberInfo {
   year?: string;
   gender?: string;
   role: ParticipantRole;
+  registrationId?: string;
+  qrToken?: string;
+  physicalQrId?: string;
+  physicalQrType?: 'ID_CARD' | 'WRISTBAND';
+  assignedAt?: string;
+  campusAttendanceStatus?: 'Pending' | 'Present';
+}
+
+export interface TeamMemberRosterItem {
+  participantId: string;
+  registrationId: string;
+  name: string;
+  email: string;
+  phone: string;
+  college?: string;
+  department?: string;
+  year?: string;
+  gender?: string;
+  role: ParticipantRole;
+  qrToken: string;
+  physicalQrId?: string;
+  physicalQrType?: 'ID_CARD' | 'WRISTBAND';
+  assignedAt?: string;
+  campusAttendanceStatus: 'Pending' | 'Present';
+  campusCheckinTime?: string;
+}
+
+export interface TeamPassProfile {
+  teamId: string;
+  teamName: string;
+  registrationId: string;
+  teamPassToken: string;
+  college: string;
+  department: string;
+  year?: string;
+  selectedEvents: string[];
+  registeredEvents: RegisteredEventInfo[];
+  members: TeamMemberRosterItem[];
+  totalMembers: number;
+  assignedCount: number;
+  isComplete: boolean;
 }
 
 export interface RegisteredEventInfo {
@@ -81,6 +122,10 @@ export interface ParticipantProfile {
   foodDeliveredTime?: string;
   foodDeliveredBy?: string;
   foodStation?: string;
+
+  // Team Pass metadata
+  isTeamPass?: boolean;
+  teamPassProfile?: TeamPassProfile;
 }
 
 export type QrResolutionErrorCode =
@@ -170,6 +215,7 @@ export interface ScanOperationResponse {
   verbatimMessage: string;
   details?: string;
   participant?: ParticipantProfile;
+  participantName?: string;
   timestamp?: string;
   registeredEvents?: string[]; // for WRONG_EVENT scenario
   originalTime?: string;

@@ -18,6 +18,7 @@ interface ParticipantCardProps {
   participant: ParticipantProfile;
   onAssignQr?: () => void;
   onMarkPresent?: () => void;
+  onOpenTeamPass?: () => void;
   isMarkingPresent?: boolean;
 }
 
@@ -25,10 +26,11 @@ export const ParticipantCard: React.FC<ParticipantCardProps> = ({
   participant,
   onAssignQr,
   onMarkPresent,
+  onOpenTeamPass,
   isMarkingPresent = false,
 }) => {
   const isCampusPresent = participant.campusAttendanceStatus === 'Present';
-  const isTeam = participant.registrationType === 'Team';
+  const isTeam = participant.registrationType === 'Team' || Boolean(participant.teamName);
 
   return (
     <div className="w-full rounded-2xl glass-panel border border-slate-800 p-5 md:p-6 space-y-6 animate-in fade-in">
@@ -36,6 +38,9 @@ export const ParticipantCard: React.FC<ParticipantCardProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
+            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+              INDIVIDUAL PASS
+            </span>
             <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight">
               {participant.participantName}
             </h3>
@@ -52,16 +57,27 @@ export const ParticipantCard: React.FC<ParticipantCardProps> = ({
             </span>
           </div>
 
-          <div className="mt-1 flex items-center gap-3 text-xs font-mono text-slate-400">
-            <span>REG ID: <strong className="text-slate-200">{participant.registrationId}</strong></span>
+          <div className="mt-1 flex items-center gap-3 text-xs font-mono text-slate-400 flex-wrap">
+            <span>REG ID: <strong className="text-slate-200">{participant.id || participant.registrationId}</strong></span>
             {isTeam && participant.teamName && (
               <span>TEAM: <strong className="text-cyan-300">{participant.teamName}</strong></span>
             )}
           </div>
         </div>
 
-        {/* Live Operational Status Badges */}
-        <div className="flex items-center gap-2">
+        {/* Live Operational Status Badges & Team Switcher */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {isTeam && onOpenTeamPass && (
+            <button
+              type="button"
+              onClick={onOpenTeamPass}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-mono font-bold bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/20 transition-all shadow-neon-cyan"
+            >
+              <Users className="w-3.5 h-3.5" />
+              <span>Switch to Team Pass</span>
+            </button>
+          )}
+
           <span
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-mono font-bold border ${
               isCampusPresent

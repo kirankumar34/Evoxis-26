@@ -1048,5 +1048,382 @@ describe('EvoXis26 Operations Portal Automated Test Suite', () => {
     const foodStations = PRESET_STATIONS.filter((s: any) => s.category === 'FOOD');
     expect(foodStations.length).toBe(0);
   });
+
+  // =========================================================================
+  // RECEPTION DESK: TEAM PASS & INDIVIDUAL PASS AUTOMATED TEST SUITE (12 TESTS)
+  // =========================================================================
+
+  test('25. (Test 1) Team Pass Detection & Full Roster Lookup', async () => {
+    const res = await operationsApi.lookupRegistration({
+      token: 'EVOXIS26:TEAM:TEST-TEAM-01',
+    });
+
+    expect(res.success).toBe(true);
+    expect(res.isTeamPass).toBe(true);
+    expect(res.type).toBe('TEAM_PASS');
+    expect(res.data?.teamPassProfile).toBeDefined();
+
+    const team = res.data!.teamPassProfile!;
+    expect(team.teamName).toBe('Code Warriors');
+    expect(team.totalMembers).toBe(4);
+    expect(team.members[0].name).toBe('Arun Kumar');
+    expect(team.members[0].role).toBe('TEAM_HEAD');
+    expect(team.members[1].name).toBe('Kumar V');
+    expect(team.members[1].role).toBe('TEAM_MEMBER');
+    expect(team.members[2].name).toBe('Ravi Shankar');
+    expect(team.members[3].name).toBe('Suresh Raina');
+  });
+
+  test('26. (Test 2) Team Pass Sequential Wristband Assignment (All 4 Members)', async () => {
+    // Assign wristbands to each team member sequentially
+    const teamRes = await operationsApi.getTeamPassProfile(TEST_TEAM_HEAD_ID);
+    expect(teamRes.success).toBe(true);
+    const members = teamRes.data!.members;
+
+    const wbIds = [
+      'EVX26-TEST-TEAMWB-01',
+      'EVX26-TEST-TEAMWB-02',
+      'EVX26-TEST-TEAMWB-03',
+      'EVX26-TEST-TEAMWB-04',
+    ];
+
+    for (let i = 0; i < members.length; i++) {
+      const assignRes = await operationsApi.assignPhysicalQr({
+        participantId: members[i].participantId,
+        registrationId: TEST_TEAM_HEAD_ID,
+        physicalQrId: wbIds[i],
+        physicalQrType: 'WRISTBAND',
+        staffId: 'Receptionist 1',
+        station: 'Main Reception Desk',
+      });
+      expect(assignRes.state).toBe('SUCCESS');
+    }
+
+    // Verify all 4 are assigned in team profile
+    const updatedTeam = await operationsApi.getTeamPassProfile(TEST_TEAM_HEAD_ID);
+    expect(updatedTeam.data?.assignedCount).toBe(4);
+    expect(updatedTeam.data?.isComplete).toBe(true);
+    expect(updatedTeam.data?.members[0].physicalQrId).toBe('EVX26-TEST-TEAMWB-01');
+    expect(updatedTeam.data?.members[1].physicalQrId).toBe('EVX26-TEST-TEAMWB-02');
+  });
+
+  test('27. (Test 3) Individual Pass Workflow — Single Member Only', async () => {
+    // Scan Member 2's Individual Pass
+    const res = await operationsApi.lookupRegistration({
+      token: 'EVOXIS26:testteamhead01-M2',
+    });
+
+    expect(res.success).toBe(true);
+    expect(res.isTeamPass).toBe(false);
+    expect(res.type).toBe('INDIVIDUAL_PASS');
+    expect(res.data?.participantName).toBe('Ravi Shankar');
+    expect(res.data?.role).toBe('TEAM_MEMBER');
+    expect(res.data?.teamName).toBe('Code Warriors');
+  });
+
+  test('28. (Test 4) Individual Pass Team Safety — No Side Effects on Other Members', async () => {
+    // Create new fresh isolated team
+    const isoTeamId = `EVOXIS26-ISO-TEAM-${Date.now()}`;
+    const mockDb = JSON.parse(localStorage.getItem('evoxis26_overall_registrations') || '[]');
+    mockDb.push({
+      registrationId: isoTeamId,
+      participantName: 'Captain Marvel',
+      email: 'cap@marvel.com',
+      mobileNumber: '9888800001',
+      collegeInstitution: 'Avengers Academy',
+      department: 'Aero',
+      selectedEvents: 'TE01, TE02',
+      registrationType: 'Team',
+      teamName: 'Avenger Squad',
+      qrToken: `EVOXIS26:marvel_${Date.now()}`,
+      teamMembers: [
+        { name: 'Captain Marvel', email: 'cap@marvel.com', phone: '9888800001', role: 'TEAM_HEAD' },
+        { name: 'Iron Man', email: 'tony@marvel.com', phone: '9888800002', role: 'TEAM_MEMBER' },
+        { name: 'Thor', email: 'thor@marvel.com', phone: '9888800003', role: 'TEAM_MEMBER' },
+      ],
+    });
+    mockDb.push({
+      registrationId: `${isoTeamId}-M1`,
+      participantName: 'Iron Man',
+      email: 'tony@marvel.com',
+      mobileNumber: '9888800002',
+      collegeInstitution: 'Avengers Academy',
+      department: 'Aero',
+      selectedEvents: 'TE01, TE02',
+      registrationType: 'Team',
+      teamName: 'Avenger Squad',
+      qrToken: `EVOXIS26:marvel_${Date.now()}-M1`,
+      role: 'TEAM_MEMBER',
+    });
+    localStorage.setItem('evoxis26_overall_registrations', JSON.stringify(mockDb));
+
+    // Assign ONLY Iron Man via individual pass
+    const assignRes = await operationsApi.assignPhysicalQr({
+      participantId: `${isoTeamId}-M1`,
+      registrationId: isoTeamId,
+      physicalQrId: 'EVX26-TEST-TONY-01',
+      physicalQrType: 'WRISTBAND',
+      staffId: 'Reception Desk 2',
+    });
+    expect(assignRes.state).toBe('SUCCESS');
+
+    // Verify Captain Marvel & Thor have NO wristbands
+    const teamCheck = await operationsApi.getTeamPassProfile(isoTeamId);
+    expect(teamCheck.data?.assignedCount).toBe(1);
+    expect(teamCheck.data?.members[0].name).toBe('Captain Marvel');
+    expect(teamCheck.data?.members[0].physicalQrId).toBeUndefined();
+    expect(teamCheck.data?.members[1].name).toBe('Iron Man');
+    expect(teamCheck.data?.members[1].physicalQrId).toBe('EVX26-TEST-TONY-01');
+    expect(teamCheck.data?.members[2].name).toBe('Thor');
+    expect(teamCheck.data?.members[2].physicalQrId).toBeUndefined();
+  });
+
+  test('29. (Test 5) Partial Team Assignment & Resume', async () => {
+    const resumeTeamId = `EVOXIS26-RESUME-${Date.now()}`;
+    const mockDb = JSON.parse(localStorage.getItem('evoxis26_overall_registrations') || '[]');
+    mockDb.push({
+      registrationId: resumeTeamId,
+      participantName: 'Alpha Leader',
+      email: 'alpha@team.com',
+      mobileNumber: '9777700001',
+      collegeInstitution: 'CIT',
+      department: 'CSE',
+      selectedEvents: 'TE03',
+      registrationType: 'Team',
+      teamName: 'Resume Alpha',
+      qrToken: `EVOXIS26:resume_${Date.now()}`,
+      teamMembers: [
+        { name: 'Alpha Leader', role: 'TEAM_HEAD' },
+        { name: 'Beta Runner', role: 'TEAM_MEMBER' },
+        { name: 'Gamma Striker', role: 'TEAM_MEMBER' },
+      ],
+    });
+    localStorage.setItem('evoxis26_overall_registrations', JSON.stringify(mockDb));
+
+    // Step A: Assign 2 of 3 members
+    await operationsApi.assignPhysicalQr({
+      participantId: resumeTeamId,
+      registrationId: resumeTeamId,
+      physicalQrId: 'EVX26-TEST-ALPHA-01',
+      physicalQrType: 'WRISTBAND',
+      staffId: 'Reception Staff',
+    });
+    await operationsApi.assignPhysicalQr({
+      participantId: `${resumeTeamId}-M1`,
+      registrationId: resumeTeamId,
+      physicalQrId: 'EVX26-TEST-BETA-02',
+      physicalQrType: 'WRISTBAND',
+      staffId: 'Reception Staff',
+    });
+
+    // Step B: Rescan Team Pass later
+    const teamRes = await operationsApi.lookupRegistration({
+      token: `EVOXIS26:TEAM:${resumeTeamId}`,
+    });
+
+    expect(teamRes.isTeamPass).toBe(true);
+    expect(teamRes.data?.teamPassProfile?.assignedCount).toBe(2);
+    expect(teamRes.data?.teamPassProfile?.isComplete).toBe(false);
+    expect(teamRes.data?.teamPassProfile?.members[2].physicalQrId).toBeUndefined();
+  });
+
+  test('30. (Test 6) Individual Pass Completion After Partial Team Assignment', async () => {
+    const mixedTeamId = `EVOXIS26-MIXED-${Date.now()}`;
+    const mockDb = JSON.parse(localStorage.getItem('evoxis26_overall_registrations') || '[]');
+    mockDb.push({
+      registrationId: mixedTeamId,
+      participantName: 'Head A',
+      email: 'heada@mix.com',
+      mobileNumber: '9666600001',
+      collegeInstitution: 'SRM',
+      department: 'ECE',
+      selectedEvents: 'TE01',
+      registrationType: 'Team',
+      teamName: 'Mixed Crew',
+      qrToken: `EVOXIS26:mix_${Date.now()}`,
+      teamMembers: [
+        { name: 'Head A', role: 'TEAM_HEAD' },
+        { name: 'Member B', role: 'TEAM_MEMBER' },
+      ],
+    });
+    localStorage.setItem('evoxis26_overall_registrations', JSON.stringify(mockDb));
+
+    // Assign Head via Team Pass
+    await operationsApi.assignPhysicalQr({
+      participantId: mixedTeamId,
+      registrationId: mixedTeamId,
+      physicalQrId: 'EVX26-TEST-HEADA-01',
+      physicalQrType: 'WRISTBAND',
+      staffId: 'Staff 1',
+    });
+
+    // Later, Member B scans their Individual Pass at a different desk
+    const memberBScan = await operationsApi.lookupRegistration({
+      token: `${mixedTeamId}-M1`,
+    });
+    expect(memberBScan.isTeamPass).toBe(false);
+
+    await operationsApi.assignPhysicalQr({
+      participantId: `${mixedTeamId}-M1`,
+      registrationId: mixedTeamId,
+      physicalQrId: 'EVX26-TEST-MEMB-02',
+      physicalQrType: 'WRISTBAND',
+      staffId: 'Staff 2',
+    });
+
+    // Rescan Team Pass: now shows complete 2/2!
+    const finalTeam = await operationsApi.getTeamPassProfile(mixedTeamId);
+    expect(finalTeam.data?.assignedCount).toBe(2);
+    expect(finalTeam.data?.isComplete).toBe(true);
+  });
+
+  test('31. (Test 7) Duplicate Wristband Conflict Prevention', async () => {
+    const dupQr = 'EVX26-TEST-COLLISION-99';
+    // 1. Assign to participant X
+    await operationsApi.assignPhysicalQr({
+      participantId: TEST_INDIVIDUAL_ID,
+      registrationId: TEST_INDIVIDUAL_ID,
+      physicalQrId: dupQr,
+      physicalQrType: 'WRISTBAND',
+      staffId: 'Staff 1',
+    });
+
+    // 2. Attempt to assign same wristband to someone else
+    const conflictRes = await operationsApi.assignPhysicalQr({
+      participantId: 'EVOXIS26-ANOTHER-PERSON',
+      registrationId: 'EVOXIS26-ANOTHER-PERSON',
+      physicalQrId: dupQr,
+      physicalQrType: 'WRISTBAND',
+      staffId: 'Staff 2',
+    });
+
+    expect(conflictRes.state).toBe('QR_CONFLICT');
+    expect(conflictRes.verbatimMessage).toBe('WRISTBAND ALREADY ASSIGNED');
+    expect(conflictRes.details).toContain(dupQr);
+  });
+
+  test('32. (Test 8) Duplicate Participant Assignment Prevention', async () => {
+    const partId = `EVOXIS26-DOUBLE-${Date.now()}`;
+    const mockDb = JSON.parse(localStorage.getItem('evoxis26_overall_registrations') || '[]');
+    mockDb.push({
+      registrationId: partId,
+      participantName: 'Double Assignee',
+      email: 'double@test.com',
+      mobileNumber: '9555500001',
+      collegeInstitution: 'SEC',
+      department: 'IT',
+      selectedEvents: 'TE02',
+      role: 'INDIVIDUAL',
+    });
+    localStorage.setItem('evoxis26_overall_registrations', JSON.stringify(mockDb));
+
+    // First assignment
+    const firstRes = await operationsApi.assignPhysicalQr({
+      participantId: partId,
+      registrationId: partId,
+      physicalQrId: 'EVX26-TEST-WB-FIRST-01',
+      physicalQrType: 'WRISTBAND',
+      staffId: 'Staff 1',
+      staffRole: 'RECEPTION',
+    });
+    expect(firstRes.state).toBe('SUCCESS');
+
+    // Attempt second assignment without super admin override
+    const secondRes = await operationsApi.assignPhysicalQr({
+      participantId: partId,
+      registrationId: partId,
+      physicalQrId: 'EVX26-TEST-WB-SECOND-02',
+      physicalQrType: 'WRISTBAND',
+      staffId: 'Staff 1',
+      staffRole: 'RECEPTION',
+    });
+    expect(secondRes.state).toBe('QR_CONFLICT');
+    expect(secondRes.verbatimMessage).toBe('PARTICIPANT ALREADY HAS ACTIVE WRISTBAND');
+  });
+
+  test('33. (Test 9) Invalid / Malformed Wristband QR Rejection', async () => {
+    const invalidRes = await operationsApi.assignPhysicalQr({
+      participantId: TEST_INDIVIDUAL_ID,
+      registrationId: TEST_INDIVIDUAL_ID,
+      physicalQrId: '',
+      physicalQrType: 'WRISTBAND',
+      staffId: 'Staff 1',
+    });
+    expect(invalidRes.state).toBe('INVALID_QR');
+  });
+
+  test('34. (Test 10) Backward Compatibility with Old QR Codes', async () => {
+    const res = await operationsApi.lookupRegistration({
+      token: 'EVOXIS26-TEST-99901',
+    });
+    expect(res.success).toBe(true);
+    expect(res.data?.participantName).toBe('Rahul Dravid');
+  });
+
+  test('35. (Test 11) New Format QR Codes Resolution', async () => {
+    const res = await operationsApi.lookupRegistration({
+      token: 'EVOXIS26:testrahul99901',
+    });
+    expect(res.success).toBe(true);
+    expect(res.data?.registrationId).toBe(TEST_INDIVIDUAL_ID);
+  });
+
+  test('36. (Test 12) Event Desk Compatibility with Team-Assigned Wristband', async () => {
+    const eventTeamId = `EVOXIS26-EVT-TEAM-${Date.now()}`;
+    const mockDb = JSON.parse(localStorage.getItem('evoxis26_overall_registrations') || '[]');
+    mockDb.push({
+      registrationId: eventTeamId,
+      participantName: 'Event Gamer',
+      email: 'gamer@evoxis.com',
+      mobileNumber: '9444400001',
+      collegeInstitution: 'Sriram',
+      department: 'CSBS',
+      selectedEvents: 'TE02, SP01',
+      registrationType: 'Team',
+      teamName: 'Game Strikers',
+      qrToken: `EVOXIS26:gamer_${Date.now()}`,
+      teamMembers: [
+        { name: 'Event Gamer', role: 'TEAM_HEAD' },
+        { name: 'Sidekick Gamer', role: 'TEAM_MEMBER' },
+      ],
+    });
+    mockDb.push({
+      registrationId: `${eventTeamId}-M1`,
+      participantName: 'Sidekick Gamer',
+      email: 'sidekick@evoxis.com',
+      mobileNumber: '9444400002',
+      collegeInstitution: 'Sriram',
+      department: 'CSBS',
+      selectedEvents: 'TE02, SP01',
+      registrationType: 'Team',
+      teamName: 'Game Strikers',
+      role: 'TEAM_MEMBER',
+      qrToken: `EVOXIS26:gamer_${Date.now()}-M1`,
+    });
+    localStorage.setItem('evoxis26_overall_registrations', JSON.stringify(mockDb));
+
+    // Assign wristband to Sidekick Gamer at Reception
+    const wb = 'EVX26-TEST-SIDEKICK-WB';
+    await operationsApi.assignPhysicalQr({
+      participantId: `${eventTeamId}-M1`,
+      registrationId: eventTeamId,
+      physicalQrId: wb,
+      physicalQrType: 'WRISTBAND',
+      staffId: 'Reception Desk',
+    });
+
+    // Sidekick Gamer visits TE02 desk and scans wristband
+    const eventDeskCheckin = await operationsApi.markEventPresent({
+      physicalQrId: wb,
+      eventId: 'TE02',
+      staffId: 'TE02 Coordinator',
+      station: 'Event Desk (TE02)',
+      portalMode: 'TEST',
+    });
+
+    expect(eventDeskCheckin.state).toBe('SUCCESS');
+    expect(eventDeskCheckin.verbatimMessage).toContain('PRESENT');
+    expect(eventDeskCheckin.participantName).toBe('Sidekick Gamer');
+  });
 });
 

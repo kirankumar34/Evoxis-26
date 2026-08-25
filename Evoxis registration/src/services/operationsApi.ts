@@ -17,6 +17,8 @@ import {
   ParticipantOperationalSummary,
   EventAttendanceSummary,
   TeamOperationalSummary,
+  TeamPassProfile,
+  TeamMemberRosterItem,
 } from '../types';
 import { OFFICIAL_EVENTS } from '../config/events';
 import { syncToGoogleSheets } from './sheetsSync';
@@ -49,6 +51,55 @@ const saveLocalArray = <T>(key: string, arr: T[]) => {
     console.warn('LocalStorage save error:', e);
   }
 };
+
+// Helper: QR token validator
+export function isValidQRToken(token: string): boolean {
+  if (!token || typeof token !== 'string') return false;
+  const clean = token.trim();
+  return (
+    /^EVOXIS26:TEAM:[0-9A-Za-z_-]+$/i.test(clean) ||
+    /^TEAM:[0-9A-Za-z_-]+$/i.test(clean) ||
+    /^EVOXIS26:[a-f0-9]{6,16}:[0-9]{1,10}(-[0-9A-Za-z]+)?$/i.test(clean) ||
+    /^EVOXIS26:[a-f0-9]{6,16}:[0-9A-Za-z_-]+$/i.test(clean) ||
+    /^EVOXIS26:[a-f0-9]{6,35}(-[0-9A-Za-z]+)?$/i.test(clean) ||
+    /^EVOXIS26:PAX:[0-9A-Za-z_-]+:[a-f0-9]+$/i.test(clean) ||
+    /^EVOXIS26-[0-9A-Za-z_-]+$/i.test(clean)
+  );
+}
+
+// Helper: QR string parser
+export function parseQRString(qrString: string): {
+  valid: boolean;
+  token: string;
+  registrationId?: string;
+  isTeamPass?: boolean;
+} {
+  const token = (qrString || '').trim();
+  if (token.toUpperCase().startsWith('EVOXIS26:TEAM:') || token.toUpperCase().startsWith('TEAM:')) {
+    const rawId = token.replace(/^EVOXIS26:TEAM:/i, '').replace(/^TEAM:/i, '').trim();
+    const padded = /^\d{1,5}$/.test(rawId) ? rawId.padStart(5, '0') : rawId;
+    return {
+      valid: true,
+      token,
+      isTeamPass: true,
+      registrationId: padded.startsWith('EVOXIS') ? padded : `EVOXIS26-${padded}`,
+    };
+  }
+
+  if (token.includes(':')) {
+    const parts = token.split(':');
+    const numeric = parts.length >= 3 ? parts[2] : parts[1].replace(/[^0-9]/g, '');
+    const padded = numeric && !numeric.includes('M') ? numeric.padStart(5, '0') : numeric;
+    return {
+      valid: true,
+      token,
+      isTeamPass: false,
+      registrationId: padded ? (padded.startsWith('EVOXIS') ? padded : `EVOXIS26-${padded}`) : undefined,
+    };
+  }
+
+  return { valid: true, token, isTeamPass: false, registrationId: token };
+}
 
 export const operationsApi = {
   /**
@@ -108,24 +159,53 @@ export const operationsApi = {
   /**
    * Lookup participant by Digital QR Token, Physical QR ID, Registration ID, Email, Phone, or Name
    */
-  async lookupRegistration(query: {
+  async lookupRegistration(params: {
     token?: string;
     queryStr?: string;
-  }): Promise<{ success: boolean; data?: ParticipantProfile; message?: string }> {
-    const rawQuery = (query.token || query.queryStr || '').trim();
-    if (!rawQuery) {
-      return { success: false, message: 'Scan token or query string is required' };
-    }
-
+    isTeamPass?: boolean;
+  }): Promise<{
+    success: boolean;
+    data?: ParticipantProfile;
+    isTeamPass?: boolean;
+    type?: 'TEAM_PASS' | 'INDIVIDUAL_PASS';
+    message?: string;
+  }> {
     try {
+      const rawQuery = (params.token || params.queryStr || '').trim();
+      if (!rawQuery) {
+        return { success: false, message: 'Scan or search query is required' };
+      }
+
       let lookupKey = rawQuery;
 
-      // 1. If rawQuery looks like a Physical QR, resolve from local assignments first, then Supabase attendance_logs
-      if (
-        rawQuery.toUpperCase().startsWith('EVX26-') ||
-        rawQuery.toUpperCase().startsWith('WRIST-') ||
-        rawQuery.toUpperCase().startsWith('IDC-')
-      ) {
+      // 1. Detect if this is an explicit Team Pass lookup
+      const isTeamPassLookup = Boolean(
+        params.isTeamPass ||
+        /^EVOXIS26:TEAM:/i.test(lookupKey) ||
+        /^TEAM:/i.test(lookupKey) ||
+        /:TEAM:/i.test(lookupKey)
+      );
+
+      // Clean up token if it's a Team Pass
+      if (isTeamPassLookup) {
+        lookupKey = lookupKey
+          .replace(/^EVOXIS26:TEAM:/i, '')
+          .replace(/^TEAM:/i, '')
+          .trim();
+        // If it's a numeric suffix, format as EVOXIS26-XXXXX
+        if (/^\d{1,6}$/.test(lookupKey)) {
+          lookupKey = `EVOXIS26-${lookupKey.padStart(5, '0')}`;
+        }
+      } else {
+        // Parse standard QR token if passed
+        if (lookupKey.startsWith('EVOXIS26:') && lookupKey.includes(':')) {
+          const parsed = parseQRString(lookupKey);
+          if (parsed.registrationId) {
+            lookupKey = parsed.registrationId;
+          }
+        }
+
+        // If not found directly, check physical QR assignments
         const localAssignments = getLocalArray<{
           physicalQrId: string;
           participantId: string;
@@ -168,26 +248,39 @@ export const operationsApi = {
 
       if (isSupabaseConfigured()) {
         try {
-          // A. Exact match by qr_token
+          // A. Exact match by qr_token (using both rawQuery and lookupKey)
           const { data: byQr, error: qrErr } = await supabase
             .from('overall_registrations')
             .select('*')
-            .eq('qr_token', lookupKey.trim())
+            .or(`qr_token.eq.${rawQuery.trim()},qr_token.eq.${lookupKey.trim()}`)
             .limit(1);
 
           if (!qrErr && byQr && byQr.length > 0) {
             matchRecord = byQr[0];
           } else {
-            // B. Exact match by registration_id
-            const { data: byRegId, error: regErr } = await supabase
-              .from('overall_registrations')
-              .select('*')
-              .eq('registration_id', lookupKey.trim().toUpperCase())
-              .limit(1);
+            // B. Exact match by registration_id (try exact, EVOXIS26-, EVOXIS26-TEST-)
+            const candidateIds = [
+              lookupKey.trim().toUpperCase(),
+              rawQuery.trim().toUpperCase(),
+              `EVOXIS26-${lookupKey.trim().toUpperCase()}`,
+              `EVOXIS26-TEST-${lookupKey.trim().toUpperCase()}`,
+            ];
+            
+            for (const cand of candidateIds) {
+              if (cand) {
+                const { data: byRegId } = await supabase
+                  .from('overall_registrations')
+                  .select('*')
+                  .eq('registration_id', cand)
+                  .limit(1);
+                if (byRegId && byRegId.length > 0) {
+                  matchRecord = byRegId[0];
+                  break;
+                }
+              }
+            }
 
-            if (!regErr && byRegId && byRegId.length > 0) {
-              matchRecord = byRegId[0];
-            } else {
+            if (!matchRecord) {
               // C. Match by email or mobile
               const cleanContact = lookupKey.trim();
               const { data: byContact } = await supabase
@@ -199,24 +292,33 @@ export const operationsApi = {
               if (byContact && byContact.length > 0) {
                 matchRecord = byContact[0];
               } else if (cleanContact.length >= 3 && !cleanContact.startsWith('EVX') && !cleanContact.startsWith('EVO') && !cleanContact.includes(':')) {
-                // D. Partial match by name
-                const { data: byName } = await supabase
+                // D. Match by team name or participant name
+                const { data: byTeam } = await supabase
                   .from('overall_registrations')
                   .select('*')
-                  .ilike('participant_name', `%${cleanContact}%`)
+                  .ilike('team_name', `%${cleanContact}%`)
                   .limit(1);
-                if (byName && byName.length > 0) {
-                  matchRecord = byName[0];
+                if (byTeam && byTeam.length > 0) {
+                  matchRecord = byTeam[0];
+                } else {
+                  const { data: byName } = await supabase
+                    .from('overall_registrations')
+                    .select('*')
+                    .ilike('participant_name', `%${cleanContact}%`)
+                    .limit(1);
+                  if (byName && byName.length > 0) {
+                    matchRecord = byName[0];
+                  }
                 }
               }
 
               // E. Fallback for team member suffixes (e.g. EVOXIS26-00046-M1)
-              if (!matchRecord && lookupKey.includes('-M')) {
-                const baseKey = lookupKey.split('-M')[0];
+              if (!matchRecord && /-M\d+$/i.test(lookupKey)) {
+                const baseKey = lookupKey.replace(/-M\d+$/i, '').toUpperCase();
                 const { data: baseRecs } = await supabase
                   .from('overall_registrations')
                   .select('*')
-                  .eq('registration_id', baseKey.toUpperCase())
+                  .eq('registration_id', baseKey)
                   .limit(1);
                 if (baseRecs && baseRecs.length > 0) {
                   matchRecord = baseRecs[0];
@@ -232,26 +334,31 @@ export const operationsApi = {
       // If not found in Supabase, check local mock registrations
       if (!matchRecord) {
         const mockRegs = getLocalArray<any>('evoxis26_overall_registrations');
+        const cleanUpper = lookupKey.toUpperCase();
+        const rawUpper = rawQuery.toUpperCase();
+
         // Exact match first
         matchRecord = mockRegs.find(
           (r) =>
-            (r.registrationId && r.registrationId.toUpperCase() === lookupKey.toUpperCase()) ||
-            (r.registration_id && r.registration_id.toUpperCase() === lookupKey.toUpperCase()) ||
+            (r.qrToken && (r.qrToken === rawQuery || r.qrToken === lookupKey)) ||
+            (r.qr_token && (r.qr_token === rawQuery || r.qr_token === lookupKey)) ||
+            (r.registrationId && (r.registrationId.toUpperCase() === cleanUpper || r.registrationId.toUpperCase() === rawUpper || r.registrationId.toUpperCase() === `EVOXIS26-${cleanUpper}` || r.registrationId.toUpperCase() === `EVOXIS26-TEST-${cleanUpper}`)) ||
+            (r.registration_id && (r.registration_id.toUpperCase() === cleanUpper || r.registration_id.toUpperCase() === rawUpper || r.registration_id.toUpperCase() === `EVOXIS26-${cleanUpper}` || r.registration_id.toUpperCase() === `EVOXIS26-TEST-${cleanUpper}`)) ||
             (r.email && r.email.toLowerCase() === lookupKey.toLowerCase()) ||
             (r.mobileNumber && r.mobileNumber === lookupKey) ||
             (r.mobile_number && r.mobile_number === lookupKey) ||
-            (r.qrToken && r.qrToken === lookupKey) ||
-            (r.qr_token && r.qr_token === lookupKey) ||
+            (r.teamName && r.teamName.toLowerCase().includes(lookupKey.toLowerCase())) ||
+            (r.team_name && r.team_name.toLowerCase().includes(lookupKey.toLowerCase())) ||
             (r.participantName && r.participantName.toLowerCase().includes(lookupKey.toLowerCase())) ||
             (r.participant_name && r.participant_name.toLowerCase().includes(lookupKey.toLowerCase()))
         );
 
-        if (!matchRecord && lookupKey.includes('-M')) {
-          const baseKey = lookupKey.split('-M')[0];
+        if (!matchRecord && /-M\d+$/i.test(lookupKey)) {
+          const baseKey = lookupKey.replace(/-M\d+$/i, '').toUpperCase();
           matchRecord = mockRegs.find(
             (r) =>
-              (r.registrationId && r.registrationId.toUpperCase() === baseKey.toUpperCase()) ||
-              (r.registration_id && r.registration_id.toUpperCase() === baseKey.toUpperCase())
+              (r.registrationId && (r.registrationId.toUpperCase() === baseKey || r.registrationId.toUpperCase() === `EVOXIS26-${baseKey}` || r.registrationId.toUpperCase() === `EVOXIS26-TEST-${baseKey}`)) ||
+              (r.registration_id && (r.registration_id.toUpperCase() === baseKey || r.registration_id.toUpperCase() === `EVOXIS26-${baseKey}` || r.registration_id.toUpperCase() === `EVOXIS26-TEST-${baseKey}`))
           );
         }
       }
@@ -281,7 +388,7 @@ export const operationsApi = {
         .filter((s: string) => s.length > 0);
 
       const teamMembers: TeamMemberInfo[] = Array.isArray(teamMembersRaw)
-        ? teamMembersRaw.map((tm: any) => ({
+        ? teamMembersRaw.map((tm: any, idx: number) => ({
             name: tm.name || tm.fullName || '',
             email: tm.email || '',
             phone: tm.phone || tm.mobile || '',
@@ -289,7 +396,9 @@ export const operationsApi = {
             department: tm.department || department,
             year: tm.year || year,
             gender: tm.gender || 'Not Specified',
-            role: tm.role || 'TEAM_MEMBER',
+            role: tm.role || (idx === 0 ? 'TEAM_HEAD' : 'TEAM_MEMBER'),
+            registrationId: tm.registrationId || (idx === 0 ? regId : `${regId}-M${idx}`),
+            qrToken: tm.qrToken || (idx === 0 ? digitalQr : `${digitalQr}-M${idx}`),
           }))
         : [];
 
@@ -298,11 +407,12 @@ export const operationsApi = {
       let currentRole: 'TEAM_HEAD' | 'TEAM_MEMBER' | 'INDIVIDUAL' =
         matchRecord.role || (regType === 'Team' ? 'TEAM_HEAD' : 'INDIVIDUAL');
 
-      if (lookupKey.includes('-M')) {
+      if (!isTeamPassLookup && /-M\d+$/i.test(lookupKey)) {
         currentParticipantId = lookupKey;
         currentRole = 'TEAM_MEMBER';
         if (regId.toUpperCase() !== lookupKey.toUpperCase()) {
-          const memberNum = parseInt(lookupKey.split('-M')[1], 10);
+          const matchNum = lookupKey.match(/-M(\d+)$/i);
+          const memberNum = matchNum ? parseInt(matchNum[1], 10) : 1;
           const nonHeadMembers = teamMembers.filter((tm) => tm.role === 'TEAM_MEMBER');
           const targetMember =
             nonHeadMembers[memberNum - 1] || teamMembers[memberNum] || teamMembers[memberNum - 1];
@@ -370,7 +480,7 @@ export const operationsApi = {
         (f) => f.participantId === currentParticipantId
       );
 
-      // Retrieve Physical QR Assignment
+      // Retrieve Physical QR Assignments for participant & team
       const localAssignments = getLocalArray<{
         physicalQrId: string;
         participantId: string;
@@ -379,9 +489,85 @@ export const operationsApi = {
         physicalQrType: 'ID_CARD' | 'WRISTBAND';
         assignedAt?: string;
       }>(STORAGE_KEYS.ASSIGNMENTS);
+
       const physicalAssignment = localAssignments.find(
         (a) => a.active && a.participantId === currentParticipantId
       );
+
+      // Build Team Pass Profile if this is a Team Pass or Team Registration requested as Team Pass
+      let teamPassProfile: TeamPassProfile | undefined = undefined;
+      if (isTeamPassLookup || regType === 'Team') {
+        const rosterItems: TeamMemberRosterItem[] = [];
+
+        // 1. Team Head
+        const headAssignment = localAssignments.find(
+          (a) => a.active && (a.participantId === regId || a.participantId === pName)
+        );
+        const headCampus = localCampus.find((c) => c.participantId === regId);
+        rosterItems.push({
+          participantId: regId,
+          registrationId: regId,
+          name: pName,
+          email,
+          phone: mobile,
+          college,
+          department,
+          year,
+          gender,
+          role: 'TEAM_HEAD',
+          qrToken: digitalQr,
+          physicalQrId: headAssignment?.physicalQrId,
+          physicalQrType: headAssignment?.physicalQrType || 'WRISTBAND',
+          assignedAt: headAssignment?.assignedAt,
+          campusAttendanceStatus: headCampus ? 'Present' : 'Pending',
+          campusCheckinTime: headCampus?.checkinTime,
+        });
+
+        // 2. Team Members
+        const nonHeadMembers = teamMembers.filter((tm) => tm.role !== 'TEAM_HEAD');
+        nonHeadMembers.forEach((tm, idx) => {
+          const mPartId = tm.registrationId || `${regId}-M${idx + 1}`;
+          const mAssign = localAssignments.find(
+            (a) => a.active && (a.participantId === mPartId || (a.registrationId === regId && a.participantId === tm.name))
+          );
+          const mCampus = localCampus.find((c) => c.participantId === mPartId);
+          rosterItems.push({
+            participantId: mPartId,
+            registrationId: regId,
+            name: tm.name,
+            email: tm.email,
+            phone: tm.phone,
+            college: tm.college || college,
+            department: tm.department || department,
+            year: tm.year || year,
+            gender: tm.gender || 'Not Specified',
+            role: 'TEAM_MEMBER',
+            qrToken: tm.qrToken || `${digitalQr}-M${idx + 1}`,
+            physicalQrId: mAssign?.physicalQrId,
+            physicalQrType: mAssign?.physicalQrType || 'WRISTBAND',
+            assignedAt: mAssign?.assignedAt,
+            campusAttendanceStatus: mCampus ? 'Present' : 'Pending',
+            campusCheckinTime: mCampus?.checkinTime,
+          });
+        });
+
+        const assignedCount = rosterItems.filter((m) => Boolean(m.physicalQrId)).length;
+        teamPassProfile = {
+          teamId: `TEAM-${regId.replace(/[^0-9]/g, '')}`,
+          teamName: teamName || `${pName}'s Team`,
+          registrationId: regId,
+          teamPassToken: `EVOXIS26:TEAM:${regId.replace(/[^0-9]/g, '')}`,
+          college,
+          department,
+          year,
+          selectedEvents: selectedEventIds,
+          registeredEvents,
+          members: rosterItems,
+          totalMembers: rosterItems.length,
+          assignedCount,
+          isComplete: rosterItems.length > 0 && assignedCount === rosterItems.length,
+        };
+      }
 
       const profile: ParticipantProfile = {
         id: currentParticipantId,
@@ -411,13 +597,86 @@ export const operationsApi = {
         foodDeliveredTime: foodCheck?.deliveredTime,
         foodDeliveredBy: foodCheck?.deliveredBy,
         foodStation: foodCheck?.station,
+        isTeamPass: isTeamPassLookup,
+        teamPassProfile: isTeamPassLookup ? teamPassProfile : undefined,
       };
 
-      return { success: true, data: profile };
+      if (isTeamPassLookup && teamPassProfile) {
+        return {
+          success: true,
+          isTeamPass: true,
+          type: 'TEAM_PASS',
+          data: profile,
+        };
+      }
+
+      return {
+        success: true,
+        isTeamPass: false,
+        type: 'INDIVIDUAL_PASS',
+        data: profile,
+      };
     } catch (err: any) {
       console.error('[OperationsApi] lookupRegistration error:', err);
       return { success: false, message: err.message || 'Lookup failed' };
     }
+  },
+
+  /**
+   * Get fresh TeamPassProfile for a given team registration
+   */
+  async getTeamPassProfile(registrationId: string): Promise<{
+    success: boolean;
+    data?: TeamPassProfile;
+    message?: string;
+  }> {
+    const res = await this.lookupRegistration({
+      queryStr: registrationId,
+      isTeamPass: true,
+    });
+    if (res.success && res.data?.teamPassProfile) {
+      return { success: true, data: res.data.teamPassProfile };
+    }
+    return { success: false, message: res.message || 'Team pass not found' };
+  },
+
+  /**
+   * Mark campus present for all members of a team
+   */
+  async markCampusPresentForTeam(params: {
+    registrationId: string;
+    staffId: string;
+    station?: string;
+  }): Promise<{
+    success: boolean;
+    message: string;
+    checkedInCount: number;
+  }> {
+    const teamRes = await this.getTeamPassProfile(params.registrationId);
+    if (!teamRes.success || !teamRes.data) {
+      return { success: false, message: teamRes.message || 'Team not found', checkedInCount: 0 };
+    }
+
+    const station = params.station || 'Reception Desk';
+    let checkedInCount = 0;
+
+    for (const member of teamRes.data.members) {
+      const res = await this.markCampusPresent({
+        participantId: member.participantId,
+        registrationId: params.registrationId,
+        staffId: params.staffId,
+        station,
+      });
+      if (res.state === 'SUCCESS') {
+        checkedInCount++;
+      }
+    }
+
+    return {
+      success: true,
+      message: `Marked ${checkedInCount} members campus present`,
+      checkedInCount,
+    };
   },
 
   /**
@@ -1249,6 +1508,7 @@ export const operationsApi = {
       timestamp: now,
       details: `${participant.participantName} verified for ${eventTitle}`,
       participant,
+      participantName: participant.participantName,
     };
   },
 
