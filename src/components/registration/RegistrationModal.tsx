@@ -4,6 +4,7 @@ import confetti from 'canvas-confetti';
 import { EventItem, TeamMember, EventId, REFERRAL_SOURCES } from '@/types';
 import { EVENTS } from '@/data/events';
 import { api } from '@/services/api';
+import { generateQRCodeDataUrl, downloadQRCodePNG } from '@/lib/qr';
 import {
   X,
   Sparkles,
@@ -18,6 +19,9 @@ import {
   ExternalLink,
   ChevronDown,
   Check,
+  Download,
+  Eye,
+  AlertCircle,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -59,6 +63,37 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
   const [registrationId, setRegistrationId] = useState('');
   const [confirmedEvents, setConfirmedEvents] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
+
+  // QR Generation & Team Roster States
+  const [registeredData, setRegisteredData] = useState<{
+    registrationId: string;
+    qrToken: string;
+    participantName: string;
+    email: string;
+    mobileNumber: string;
+    college: string;
+    department: string;
+    selectedEvents: EventId[];
+    teamName?: string;
+    teamMembers?: TeamMember[];
+    participants?: Array<{
+      name: string;
+      email: string;
+      phone: string;
+      college: string;
+      department: string;
+      year: string;
+      gender: string;
+      role: 'TEAM_HEAD' | 'TEAM_MEMBER' | 'INDIVIDUAL';
+      registrationId?: string;
+      qrToken?: string;
+    }>;
+  } | null>(null);
+
+  const [qrDataUrls, setQrDataUrls] = useState<Record<string, string>>({});
+  const [isGeneratingQR, setIsGeneratingQR] = useState(false);
+  const [qrError, setQrError] = useState<string | null>(null);
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
 
   // Sync initial event if passed
   useEffect(() => {
@@ -102,13 +137,9 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
         updated = [...prev.selectedEventIds, eventId];
       }
 
-      const newSelectedEvents = EVENTS.filter((e) => updated.includes(e.eventId));
-      const hasTeamEvent = newSelectedEvents.some((e) => e.teamSize.max > 1);
-
       return {
         ...prev,
         selectedEventIds: updated,
-        isTeam: hasTeamEvent ? prev.isTeam : false,
       };
     });
 
@@ -132,31 +163,29 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
   };
 
   const handleAddTeamMember = () => {
-    const maxMembers = maxTeamSize - 1;
-    if ((formData.teamMembers || []).length < maxMembers) {
-      setFormData((prev) => ({
-        ...prev,
-        teamMembers: [
-          ...(prev.teamMembers || []),
-          {
-            name: '',
-            email: '',
-            phone: '',
-            college: prev.collegeName || '',
-            department: prev.department || '',
-            year: prev.yearOfStudy || '3rd Year',
-            gender: 'Male',
-            role: 'TEAM_MEMBER',
-          },
-        ],
-      }));
-    }
+    if (formData.teamMembers.length + 1 >= maxTeamSize) return;
+    setFormData((prev) => ({
+      ...prev,
+      teamMembers: [
+        ...prev.teamMembers,
+        {
+          name: '',
+          email: '',
+          phone: '',
+          college: prev.collegeName,
+          department: prev.department,
+          year: prev.yearOfStudy,
+          gender: 'Not Specified',
+          role: 'TEAM_MEMBER',
+        },
+      ],
+    }));
   };
 
   const handleRemoveTeamMember = (index: number) => {
     setFormData((prev) => ({
       ...prev,
-      teamMembers: (prev.teamMembers || []).filter((_, i) => i !== index),
+      teamMembers: prev.teamMembers.filter((_, i) => i !== index),
     }));
   };
 
@@ -166,39 +195,102 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
     value: string
   ) => {
     setFormData((prev) => {
-      const updated = [...(prev.teamMembers || [])];
+      const updated = [...prev.teamMembers];
       updated[index] = { ...updated[index], [field]: value };
       return { ...prev, teamMembers: updated };
     });
   };
 
-  const validateForm = () => {
+  const generateAllQRs = async (data: {
+    registrationId: string;
+    qrToken: string;
+    participantName: string;
+    teamName?: string;
+    participants?: Array<{
+      name: string;
+      registrationId?: string;
+      qrToken?: string;
+    }>;
+  }) => {
+    setIsGeneratingQR(true);
+    setQrError(null);
+    try {
+      const urls: Record<string, string> = {};
+      const roster = data.participants && data.participants.length > 0
+        ? data.participants
+        : [{
+            name: data.participantName,
+            registrationId: data.registrationId,
+            qrToken: data.qrToken,
+          }];
+
+      for (const p of roster) {
+        const regId = p.registrationId || data.registrationId;
+        const token = p.qrToken || data.qrToken;
+        const url = await generateQRCodeDataUrl(token, { width: 360, margin: 2 });
+        urls[regId] = url;
+      }
+      setQrDataUrls(urls);
+    } catch (err) {
+      console.error('[EvoXis26] QR generation failed:', err);
+      setQrError('QR generation failed. Please retry.');
+    } finally {
+      setIsGeneratingQR(false);
+    }
+  };
+
+  const handleDownloadSingleQR = async (token: string, regId: string, label: string) => {
+    await downloadQRCodePNG(token, `${regId}-QR.png`, label);
+  };
+
+  const handleDownloadAllQRs = async () => {
+    if (!registeredData) return;
+    setIsDownloadingAll(true);
+    try {
+      const roster = registeredData.participants && registeredData.participants.length > 0
+        ? registeredData.participants
+        : [{
+            name: registeredData.participantName,
+            registrationId: registeredData.registrationId,
+            qrToken: registeredData.qrToken,
+          }];
+
+      for (let i = 0; i < roster.length; i++) {
+        const p = roster[i];
+        const regId = p.registrationId || registeredData.registrationId;
+        const token = p.qrToken || registeredData.qrToken;
+        const label = `${p.name} (${regId})`;
+        await downloadQRCodePNG(token, `${regId}-QR.png`, label);
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      }
+    } finally {
+      setIsDownloadingAll(false);
+    }
+  };
+
+  const validate = () => {
     const errs: Record<string, string> = {};
-
-    if (!formData.fullName.trim()) errs.fullName = 'Full Name is required.';
-    if (!formData.email.trim() || !/^\S+@\S+\.\S+$/.test(formData.email)) {
-      errs.email = 'Valid Email Address is required.';
+    if (!formData.fullName.trim()) errs.fullName = 'Full Name is required';
+    if (!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email)) {
+      errs.email = 'Valid college or personal email is required';
     }
-    if (!formData.phone.trim() || !/^\d{10}$/.test(formData.phone.replace(/\D/g, ''))) {
-      errs.phone = '10-digit Mobile Number required.';
+    if (!formData.phone.trim() || !/^\d{10}$/.test(formData.phone.replace(/[^0-9]/g, ''))) {
+      errs.phone = 'Valid 10-digit mobile number is required';
     }
-    if (!formData.collegeName.trim()) errs.collegeName = 'College / Institution name required.';
-    if (!formData.department.trim()) errs.department = 'Department name required.';
-
-    if (formData.selectedEventIds.length === 0) {
+    if (!formData.collegeName.trim()) errs.collegeName = 'College / Institution name is required';
+    if (!formData.department.trim()) errs.department = 'Department name is required';
+    if (!formData.selectedEventIds || formData.selectedEventIds.length === 0) {
       errs.selectedEvents = 'Please select at least one event.';
     }
 
-    if (!formData.referralSource || formData.referralSource.trim() === '') {
-      errs.referralSource = 'Please tell us how you heard about EvoXis 26.';
-    } else if (formData.referralSource === 'Other' && (!formData.referralSourceOther || !formData.referralSourceOther.trim())) {
-      errs.referralSourceOther = 'Please specify how you heard about EvoXis 26.';
-    }
-
-    if (formData.isTeam && allowsTeams) {
-      if (!formData.teamName?.trim()) {
-        errs.teamName = 'Team Name is required for team registrations.';
-      }
+    if (formData.isTeam) {
+      if (!formData.teamName.trim()) errs.teamName = 'Team name is required for team entry';
+      formData.teamMembers.forEach((member, i) => {
+        if (!member.name.trim()) errs[`member_${i}_name`] = `Member ${i + 2} name required`;
+        if (member.email && !/\S+@\S+\.\S+/.test(member.email)) {
+          errs[`member_${i}_email`] = `Member ${i + 2} email is invalid`;
+        }
+      });
     }
 
     setErrors(errs);
@@ -207,9 +299,10 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validate()) return;
 
     setIsSubmitting(true);
+    setErrors({});
 
     try {
       const result = await api.registerParticipant({
@@ -232,7 +325,9 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
       if (result.success && result.data) {
         setRegistrationId(result.data.registrationId);
         setConfirmedEvents(result.data.selectedEvents || formData.selectedEventIds);
+        setRegisteredData(result.data);
         setIsSuccess(true);
+        generateAllQRs(result.data);
 
         try {
           confetti({
@@ -310,7 +405,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
           <div className="p-6 sm:p-8 overflow-y-auto max-h-[calc(92vh-140px)]">
             {isSuccess ? (
               /* Success Confirmation Card */
-              <div className="text-center py-6">
+              <div className="text-center py-4">
                 <div className="w-16 h-16 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 flex items-center justify-center mx-auto mb-4 shadow-glow-cyan">
                   <CheckCircle2 className="w-10 h-10 text-cyan-400" />
                 </div>
@@ -324,10 +419,6 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
 
                 {/* Digital Ticket Pass */}
                 <div className="mt-6 p-6 rounded-2xl bg-slate-900 border border-cyan-500/30 text-left relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-4 opacity-20">
-                    <QrCode className="w-20 h-20 text-cyan-400" />
-                  </div>
-
                   <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
                     <div>
                       <span className="text-[10px] font-mono text-cyan-400 uppercase">Registration ID</span>
@@ -359,6 +450,15 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
                     </div>
                   </div>
 
+                  {registeredData?.teamName && (
+                    <div className="p-2.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-xs mb-4 flex items-center justify-between">
+                      <span className="text-slate-300">Team: <strong className="text-white">{registeredData.teamName}</strong></span>
+                      <span className="text-[11px] font-mono text-cyan-400 font-bold">
+                        {registeredData.participants?.length || (1 + (registeredData.teamMembers?.length || 0))} Members
+                      </span>
+                    </div>
+                  )}
+
                   <div className="border-t border-slate-800/80 pt-3">
                     <span className="text-[11px] font-mono text-cyan-400 uppercase tracking-wider block mb-2 font-bold">
                       Registered Events ({confirmedEvents.length}):
@@ -378,6 +478,157 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
                   </div>
                 </div>
 
+                {/* OFFICIAL CHECK-IN QR PASS SECTION */}
+                <div className="mt-6 p-6 rounded-2xl bg-gradient-to-b from-slate-900 to-[#0B132B] border border-cyan-500/30 text-center">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="text-left">
+                      <span className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-widest block">
+                        {registeredData?.teamName ? 'TEAM QR PASSES' : 'YOUR OFFICIAL CHECK-IN QR PASS'}
+                      </span>
+                      <p className="text-[11px] text-slate-400">
+                        {registeredData?.teamName
+                          ? 'Each team member has a unique check-in QR code.'
+                          : 'Show this QR pass at the reception desk on event day.'}
+                      </p>
+                    </div>
+
+                    {registeredData?.teamName && (
+                      <button
+                        type="button"
+                        onClick={handleDownloadAllQRs}
+                        disabled={isDownloadingAll || isGeneratingQR}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold font-display bg-purple-500/20 text-purple-300 border border-purple-500/40 hover:bg-purple-500/30 transition-colors"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>{isDownloadingAll ? 'Downloading All...' : 'DOWNLOAD ALL MEMBER QRs'}</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {isGeneratingQR ? (
+                    <div className="w-full py-12 flex flex-col items-center justify-center gap-3">
+                      <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+                      <span className="text-xs font-mono text-slate-400">Generating HD Check-In QR Pass...</span>
+                    </div>
+                  ) : qrError ? (
+                    <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs space-y-2">
+                      <div className="flex items-center justify-center gap-2">
+                        <AlertCircle className="w-4 h-4 text-red-400" />
+                        <span>{qrError}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => registeredData && generateAllQRs(registeredData)}
+                        className="px-4 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-200 text-xs font-bold"
+                      >
+                        RETRY QR
+                      </button>
+                    </div>
+                  ) : registeredData?.teamName ? (
+                    /* Team Roster with individual QRs */
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {(registeredData.participants || [
+                          {
+                            name: registeredData.participantName,
+                            role: 'TEAM_HEAD' as const,
+                            registrationId: registeredData.registrationId,
+                            qrToken: registeredData.qrToken,
+                            email: registeredData.email,
+                            phone: registeredData.mobileNumber,
+                            college: registeredData.college,
+                            department: registeredData.department,
+                            year: '3rd Year',
+                            gender: 'Not Specified',
+                          },
+                        ]).map((member, idx) => {
+                          const memRegId = member.registrationId || (idx === 0 ? registrationId : `${registrationId}-M${idx}`);
+                          const memQrToken = member.qrToken || (idx === 0 ? registeredData.qrToken : `${registeredData.qrToken}-M${idx}`);
+                          const memUrl = qrDataUrls[memRegId];
+
+                          return (
+                            <div
+                              key={memRegId}
+                              className="p-4 rounded-xl bg-slate-900/90 border border-cyan-500/20 text-center flex flex-col items-center justify-between"
+                            >
+                              <div className="w-full flex items-center justify-between mb-2">
+                                <span className="font-bold text-white text-xs truncate max-w-[120px]">
+                                  {idx + 1}. {member.name}
+                                </span>
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                                  idx === 0
+                                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
+                                    : 'bg-purple-500/20 text-purple-300 border border-purple-500/40'
+                                }`}>
+                                  {idx === 0 ? 'TEAM_HEAD' : 'MEMBER'}
+                                </span>
+                              </div>
+
+                              <div className="p-2.5 bg-white rounded-xl shadow-lg my-2">
+                                {memUrl ? (
+                                  <img
+                                    src={memUrl}
+                                    alt={`QR for ${member.name}`}
+                                    className="w-32 h-32 mx-auto"
+                                  />
+                                ) : (
+                                  <div className="w-32 h-32 bg-slate-100 flex items-center justify-center">
+                                    <QrCode className="w-8 h-8 text-slate-400 animate-pulse" />
+                                  </div>
+                                )}
+                              </div>
+
+                              <span className="text-[10px] font-mono font-bold text-cyan-400 mb-3">
+                                {memRegId}
+                              </span>
+
+                              <button
+                                type="button"
+                                onClick={() => handleDownloadSingleQR(memQrToken, memRegId, `${member.name} (${memRegId})`)}
+                                className="w-full py-2 px-3 rounded-lg text-xs font-bold font-display bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center justify-center gap-1.5 transition-colors"
+                              >
+                                <Download className="w-3.5 h-3.5 text-cyan-400" />
+                                <span>DOWNLOAD QR</span>
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    /* Individual Participant QR */
+                    <div className="space-y-4">
+                      <div className="p-4 bg-white rounded-2xl inline-block shadow-2xl mx-auto border border-cyan-500/20">
+                        {qrDataUrls[registrationId] ? (
+                          <img
+                            src={qrDataUrls[registrationId]}
+                            alt={`QR Code for ${registrationId}`}
+                            className="w-48 h-48 sm:w-56 sm:h-56 mx-auto"
+                          />
+                        ) : (
+                          <div className="w-48 h-48 sm:w-56 sm:h-56 flex items-center justify-center bg-slate-100 rounded-lg">
+                            <QrCode className="w-12 h-12 text-slate-400 animate-pulse" />
+                          </div>
+                        )}
+                        <p className="text-xs font-mono font-black text-slate-900 mt-2">
+                          {registrationId}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadSingleQR(registeredData?.qrToken || registrationId, registrationId, `${formData.fullName} (${registrationId})`)}
+                          className="px-5 py-2.5 rounded-xl text-xs font-bold font-display bg-gradient-to-r from-cyan-400 to-sky-400 text-black shadow-glow-cyan flex items-center gap-2 transition-transform hover:scale-105 active:scale-[0.98]"
+                        >
+                          <Download className="w-4 h-4" />
+                          <span>DOWNLOAD QR</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Actions */}
                 <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
                   <button
@@ -389,12 +640,13 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
                   </button>
 
                   <Link
-                    to={`/my-registration?id=${registrationId}`}
+                    to={`/my-registration?id=${registrationId}&token=${encodeURIComponent(registeredData?.qrToken || '')}`}
                     onClick={onClose}
-                    className="px-6 py-2.5 rounded-xl text-xs font-bold font-display bg-gradient-to-r from-cyan-400 to-sky-400 text-black shadow-glow-cyan transition-transform hover:scale-105 inline-flex items-center gap-1.5"
+                    className="px-6 py-2.5 rounded-xl text-xs font-bold font-display bg-gradient-to-r from-cyan-400 to-purple-400 text-black shadow-glow-cyan transition-transform hover:scale-105 inline-flex items-center gap-1.5"
                   >
+                    <Eye className="w-3.5 h-3.5" />
                     <span>View QR Pass</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
+                    <ExternalLink className="w-3.5 h-3.5 ml-0.5" />
                   </Link>
                 </div>
               </div>

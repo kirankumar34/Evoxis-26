@@ -309,12 +309,20 @@ export const api = {
         assignedRegId = `EVOXIS26-${String(nextSeq).padStart(5, '0')}`;
         assignedQrToken = generateMockQRToken(assignedRegId);
 
-        // 3. Assemble Master Records for ALL Participants in the Registration
-        const masterRows = allParticipants.map((p, idx) => {
+        // 3. Assemble Master Records for ALL Participants with unique ID & QR Token
+        const participantsWithTokens = allParticipants.map((p, idx) => {
           const memberRegId = idx === 0 ? assignedRegId : `${assignedRegId}-M${idx}`;
-          const memberQrToken = idx === 0 ? assignedQrToken : `${assignedQrToken}-M${idx}`;
+          const memberQrToken = idx === 0 ? assignedQrToken : generateMockQRToken(memberRegId);
           return {
-            registration_id: memberRegId,
+            ...p,
+            registrationId: memberRegId,
+            qrToken: memberQrToken,
+          };
+        });
+
+        const masterRows = participantsWithTokens.map((p) => {
+          return {
+            registration_id: p.registrationId,
             registration_date: regDate,
             registration_time: regTime,
             participant_name: p.name,
@@ -329,7 +337,7 @@ export const api = {
             total_events: payload.selectedEventIds.length,
             total_amount: 0,
             payment_status: 'Free',
-            qr_token: memberQrToken,
+            qr_token: p.qrToken,
             qr_status: 'Active',
             referral_source: referralSource,
             referral_source_other: referralSourceOther,
@@ -339,7 +347,7 @@ export const api = {
             overall_attendance_status: 'Pending',
             registration_status: 'Confirmed',
             team_name: safeTeamName || null,
-            team_members: allParticipants,
+            team_members: participantsWithTokens,
           };
         });
 
@@ -369,14 +377,11 @@ export const api = {
           participation_status: string;
         }> = [];
 
-        allParticipants.forEach((p, pIdx) => {
-          const pRegId = pIdx === 0 ? assignedRegId : `${assignedRegId}-M${pIdx}`;
-          const pQrToken = pIdx === 0 ? assignedQrToken : `${assignedQrToken}-M${pIdx}`;
-
+        participantsWithTokens.forEach((p) => {
           payload.selectedEventIds.forEach((evtId) => {
             const meta = EVENTS.find((e) => e.eventId === evtId);
             eventRows.push({
-              registration_id: pRegId,
+              registration_id: p.registrationId,
               participant_name: p.name,
               email: p.email,
               mobile: p.phone,
@@ -386,7 +391,7 @@ export const api = {
               event_name: meta ? meta.title : evtId,
               category: meta ? meta.category : 'Technical',
               registration_date: regDate,
-              qr_token: pQrToken,
+              qr_token: p.qrToken,
               attendance_status: 'Pending',
               participation_status: 'Registered',
             });
@@ -534,11 +539,19 @@ export const api = {
         assignedQrToken = generateMockQRToken(assignedRegId);
       }
 
-      const mockRecordsToInsert: OverallRegistrationRecord[] = allParticipants.map((p, idx) => {
+      const participantsWithTokens = allParticipants.map((p, idx) => {
         const memberRegId = idx === 0 ? assignedRegId : `${assignedRegId}-M${idx}`;
-        const memberQrToken = idx === 0 ? assignedQrToken : `${assignedQrToken}-M${idx}`;
+        const memberQrToken = idx === 0 ? assignedQrToken : generateMockQRToken(memberRegId);
         return {
+          ...p,
           registrationId: memberRegId,
+          qrToken: memberQrToken,
+        };
+      });
+
+      const mockRecordsToInsert: OverallRegistrationRecord[] = participantsWithTokens.map((p) => {
+        return {
+          registrationId: p.registrationId,
           registrationDate: regDate,
           registrationTime: regTime,
           participantName: p.name,
@@ -553,7 +566,7 @@ export const api = {
           totalEvents: payload.selectedEventIds.length,
           totalAmount: 0,
           paymentStatus: 'Free',
-          qrToken: memberQrToken,
+          qrToken: p.qrToken,
           qrStatus: 'Active',
           referralSource: referralSource,
           referralSourceOther: referralSourceOther || undefined,
@@ -563,7 +576,7 @@ export const api = {
           overallAttendanceStatus: 'Pending',
           registrationStatus: 'Confirmed',
           teamName: safeTeamName || undefined,
-          teamMembers: allParticipants,
+          teamMembers: participantsWithTokens,
         };
       });
 
@@ -581,6 +594,16 @@ export const api = {
         message: 'Registration server is temporarily unavailable. Please try again.',
       };
     }
+
+    const finalParticipantsWithTokens = allParticipants.map((p, idx) => {
+      const memberRegId = idx === 0 ? assignedRegId : `${assignedRegId}-M${idx}`;
+      const memberQrToken = idx === 0 ? assignedQrToken : generateMockQRToken(memberRegId);
+      return {
+        ...p,
+        registrationId: memberRegId,
+        qrToken: memberQrToken,
+      };
+    });
 
     return {
       success: true,
@@ -601,8 +624,8 @@ export const api = {
         referralSourceOther: referralSourceOther || undefined,
         registrationDate: regDate,
         teamName: safeTeamName || undefined,
-        teamMembers: normalizedTeamMembers,
-        participants: allParticipants,
+        teamMembers: finalParticipantsWithTokens.slice(1),
+        participants: finalParticipantsWithTokens,
       },
       message: 'Registration confirmed successfully.',
     };

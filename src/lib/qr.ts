@@ -22,7 +22,12 @@ export function generateQRString(registrationId: string): string {
 export function isValidQRToken(token: string): boolean {
   if (!token || typeof token !== 'string') return false;
   const clean = token.trim();
-  return /^EVOXIS26:[a-f0-9]{6,16}:[0-9]{1,10}$/i.test(clean) || /^EVOXIS26:[a-f0-9]{15,35}$/i.test(clean);
+  return (
+    /^EVOXIS26:[a-f0-9]{6,16}:[0-9]{1,10}(-[0-9A-Za-z]+)?$/i.test(clean) ||
+    /^EVOXIS26:[a-f0-9]{6,16}:[0-9A-Za-z_-]+$/i.test(clean) ||
+    /^EVOXIS26:[a-f0-9]{6,35}(-[0-9A-Za-z]+)?$/i.test(clean) ||
+    /^EVOXIS26:PAX:[0-9A-Za-z_-]+:[a-f0-9]+$/i.test(clean)
+  );
 }
 
 /**
@@ -36,11 +41,11 @@ export function parseQRString(qrString: string): { valid: boolean; token: string
   if (token.includes(':')) {
     const parts = token.split(':');
     const numeric = parts.length >= 3 ? parts[2] : parts[1].replace(/[^0-9]/g, '');
-    const padded = numeric ? numeric.padStart(5, '0') : '';
+    const padded = numeric && !numeric.includes('M') ? numeric.padStart(5, '0') : numeric;
     return {
       valid: true,
       token,
-      registrationId: padded ? `EVOXIS26-${padded}` : undefined,
+      registrationId: padded ? (padded.startsWith('EVOXIS') ? padded : `EVOXIS26-${padded}`) : undefined,
     };
   }
   return { valid: false, token: qrString };
@@ -71,15 +76,73 @@ export async function generateQRCodeDataUrl(
 }
 
 /**
- * Download the raw QR Code as a high-resolution PNG image.
+ * Download the raw or branded QR Code as a high-resolution PNG image.
  */
 export async function downloadQRCodePNG(
   qrToken: string,
-  filename = 'EvoXis26-QR-Code.png'
+  filename = 'EvoXis26-QR-Code.png',
+  label?: string
 ): Promise<void> {
-  const dataUrl = await generateQRCodeDataUrl(qrToken, { width: 800, margin: 3 });
+  const qrDataUrl = await generateQRCodeDataUrl(qrToken, { width: 600, margin: 2 });
+
+  if (!label) {
+    const link = document.createElement('a');
+    link.href = qrDataUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    return;
+  }
+
+  // Render on canvas with label & branding
+  const canvas = document.createElement('canvas');
+  canvas.width = 680;
+  canvas.height = 800;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    const link = document.createElement('a');
+    link.href = qrDataUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    return;
+  }
+
+  // Draw background
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, 680, 800);
+
+  // Top header banner
+  ctx.fillStyle = '#080C15';
+  ctx.fillRect(0, 0, 680, 80);
+  ctx.fillStyle = '#00F2FE';
+  ctx.font = 'bold 26px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText("EvoXis'26 Official Check-In Pass", 340, 50);
+
+  // QR Image
+  const img = new Image();
+  img.src = qrDataUrl;
+  await new Promise((resolve) => {
+    img.onload = resolve;
+  });
+  ctx.drawImage(img, 65, 105, 550, 550);
+
+  // Label text below QR
+  ctx.fillStyle = '#080C15';
+  ctx.font = 'bold 26px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(label, 340, 705);
+
+  ctx.fillStyle = '#64748B';
+  ctx.font = '15px sans-serif';
+  ctx.fillText('Sriram Engineering College • September 26, 2026', 340, 745);
+
+  const pngUrl = canvas.toDataURL('image/png');
   const link = document.createElement('a');
-  link.href = dataUrl;
+  link.href = pngUrl;
   link.download = filename;
   document.body.appendChild(link);
   link.click();

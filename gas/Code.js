@@ -437,7 +437,9 @@ function registerParticipant(payload) {
     const referralSource = (payload.referralSource || 'Not Specified').trim();
     const referralSourceOther = (payload.referralSourceOther || '').trim();
 
-    allParticipants.forEach((p) => {
+    allParticipants.forEach((p, pIdx) => {
+      const pRegId = pIdx === 0 ? registrationId : (p.registrationId || (registrationId + '-M' + pIdx));
+      const pQrToken = pIdx === 0 ? qrToken : (p.qrToken || (qrToken + '-M' + pIdx));
       const pRegType = p.role === 'TEAM_HEAD'
         ? ('Team (Head - ' + safeTeamName + ')')
         : p.role === 'TEAM_MEMBER'
@@ -445,7 +447,7 @@ function registerParticipant(payload) {
           : 'Individual';
 
       overallSheet.appendRow([
-        registrationId,
+        pRegId,
         regDate,
         regTime,
         p.name,
@@ -460,7 +462,7 @@ function registerParticipant(payload) {
         totalEvents,
         0, // Free event entry
         'Free',
-        qrToken,
+        pQrToken,
         'Active',
         referralSource,
         referralSourceOther,
@@ -500,10 +502,13 @@ function registerParticipant(payload) {
         ], '#0F172A', '#10B981');
       }
 
-      allParticipants.forEach((p) => {
+      allParticipants.forEach((p, pIdx) => {
+        const pRegId = pIdx === 0 ? registrationId : (p.registrationId || (registrationId + '-M' + pIdx));
+        const pQrToken = pIdx === 0 ? qrToken : (p.qrToken || (qrToken + '-M' + pIdx));
+
         if (catSheet) {
           catSheet.appendRow([
-            registrationId,
+            pRegId,
             p.name,
             p.email,
             p.mobile,
@@ -512,7 +517,7 @@ function registerParticipant(payload) {
             evtMeta.eventId,
             evtMeta.eventName,
             regDate,
-            qrToken,
+            pQrToken,
             'Pending',
             'Registered'
           ]);
@@ -520,7 +525,7 @@ function registerParticipant(payload) {
 
         if (indivSheet) {
           indivSheet.appendRow([
-            registrationId,
+            pRegId,
             p.name,
             p.email,
             p.mobile,
@@ -529,7 +534,7 @@ function registerParticipant(payload) {
             evtMeta.eventId,
             evtMeta.eventName,
             regDate,
-            qrToken,
+            pQrToken,
             'Pending',
             'Registered'
           ]);
@@ -558,6 +563,12 @@ function registerParticipant(payload) {
       logNotification(ss, registrationId, fullName, 'ALL', 'Registration Confirmation', 'Email', cleanEmail, 'Failed', mailErr.toString());
     }
 
+    const participantsWithTokens = allParticipants.map((p, idx) => ({
+      ...p,
+      registrationId: idx === 0 ? registrationId : (p.registrationId || (registrationId + '-M' + idx)),
+      qrToken: idx === 0 ? qrToken : (p.qrToken || (qrToken + '-M' + idx))
+    }));
+
     return {
       success: true,
       sheetsSyncSuccess: true,
@@ -575,6 +586,8 @@ function registerParticipant(payload) {
         totalEvents,
         registrationDate: regDate,
         teamName: safeTeamName || undefined,
+        teamMembers: participantsWithTokens.slice(1),
+        participants: participantsWithTokens,
         participantsCount: allParticipants.length
       }
     };

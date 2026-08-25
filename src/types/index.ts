@@ -111,6 +111,8 @@ export interface TeamMember {
   year?: string;
   gender?: string;
   role?: 'TEAM_HEAD' | 'TEAM_MEMBER' | 'INDIVIDUAL';
+  registrationId?: string;
+  qrToken?: string;
 }
 
 export const REFERRAL_SOURCES = [
