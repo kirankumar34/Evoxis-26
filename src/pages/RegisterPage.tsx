@@ -230,19 +230,19 @@ export const RegisterPage: React.FC = () => {
     : EVENTS.filter((e) => e.category === selectedCategory);
 
   return (
-    <div className="min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 bg-cyber-dark text-slate-100 selection:bg-cyber-cyan selection:text-black">
+    <div className="min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-[#02050E] via-[#040814] to-[#0A1128] text-slate-100 selection:bg-[#E6CA65] selection:text-[#040814]">
       <div className="max-w-5xl mx-auto">
         {/* Header Title */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono font-bold tracking-wider uppercase mb-4">
-            <Sparkles className="w-3.5 h-3.5" />
-            Official Symposium Pass Registration
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#E6CA65]/10 border border-[#E6CA65]/35 text-[#FCE79C] text-xs font-mono font-bold tracking-wider uppercase mb-4 shadow-sm">
+            <Sparkles className="w-3.5 h-3.5 text-[#E6CA65]" />
+            Official Grand Voyage Pass Registration
           </div>
-          <h1 className="text-3xl sm:text-5xl font-display font-black tracking-tight text-white mb-4">
-            Join <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-400 to-purple-400">EvoXis'26</span>
+          <h1 className="text-3xl sm:text-5xl font-voyage font-black tracking-tight text-white mb-4">
+            Enlist for <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FCE79C] via-[#E6CA65] to-[#00F2FE]">EvoXis'26</span>
           </h1>
-          <p className="text-slate-400 max-w-2xl mx-auto text-sm sm:text-base">
-            Select your events across 3 categories, fill in your details, and instantly generate your secure HMAC QR check-in pass.
+          <p className="text-slate-300 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed font-sans">
+            Select your challenges across the 3 realms, enter your crew manifest details, and instantly generate your secure HMAC QR Voyage Pass.
           </p>
         </div>
 
@@ -259,35 +259,35 @@ export const RegisterPage: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-10">
           {/* STEP 1: EVENT SELECTION */}
-          <div className="p-6 sm:p-8 rounded-2xl bg-cyber-card border border-cyan-500/20 shadow-glass">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-800">
+          <div className="p-6 sm:p-8 rounded-2xl bg-[#0A1128]/90 border border-[#E6CA65]/30 shadow-2xl wanted-card-border backdrop-blur-md">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-[#E6CA65]/20">
               <div>
-                <h2 className="text-xl font-display font-bold text-white flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 flex items-center justify-center text-sm font-mono font-black">
+                <h2 className="text-xl font-voyage font-bold text-white flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-lg bg-[#E6CA65]/20 text-[#FCE79C] border border-[#E6CA65]/40 flex items-center justify-center text-sm font-mono font-black shadow-sm">
                     1
                   </span>
-                  <span>SELECT EVENTS (16 COMPETITIONS) *</span>
+                  <span>SELECT VOYAGE CHALLENGES (16 COMPETITIONS) *</span>
                 </h2>
-                <p className="text-xs text-slate-400 mt-1">
-                  You can register for multiple events across Technical, Non-Technical & Special tracks.
+                <p className="text-xs text-slate-300 mt-1 font-sans">
+                  You can register for multiple challenges across Grand Voyage, Crew & Arena tracks.
                 </p>
               </div>
 
               {/* Category Filter Pills & Counter */}
               <div className="flex items-center gap-2 self-start flex-wrap">
-                <span className="px-3 py-1 rounded-lg text-xs font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                <span className="px-3 py-1 rounded-lg text-xs font-mono font-bold bg-[#E6CA65]/15 text-[#FCE79C] border border-[#E6CA65]/35 shadow-sm">
                   {selectedEventIds.length} Selected
                 </span>
-                <div className="flex items-center gap-1.5 p-1 bg-slate-900/80 rounded-xl border border-slate-800">
+                <div className="flex items-center gap-1.5 p-1 bg-[#040814]/90 rounded-xl border border-[#E6CA65]/20">
                   {(['All', 'Technical', 'Non-Technical', 'Special'] as const).map((cat) => (
                     <button
                       key={cat}
                       type="button"
                       onClick={() => setSelectedCategory(cat)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                         selectedCategory === cat
-                          ? 'bg-cyan-500 text-black font-bold shadow-glow-sm'
-                          : 'text-slate-400 hover:text-white'
+                          ? 'bg-gradient-to-r from-[#E6CA65] to-[#FCE79C] text-[#040814] font-bold shadow-glow-gold/40'
+                          : 'text-slate-400 hover:text-[#E6CA65]'
                       }`}
                     >
                       {cat}
@@ -299,8 +299,8 @@ export const RegisterPage: React.FC = () => {
 
             {/* Selected Events Chips Bar */}
             {selectedEventIds.length > 0 && (
-              <div className="mb-6 p-3 rounded-xl bg-slate-900/90 border border-cyan-500/30 flex flex-wrap items-center gap-2">
-                <span className="text-[11px] font-mono text-cyan-400 font-bold uppercase tracking-wider mr-1">
+              <div className="mb-6 p-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-mono text-[#E6CA65] font-bold uppercase tracking-wider mr-1">
                   Selected ({selectedEventIds.length}):
                 </span>
                 {selectedEventIds.map((eid) => {
@@ -309,7 +309,7 @@ export const RegisterPage: React.FC = () => {
                     <span
                       key={eid}
                       onClick={() => toggleEventSelection(eid)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 cursor-pointer hover:bg-red-500/20 hover:border-red-500/40 hover:text-red-300 transition-colors"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-[#E6CA65]/20 text-[#FCE79C] border border-[#E6CA65]/40 cursor-pointer hover:bg-red-500/20 hover:border-red-500/40 hover:text-red-300 transition-colors"
                       title="Click to remove"
                     >
                       <span>{eid}</span>
@@ -335,15 +335,15 @@ export const RegisterPage: React.FC = () => {
                   <div
                     key={evt.eventId}
                     onClick={() => toggleEventSelection(evt.eventId)}
-                    className={`cursor-pointer relative p-4 rounded-xl transition-all border ${
+                    className={`cursor-pointer relative p-4 rounded-xl transition-all border wanted-card-border ${
                       isSelected
-                        ? 'bg-cyan-500/10 border-cyan-400 shadow-glow-cyan/50 scale-[1.02]'
-                        : 'bg-slate-900/50 border-slate-800/80 hover:border-cyan-500/30 hover:bg-slate-900/80'
+                        ? 'bg-[#E6CA65]/15 border-[#E6CA65] shadow-glow-gold/40 scale-[1.02]'
+                        : 'bg-[#040814]/70 border-[#E6CA65]/20 hover:border-[#E6CA65]/50 hover:bg-[#0E1736]/80'
                     }`}
                   >
-                    <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="flex items-start justify-between gap-2 mb-2 relative z-10">
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#E6CA65]/20 text-[#FCE79C] border border-[#E6CA65]/40">
                           {evt.eventId}
                         </span>
                         <span className="text-[10px] font-medium text-slate-400">
@@ -353,23 +353,23 @@ export const RegisterPage: React.FC = () => {
                       <div
                         className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
                           isSelected
-                            ? 'bg-cyan-500 border-cyan-400 text-black'
-                            : 'border-slate-700 bg-slate-800/50'
+                            ? 'bg-[#E6CA65] border-[#E6CA65] text-[#040814]'
+                            : 'border-slate-700 bg-[#0A1128]'
                         }`}
                       >
                         {isSelected && <CheckCircle2 className="w-3.5 h-3.5 stroke-[3]" />}
                       </div>
                     </div>
 
-                    <h3 className="font-display font-bold text-sm text-white mb-1">{evt.title}</h3>
-                    <p className="text-xs text-slate-400 line-clamp-2 mb-3">{evt.shortDescription}</p>
+                    <h3 className="font-voyage font-bold text-sm text-white mb-1 relative z-10">{evt.title}</h3>
+                    <p className="text-xs text-slate-300 line-clamp-2 mb-3 relative z-10 font-sans">{evt.shortDescription}</p>
 
-                    <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-800/60 font-mono">
+                    <div className="flex items-center justify-between text-[11px] text-slate-300 pt-2 border-t border-[#E6CA65]/15 font-mono relative z-10">
                       <span className="flex items-center gap-1">
-                        <Users className="w-3 h-3 text-cyan-400" />
+                        <Users className="w-3 h-3 text-[#00F2FE]" />
                         {evt.teamSize.description}
                       </span>
-                      <span className="text-purple-300">{evt.schedule.timeSlot.split(' - ')[0]}</span>
+                      <span className="text-[#FCE79C]">{evt.schedule.timeSlot.split(' - ')[0]}</span>
                     </div>
                   </div>
                 );
@@ -377,33 +377,33 @@ export const RegisterPage: React.FC = () => {
             </div>
 
             {/* Selected Count Indicator */}
-            <div className="mt-6 p-3 rounded-xl bg-slate-900/70 border border-slate-800 flex items-center justify-between">
+            <div className="mt-6 p-3 rounded-xl bg-[#040814]/80 border border-[#E6CA65]/20 flex items-center justify-between">
               <span className="text-xs text-slate-300">
-                Selected Events: <strong className="text-cyan-400 font-mono font-bold text-sm">{selectedEventIds.length}</strong> / 16
+                Selected Challenges: <strong className="text-[#FCE79C] font-mono font-bold text-sm">{selectedEventIds.length}</strong> / 16
               </span>
-              <span className="text-xs font-mono text-emerald-400 font-semibold">Registration Fee: Free (₹0)</span>
+              <span className="text-xs font-mono text-emerald-400 font-semibold">Voyage Registration: Free (₹0)</span>
             </div>
           </div>
 
           {/* STEP 2: PARTICIPANT DETAILS */}
-          <div className="p-6 sm:p-8 rounded-2xl bg-cyber-card border border-cyan-500/20 shadow-glass">
-            <div className="mb-6 pb-4 border-b border-slate-800">
-              <h2 className="text-xl font-display font-bold text-white flex items-center gap-2">
-                <span className="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 flex items-center justify-center text-sm font-mono font-black">
+          <div className="p-6 sm:p-8 rounded-2xl bg-[#0A1128]/90 border border-[#E6CA65]/30 shadow-2xl wanted-card-border backdrop-blur-md">
+            <div className="mb-6 pb-4 border-b border-[#E6CA65]/20">
+              <h2 className="text-xl font-voyage font-bold text-white flex items-center gap-2">
+                <span className="w-7 h-7 rounded-lg bg-[#E6CA65]/20 text-[#FCE79C] border border-[#E6CA65]/40 flex items-center justify-center text-sm font-mono font-black shadow-sm">
                   2
                 </span>
-                Participant Information
+                Captain / Participant Manifest Details
               </h2>
-              <p className="text-xs text-slate-400 mt-1">
-                Enter your accurate contact and academic details for QR pass delivery and national certificate generation.
+              <p className="text-xs text-slate-300 mt-1 font-sans">
+                Enter your official contact and college details for Voyage Pass generation and certificate delivery.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {/* Full Name */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                  Full Name (As on ID Card) *
+                <label className="block text-xs font-semibold text-[#FCE79C] uppercase tracking-wider mb-2 font-mono">
+                  Full Name (As on College ID) *
                 </label>
                 <input
                   type="text"
@@ -411,15 +411,15 @@ export const RegisterPage: React.FC = () => {
                   value={formData.fullName}
                   onChange={handleInputChange}
                   placeholder="e.g. Priya Raman"
-                  className="w-full px-4 py-3 rounded-xl bg-slate-900/80 border border-slate-700/80 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-sm"
+                  className="w-full px-4 py-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 text-white placeholder-slate-500 focus:outline-none focus:border-[#E6CA65] focus:ring-1 focus:ring-[#E6CA65] text-sm"
                 />
                 {errors.fullName && <p className="text-red-400 text-xs mt-1.5">{errors.fullName}</p>}
               </div>
 
               {/* Email Address */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                  Email Address (For QR Pass & Notifications) *
+                <label className="block text-xs font-semibold text-[#FCE79C] uppercase tracking-wider mb-2 font-mono">
+                  Email Address (For Voyage Pass) *
                 </label>
                 <input
                   type="email"
@@ -427,14 +427,14 @@ export const RegisterPage: React.FC = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="e.g. priya.raman@gmail.com"
-                  className="w-full px-4 py-3 rounded-xl bg-slate-900/80 border border-slate-700/80 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-sm"
+                  className="w-full px-4 py-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 text-white placeholder-slate-500 focus:outline-none focus:border-[#E6CA65] focus:ring-1 focus:ring-[#E6CA65] text-sm"
                 />
                 {errors.email && <p className="text-red-400 text-xs mt-1.5">{errors.email}</p>}
               </div>
 
               {/* Mobile Number */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-semibold text-[#FCE79C] uppercase tracking-wider mb-2 font-mono">
                   WhatsApp / Mobile Number *
                 </label>
                 <input
@@ -444,14 +444,14 @@ export const RegisterPage: React.FC = () => {
                   onChange={handleInputChange}
                   placeholder="10-digit mobile number"
                   maxLength={10}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-900/80 border border-slate-700/80 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-sm"
+                  className="w-full px-4 py-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 text-white placeholder-slate-500 focus:outline-none focus:border-[#E6CA65] focus:ring-1 focus:ring-[#E6CA65] text-sm font-mono"
                 />
                 {errors.phone && <p className="text-red-400 text-xs mt-1.5">{errors.phone}</p>}
               </div>
 
               {/* College Name */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-semibold text-[#FCE79C] uppercase tracking-wider mb-2 font-mono">
                   College / University Name *
                 </label>
                 <input
@@ -460,14 +460,14 @@ export const RegisterPage: React.FC = () => {
                   value={formData.collegeName}
                   onChange={handleInputChange}
                   placeholder="e.g. Sriram Engineering College"
-                  className="w-full px-4 py-3 rounded-xl bg-slate-900/80 border border-slate-700/80 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-sm"
+                  className="w-full px-4 py-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 text-white placeholder-slate-500 focus:outline-none focus:border-[#E6CA65] focus:ring-1 focus:ring-[#E6CA65] text-sm"
                 />
                 {errors.collegeName && <p className="text-red-400 text-xs mt-1.5">{errors.collegeName}</p>}
               </div>
 
               {/* Department */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-semibold text-[#FCE79C] uppercase tracking-wider mb-2 font-mono">
                   Department / Branch *
                 </label>
                 <input
@@ -476,7 +476,7 @@ export const RegisterPage: React.FC = () => {
                   value={formData.department}
                   onChange={handleInputChange}
                   placeholder="e.g. Computer Science & Business Systems"
-                  className="w-full px-4 py-3 rounded-xl bg-slate-900/80 border border-slate-700/80 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-sm"
+                  className="w-full px-4 py-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 text-white placeholder-slate-500 focus:outline-none focus:border-[#E6CA65] focus:ring-1 focus:ring-[#E6CA65] text-sm"
                 />
                 {errors.department && <p className="text-red-400 text-xs mt-1.5">{errors.department}</p>}
               </div>
@@ -484,14 +484,14 @@ export const RegisterPage: React.FC = () => {
               {/* Year & Gender */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-semibold text-[#FCE79C] uppercase tracking-wider mb-2 font-mono">
                     Year of Study
                   </label>
                   <select
                     name="yearOfStudy"
                     value={formData.yearOfStudy}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-900/80 border border-slate-700/80 text-white focus:outline-none focus:border-cyan-400 text-sm"
+                    className="w-full px-4 py-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 text-white focus:outline-none focus:border-[#E6CA65] text-sm"
                   >
                     <option value="1st Year">1st Year</option>
                     <option value="2nd Year">2nd Year</option>
@@ -500,14 +500,14 @@ export const RegisterPage: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-semibold text-[#FCE79C] uppercase tracking-wider mb-2 font-mono">
                     Gender
                   </label>
                   <select
                     name="gender"
                     value={formData.gender}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-900/80 border border-slate-700/80 text-white focus:outline-none focus:border-cyan-400 text-sm"
+                    className="w-full px-4 py-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 text-white focus:outline-none focus:border-[#E6CA65] text-sm"
                   >
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
@@ -519,36 +519,36 @@ export const RegisterPage: React.FC = () => {
 
             {/* TEAM SECTION (Shown if any selected event is team-based) */}
             {formData.isTeam && (
-              <div className="mt-8 pt-6 border-t border-slate-800">
+              <div className="mt-8 pt-6 border-t border-[#E6CA65]/20">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="font-display font-bold text-sm text-cyan-400 flex items-center gap-2">
-                      <Users className="w-4 h-4" /> Team Roster Details
+                    <h3 className="font-voyage font-bold text-sm text-[#FCE79C] flex items-center gap-2">
+                      <Users className="w-4 h-4 text-[#E6CA65]" /> Crew Manifest & Roster
                     </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      You selected team-based events. Specify your team name and optional co-members.
+                    <p className="text-xs text-slate-400 mt-0.5 font-sans">
+                      You selected team challenges. Specify your crew / team name and co-members.
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={handleAddTeamMember}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-semibold hover:bg-cyan-500/20 transition-colors"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#E6CA65]/15 border border-[#E6CA65]/35 text-[#FCE79C] text-xs font-semibold hover:bg-[#E6CA65]/25 transition-colors shadow-sm"
                   >
-                    <Plus className="w-3.5 h-3.5" /> Add Member
+                    <Plus className="w-3.5 h-3.5" /> Add Crew Member
                   </button>
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                    Team Name *
+                  <label className="block text-xs font-semibold text-[#FCE79C] uppercase tracking-wider mb-2 font-mono">
+                    Crew / Team Name *
                   </label>
                   <input
                     type="text"
                     name="teamName"
                     value={formData.teamName}
                     onChange={handleInputChange}
-                    placeholder="e.g. CyberTitans"
-                    className="w-full px-4 py-3 rounded-xl bg-slate-900/80 border border-slate-700/80 text-white focus:outline-none focus:border-cyan-400 text-sm"
+                    placeholder="e.g. Grand Line Voyagers"
+                    className="w-full px-4 py-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 text-white focus:outline-none focus:border-[#E6CA65] text-sm"
                   />
                   {errors.teamName && <p className="text-red-400 text-xs mt-1.5">{errors.teamName}</p>}
                 </div>
@@ -558,11 +558,11 @@ export const RegisterPage: React.FC = () => {
                   {(formData.teamMembers || []).map((member, idx) => (
                     <div
                       key={idx}
-                      className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3"
+                      className="p-4 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/25 space-y-3 wanted-card-border"
                     >
-                      <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-                        <span className="text-xs font-mono font-bold text-cyan-400">
-                          Co-Member #{idx + 2} (TEAM_MEMBER)
+                      <div className="flex items-center justify-between border-b border-[#E6CA65]/15 pb-2 relative z-10">
+                        <span className="text-xs font-mono font-bold text-[#FCE79C]">
+                          Crew Member #{idx + 2} (TEAM_MEMBER)
                         </span>
                         <button
                           type="button"
@@ -574,7 +574,7 @@ export const RegisterPage: React.FC = () => {
                         </button>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 relative z-10">
                         <div>
                           <label className="block text-[11px] font-mono text-slate-400 mb-1">Full Name *</label>
                           <input
@@ -582,7 +582,7 @@ export const RegisterPage: React.FC = () => {
                             placeholder="Full Name"
                             value={member.name}
                             onChange={(e) => handleTeamMemberChange(idx, 'name', e.target.value)}
-                            className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:border-cyan-400 focus:outline-none"
+                            className="w-full px-3 py-2 rounded-lg bg-[#0E1736] border border-[#E6CA65]/20 text-xs text-white focus:border-[#E6CA65] focus:outline-none"
                           />
                         </div>
                         <div>
@@ -592,7 +592,7 @@ export const RegisterPage: React.FC = () => {
                             placeholder="Email"
                             value={member.email}
                             onChange={(e) => handleTeamMemberChange(idx, 'email', e.target.value)}
-                            className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:border-cyan-400 focus:outline-none"
+                            className="w-full px-3 py-2 rounded-lg bg-[#0E1736] border border-[#E6CA65]/20 text-xs text-white focus:border-[#E6CA65] focus:outline-none"
                           />
                         </div>
                         <div>
@@ -603,12 +603,12 @@ export const RegisterPage: React.FC = () => {
                             maxLength={10}
                             value={member.phone}
                             onChange={(e) => handleTeamMemberChange(idx, 'phone', e.target.value)}
-                            className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:border-cyan-400 focus:outline-none"
+                            className="w-full px-3 py-2 rounded-lg bg-[#0E1736] border border-[#E6CA65]/20 text-xs text-white focus:border-[#E6CA65] focus:outline-none font-mono"
                           />
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 relative z-10">
                         <div className="sm:col-span-2">
                           <label className="block text-[11px] font-mono text-slate-400 mb-1">College / Institution</label>
                           <input
@@ -616,7 +616,7 @@ export const RegisterPage: React.FC = () => {
                             placeholder={formData.collegeName || "College Name"}
                             value={member.college || ''}
                             onChange={(e) => handleTeamMemberChange(idx, 'college', e.target.value)}
-                            className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:border-cyan-400 focus:outline-none"
+                            className="w-full px-3 py-2 rounded-lg bg-[#0E1736] border border-[#E6CA65]/20 text-xs text-white focus:border-[#E6CA65] focus:outline-none"
                           />
                         </div>
                         <div>
@@ -626,7 +626,7 @@ export const RegisterPage: React.FC = () => {
                             placeholder={formData.department || "Department"}
                             value={member.department}
                             onChange={(e) => handleTeamMemberChange(idx, 'department', e.target.value)}
-                            className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:border-cyan-400 focus:outline-none"
+                            className="w-full px-3 py-2 rounded-lg bg-[#0E1736] border border-[#E6CA65]/20 text-xs text-white focus:border-[#E6CA65] focus:outline-none"
                           />
                         </div>
                         <div>
@@ -634,7 +634,7 @@ export const RegisterPage: React.FC = () => {
                           <select
                             value={member.year || formData.yearOfStudy || '3rd Year'}
                             onChange={(e) => handleTeamMemberChange(idx, 'year', e.target.value)}
-                            className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:border-cyan-400 focus:outline-none"
+                            className="w-full px-3 py-2 rounded-lg bg-[#0E1736] border border-[#E6CA65]/20 text-xs text-white focus:border-[#E6CA65] focus:outline-none"
                           >
                             <option value="1st Year">1st Year</option>
                             <option value="2nd Year">2nd Year</option>
@@ -651,29 +651,29 @@ export const RegisterPage: React.FC = () => {
           </div>
 
           {/* STEP 3: HOW DID YOU KNOW ABOUT THIS EVENT? */}
-          <div className="p-6 sm:p-8 rounded-2xl bg-cyber-card border border-cyan-500/20 shadow-glass">
-            <div className="mb-6 pb-4 border-b border-slate-800">
-              <h2 className="text-xl font-display font-bold text-white flex items-center gap-2">
-                <span className="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 flex items-center justify-center text-sm font-mono font-black">
+          <div className="p-6 sm:p-8 rounded-2xl bg-[#0A1128]/90 border border-[#E6CA65]/30 shadow-2xl wanted-card-border backdrop-blur-md">
+            <div className="mb-6 pb-4 border-b border-[#E6CA65]/20">
+              <h2 className="text-xl font-voyage font-bold text-white flex items-center gap-2">
+                <span className="w-7 h-7 rounded-lg bg-[#E6CA65]/20 text-[#FCE79C] border border-[#E6CA65]/40 flex items-center justify-center text-sm font-mono font-black shadow-sm">
                   3
                 </span>
-                How Did You Know About This Event? *
+                How Did You Discover the Grand Voyage? *
               </h2>
-              <p className="text-xs text-slate-400 mt-1">
-                Help us understand how you discovered EvoXis'26 national symposium.
+              <p className="text-xs text-slate-300 mt-1 font-sans">
+                Help us understand how you heard about EvoXis'26 symposium.
               </p>
             </div>
 
             <div className="space-y-4 max-w-xl">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-semibold text-[#FCE79C] uppercase tracking-wider mb-2 font-mono">
                   Referral Source *
                 </label>
                 <select
                   name="referralSource"
                   value={formData.referralSource || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-900/80 border border-slate-700/80 text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-sm"
+                  className="w-full px-4 py-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 text-white focus:outline-none focus:border-[#E6CA65] focus:ring-1 focus:ring-[#E6CA65] text-sm"
                 >
                   <option value="">Select an option ▼</option>
                   <option value="School Friend">School Friend</option>
@@ -697,7 +697,7 @@ export const RegisterPage: React.FC = () => {
                   animate={{ opacity: 1, height: 'auto' }}
                   className="pt-2"
                 >
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-semibold text-[#FCE79C] uppercase tracking-wider mb-2 font-mono">
                     Please Specify *
                   </label>
                   <input
@@ -706,7 +706,7 @@ export const RegisterPage: React.FC = () => {
                     value={formData.referralSourceOther || ''}
                     onChange={handleInputChange}
                     placeholder="e.g. YouTube / WhatsApp Group / Friend referral"
-                    className="w-full px-4 py-3 rounded-xl bg-slate-900/80 border border-slate-700/80 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-sm"
+                    className="w-full px-4 py-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 text-white placeholder-slate-500 focus:outline-none focus:border-[#E6CA65] focus:ring-1 focus:ring-[#E6CA65] text-sm"
                   />
                   {errors.referralSourceOther && (
                     <p className="error-message text-red-400 text-xs mt-1.5 flex items-center gap-1">
@@ -719,35 +719,35 @@ export const RegisterPage: React.FC = () => {
           </div>
 
           {/* STEP 4: CODE OF CONDUCT & SUBMIT */}
-          <div className="p-6 rounded-2xl bg-cyber-card border border-cyan-500/20 flex flex-col sm:flex-row items-center justify-between gap-6">
-            <label className="flex items-start gap-3 cursor-pointer select-none">
+          <div className="p-6 rounded-2xl bg-[#0A1128]/95 border border-[#E6CA65]/30 flex flex-col sm:flex-row items-center justify-between gap-6 wanted-card-border shadow-2xl">
+            <label className="flex items-start gap-3 cursor-pointer select-none relative z-10">
               <input
                 type="checkbox"
                 name="agreedToRules"
                 checked={formData.agreedToRules}
                 onChange={handleInputChange}
-                className="mt-1 rounded bg-slate-900 border-slate-700 text-cyan-500 focus:ring-cyan-400"
+                className="mt-1 rounded bg-[#040814] border-[#E6CA65]/40 text-[#E6CA65] focus:ring-[#E6CA65]"
               />
-              <span className="text-xs text-slate-300 leading-relaxed">
-                I agree to the <strong>EvoXis'26</strong> code of conduct, affirm that my details are accurate, and promise to bring my college ID card for reception desk verification.
+              <span className="text-xs text-slate-300 leading-relaxed font-sans">
+                I agree to the <strong className="text-[#FCE79C]">EvoXis'26 Grand Voyage</strong> code of conduct, affirm that my details are accurate, and promise to bring my college ID card for reception desk verification.
               </span>
             </label>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full sm:w-auto flex-shrink-0 inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-display font-black text-black bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-400 hover:from-cyan-300 hover:to-sky-300 shadow-glow-cyan transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="cyber-button w-full sm:w-auto flex-shrink-0 inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-voyage font-black text-[#040814] bg-gradient-to-r from-[#E6CA65] via-[#FCE79C] to-[#00F2FE] hover:from-[#FFF5C0] hover:to-[#38BDF8] shadow-glow-gold transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed border border-[#FFF5C0]/60 relative z-10"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Generating Official Pass...</span>
+                  <Loader2 className="w-5 h-5 animate-spin text-[#040814]" />
+                  <span>Generating Official Voyage Pass...</span>
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-5 h-5" />
+                  <Sparkles className="w-5 h-5 text-[#040814]" />
                   <span>Confirm Registration & Get QR</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-4 h-4 text-[#040814]" />
                 </>
               )}
             </button>

@@ -279,6 +279,11 @@ function handleRequest(e, method) {
         responseData = validateAdmin(params);
         break;
 
+      case 'resetAndRebuildSheets':
+      case 'resetAllData':
+        responseData = resetAndRebuildSheets();
+        break;
+
       default:
         responseData = { success: false, errorCode: 'INVALID_ACTION', message: 'Unrecognized API action: ' + action };
         break;
@@ -1513,3 +1518,60 @@ function markFoodDeliveredSheet(params) {
   return { success: true, message: 'Food delivery status updated in Google Sheet.' };
 }
 
+/**
+ * ============================================================================
+ * ONE-CLICK PRODUCTION RESET ROUTINE
+ * Clears all test data rows (row 2+) across all registration, category, event,
+ * and attendance log sheets, while preserving header formatting & master events.
+ * ============================================================================
+ */
+function resetAndRebuildSheets() {
+  const ss = getSpreadsheet();
+  const sheetsToClear = [
+    SHEETS.OVERALL_REG,
+    SHEETS.TECH_REG,
+    SHEETS.NON_TECH_REG,
+    SHEETS.SPECIAL_REG,
+    SHEETS.ATTENDANCE_LOG,
+    SHEETS.NOTIFICATION_LOG,
+    SHEETS.PHYSICAL_QR_INVENTORY
+  ];
+
+  // Include 16 individual event sheets
+  OFFICIAL_EVENTS.forEach(evt => {
+    sheetsToClear.push('EVT_' + evt.slug);
+  });
+
+  let clearedCount = 0;
+  sheetsToClear.forEach(name => {
+    const sheet = ss.getSheetByName(name);
+    if (sheet && sheet.getLastRow() > 1) {
+      sheet.deleteRows(2, sheet.getLastRow() - 1);
+      clearedCount++;
+      Logger.log('🧹 [resetAndRebuildSheets] Cleared test data rows in sheet: ' + name);
+    }
+  });
+
+  // Reset Configuration sequence counter
+  const configSheet = ss.getSheetByName(SHEETS.CONFIGURATION);
+  if (configSheet && configSheet.getLastRow() > 1) {
+    const data = configSheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] === 'LAST_REGISTRATION_SEQUENCE') {
+        configSheet.getRange(i + 1, 2).setValue('0');
+        Logger.log('🔄 [resetAndRebuildSheets] Reset LAST_REGISTRATION_SEQUENCE to 0');
+        break;
+      }
+    }
+  }
+
+  // Ensure all sheet headers and Event_Master rows exist
+  setupEvoXis26Sheets();
+
+  Logger.log('✅ [resetAndRebuildSheets] All Google Sheets data wiped clean for production.');
+  return {
+    success: true,
+    message: 'All Google Sheets test data rows successfully cleared and reset for production!',
+    clearedSheets: clearedCount
+  };
+}

@@ -183,29 +183,29 @@ export const RegistrationSuccessPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 bg-cyber-dark text-slate-100 selection:bg-cyber-cyan selection:text-black">
-      <div className="max-w-4xl mx-auto">
-        {/* Celebration Header */}
+    <div className="min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-[#02050E] via-[#040814] to-[#0A1128] text-slate-100 selection:bg-[#E6CA65] selection:text-[#040814]">
+      <div className="max-w-5xl mx-auto">
+        {/* Success Header */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           className="text-center mb-10"
         >
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-cyan-400 p-[2px] mx-auto mb-4 shadow-glow-cyan">
-            <div className="w-full h-full bg-[#080C15] rounded-[14px] flex items-center justify-center">
-              <CheckCircle2 className="w-8 h-8 text-cyan-400" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#E6CA65] via-[#C8933C] to-[#E11D48] p-[2px] shadow-glow-gold mb-4">
+            <div className="w-full h-full bg-[#070D1E] rounded-[14px] flex items-center justify-center text-[#E6CA65]">
+              <CheckCircle2 className="w-9 h-9 stroke-[2.5]" />
             </div>
           </div>
 
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-bold uppercase mb-3">
-            <Sparkles className="w-3.5 h-3.5" /> Registration Confirmed
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E6CA65]/10 border border-[#E6CA65]/35 text-[#FCE79C] text-xs font-mono font-bold uppercase mb-3 shadow-sm">
+            <Sparkles className="w-3.5 h-3.5 text-[#E6CA65]" /> Grand Voyage Manifest Logged
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-display font-black text-white mb-2">
-            Registration <span className="text-cyan-400">Successful</span>
+          <h1 className="text-3xl sm:text-4xl font-voyage font-black text-white mb-2">
+            Voyage Enlistment <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FCE79C] via-[#E6CA65] to-[#00F2FE]">Confirmed</span>
           </h1>
-          <p className="text-slate-400 text-sm max-w-xl mx-auto">
-            Your official registration record has been committed to the master database. Keep your check-in QR pass handy.
+          <p className="text-slate-300 text-sm max-w-xl mx-auto font-sans leading-relaxed">
+            Your official voyage record has been logged in the master fleet manifest. Keep your secure HMAC QR pass ready for port check-in.
           </p>
         </motion.div>
 
@@ -213,12 +213,12 @@ export const RegistrationSuccessPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Column: Details & Event Badges (7 cols) */}
           <div className="lg:col-span-7 space-y-6">
-            <div className="p-6 sm:p-8 rounded-2xl bg-cyber-card border border-cyan-500/20 shadow-glass space-y-6">
+            <div className="p-6 sm:p-8 rounded-2xl bg-[#0A1128]/95 border border-[#E6CA65]/30 shadow-2xl wanted-card-border backdrop-blur-md space-y-6">
               {/* Registration ID Banner */}
-              <div className="p-4 rounded-xl bg-slate-900/90 border border-cyan-500/30 flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/35 flex items-center justify-between shadow-inner">
                 <div>
-                  <span className="text-[11px] font-mono text-cyan-400 font-semibold tracking-wider block uppercase">
-                    Registration ID
+                  <span className="text-[11px] font-mono text-[#E6CA65] font-bold tracking-wider block uppercase">
+                    VOYAGE PASS ID
                   </span>
                   <span className="text-2xl font-mono font-black text-white tracking-tight">
                     {registrationId}
@@ -226,7 +226,7 @@ export const RegistrationSuccessPage: React.FC = () => {
                 </div>
                 <button
                   onClick={handleCopyId}
-                  className="p-2.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 transition-colors flex items-center gap-1.5 text-xs font-semibold"
+                  className="p-2.5 rounded-xl bg-[#E6CA65]/15 hover:bg-[#E6CA65]/25 border border-[#E6CA65]/35 text-[#FCE79C] transition-colors flex items-center gap-1.5 text-xs font-semibold shadow-sm"
                 >
                   {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                   <span>{copied ? 'Copied' : 'Copy'}</span>
@@ -234,28 +234,28 @@ export const RegistrationSuccessPage: React.FC = () => {
               </div>
 
               {/* Participant Meta */}
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-2 gap-4 text-sm font-sans">
                 <div>
-                  <span className="text-xs text-slate-400 block mb-0.5">Participant Name</span>
-                  <span className="font-bold text-white text-base">{participantName}</span>
+                  <span className="text-xs text-slate-400 block mb-0.5 font-mono uppercase">Captain / Participant</span>
+                  <span className="font-bold text-white text-base font-voyage">{participantName}</span>
                 </div>
                 <div>
-                  <span className="text-xs text-slate-400 block mb-0.5">College / Institution</span>
+                  <span className="text-xs text-slate-400 block mb-0.5 font-mono uppercase">College / Fleet</span>
                   <span className="font-semibold text-slate-200 line-clamp-1">{college}</span>
                 </div>
                 <div>
-                  <span className="text-xs text-slate-400 block mb-0.5">Department</span>
+                  <span className="text-xs text-slate-400 block mb-0.5 font-mono uppercase">Department</span>
                   <span className="font-medium text-slate-300">{department}</span>
                 </div>
                 <div>
-                  <span className="text-xs text-slate-400 block mb-0.5">Event Date</span>
-                  <span className="font-medium text-cyan-300 flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" /> September 26, 2026
+                  <span className="text-xs text-slate-400 block mb-0.5 font-mono uppercase">Voyage Date</span>
+                  <span className="font-medium text-[#FCE79C] flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5 text-[#E6CA65]" /> September 26, 2026
                   </span>
                 </div>
-                <div className="col-span-2 pt-2 border-t border-slate-800/80 flex items-center justify-between">
-                  <span className="text-xs text-slate-400">How you heard about us:</span>
-                  <span className="text-xs font-mono font-bold text-cyan-400 px-2.5 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/30">
+                <div className="col-span-2 pt-2 border-t border-[#E6CA65]/15 flex items-center justify-between">
+                  <span className="text-xs text-slate-400">Discovery Source:</span>
+                  <span className="text-xs font-mono font-bold text-[#FCE79C] px-2.5 py-1 rounded-lg bg-[#E6CA65]/15 border border-[#E6CA65]/30">
                     {referralSource === 'Other' && referralSourceOther ? `Other: ${referralSourceOther}` : referralSource}
                   </span>
                 </div>
@@ -263,33 +263,33 @@ export const RegistrationSuccessPage: React.FC = () => {
 
               {/* Team Roster Details (if team registration) */}
               {isTeam && (
-                <div className="pt-4 border-t border-slate-800">
+                <div className="pt-4 border-t border-[#E6CA65]/20">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider">
-                      Team Roster: <span className="text-white normal-case font-sans font-bold ml-1">{teamName || `${participantName}'s Team`}</span>
+                    <h3 className="text-xs font-mono font-bold text-[#FCE79C] uppercase tracking-wider">
+                      Crew Manifest: <span className="text-white normal-case font-voyage font-bold ml-1">{teamName || `${participantName}'s Crew`}</span>
                     </h3>
-                    <span className="px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-[11px] font-mono">
-                      {fullRoster.length} Members
+                    <span className="px-2 py-0.5 rounded-full bg-[#E6CA65]/15 border border-[#E6CA65]/35 text-[#FCE79C] text-[11px] font-mono">
+                      {fullRoster.length} Crew Members
                     </span>
                   </div>
                   <div className="space-y-2">
                     {fullRoster.map((tm, i) => (
                       <div
                         key={i}
-                        className={`p-2.5 rounded-lg border flex items-center justify-between text-xs ${
+                        className={`p-2.5 rounded-lg border flex items-center justify-between text-xs wanted-card-border ${
                           tm.role === 'TEAM_HEAD'
-                            ? 'bg-slate-900/80 border-cyan-500/30'
-                            : 'bg-slate-900/50 border-slate-800'
+                            ? 'bg-[#0E1736] border-[#E6CA65]/40'
+                            : 'bg-[#040814]/80 border-[#E6CA65]/20'
                         }`}
                       >
-                        <div>
+                        <div className="relative z-10">
                           <span className="font-bold text-white block">{tm.name}</span>
-                          <span className="text-slate-400 text-[11px]">{tm.registrationId} • {tm.department}</span>
+                          <span className="text-slate-400 text-[11px] font-mono">{tm.registrationId} • {tm.department}</span>
                         </div>
-                        <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold ${
+                        <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold relative z-10 ${
                           tm.role === 'TEAM_HEAD'
-                            ? 'bg-cyan-500/20 text-cyan-300'
-                            : 'bg-purple-500/20 text-purple-300'
+                            ? 'bg-[#E6CA65]/25 text-[#FCE79C] border border-[#E6CA65]/40'
+                            : 'bg-[#00F2FE]/20 text-[#00F2FE] border border-[#00F2FE]/30'
                         }`}>
                           {tm.role}
                         </span>
@@ -300,9 +300,9 @@ export const RegistrationSuccessPage: React.FC = () => {
               )}
 
               {/* Registered Events List */}
-              <div className="pt-4 border-t border-slate-800">
-                <h3 className="text-xs font-mono font-bold text-purple-400 uppercase tracking-wider mb-3">
-                  Registered Events ({selectedEvents.length})
+              <div className="pt-4 border-t border-[#E6CA65]/20">
+                <h3 className="text-xs font-mono font-bold text-[#FCE79C] uppercase tracking-wider mb-3">
+                  Enlisted Challenges ({selectedEvents.length})
                 </h3>
                 <div className="space-y-2.5">
                   {selectedEvents.map((eid) => {
@@ -310,22 +310,22 @@ export const RegistrationSuccessPage: React.FC = () => {
                     return (
                       <div
                         key={eid}
-                        className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between"
+                        className="p-3 rounded-xl bg-[#040814]/80 border border-[#E6CA65]/20 flex items-center justify-between wanted-card-border"
                       >
-                        <div className="flex items-center gap-3">
-                          <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                        <div className="flex items-center gap-3 relative z-10">
+                          <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-[#E6CA65]/20 text-[#FCE79C] border border-[#E6CA65]/40">
                             {eid}
                           </span>
                           <div>
-                            <span className="font-display font-bold text-sm text-white block">
+                            <span className="font-voyage font-bold text-sm text-white block">
                               {evt ? evt.title : eid}
                             </span>
-                            <span className="text-[11px] text-slate-400">
+                            <span className="text-[11px] text-slate-400 font-sans">
                               {evt ? evt.schedule.venue : 'Sriram Campus'}
                             </span>
                           </div>
                         </div>
-                        <span className="text-xs font-mono text-purple-300">
+                        <span className="text-xs font-mono text-[#FCE79C] relative z-10">
                           {evt ? evt.schedule.timeSlot.split(' - ')[0] : '10:00 AM'}
                         </span>
                       </div>
@@ -336,11 +336,11 @@ export const RegistrationSuccessPage: React.FC = () => {
             </div>
 
             {/* Important Reception Notice */}
-            <div className="p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-slate-200 text-xs leading-relaxed flex items-start gap-3">
-              <Sparkles className="w-5 h-5 flex-shrink-0 text-cyan-400 mt-0.5" />
+            <div className="p-4 rounded-xl bg-[#E6CA65]/10 border border-[#E6CA65]/35 text-slate-200 text-xs leading-relaxed flex items-start gap-3 shadow-sm">
+              <Sparkles className="w-5 h-5 flex-shrink-0 text-[#E6CA65] mt-0.5" />
               <div>
-                <p className="text-cyan-200 font-medium leading-relaxed">
-                  "Please keep this QR code safe. The same QR will be used for reception and event verification."
+                <p className="text-[#FCE79C] font-medium leading-relaxed font-sans">
+                  "Please keep this QR code safe. The same QR will be used for reception and challenge desk verification."
                 </p>
               </div>
             </div>
@@ -352,34 +352,34 @@ export const RegistrationSuccessPage: React.FC = () => {
               /* Team QR Passes Container */
               <div className="space-y-4">
                 {/* Master Team Pass */}
-                <div className="p-6 rounded-2xl bg-gradient-to-b from-slate-900 via-cyan-950/20 to-cyber-card border-2 border-cyan-500/50 shadow-glow-cyan text-center space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 uppercase tracking-widest flex items-center gap-1.5 shadow-neon-cyan">
-                      <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                      MASTER TEAM PASS
+                <div className="p-6 rounded-2xl bg-[#0A1128]/95 border-2 border-[#E6CA65]/50 shadow-glow-gold text-center space-y-4 wanted-card-border">
+                  <div className="flex items-center justify-between relative z-10">
+                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#E6CA65]/20 text-[#FCE79C] border border-[#E6CA65]/40 uppercase tracking-widest flex items-center gap-1.5 shadow-sm">
+                      <Sparkles className="w-3.5 h-3.5 text-[#E6CA65]" />
+                      MASTER CREW PASS
                     </span>
                     <span className="text-xs font-mono text-slate-400">
                       {fullRoster.length} Members
                     </span>
                   </div>
 
-                  <div>
-                    <h4 className="text-lg font-bold text-white tracking-tight">
-                      {teamName || 'Team Pass'}
+                  <div className="relative z-10">
+                    <h4 className="text-lg font-voyage font-bold text-white tracking-tight">
+                      {teamName || 'Crew Pass'}
                     </h4>
-                    <p className="text-xs text-slate-300 font-mono mt-0.5">
-                      Use at Reception Desk to assign wristbands for the entire team
+                    <p className="text-xs text-slate-300 font-sans mt-0.5">
+                      Use at Reception Desk to assign wristbands for the entire crew
                     </p>
                   </div>
 
                   {/* Master Team QR Code Frame */}
                   <div
-                    className="p-3 bg-white rounded-2xl shadow-2xl inline-block cursor-pointer group relative"
+                    className="p-3 bg-white rounded-2xl shadow-2xl inline-block cursor-pointer group relative z-10 border-2 border-[#E6CA65]/40"
                     onClick={() => {
                       const tToken = `EVOXIS26:TEAM:${registrationId.replace(/[^0-9]/g, '')}`;
                       setViewingQR({
                         id: registrationId,
-                        name: `${teamName || 'Team'} (Master Team Pass)`,
+                        name: `${teamName || 'Team'} (Master Crew Pass)`,
                         url: qrUrlsMap[`TEAM-${registrationId}`] || qrDataUrl,
                         token: tToken,
                       });
@@ -403,25 +403,25 @@ export const RegistrationSuccessPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="text-xs font-mono font-bold text-cyan-400">
+                  <div className="text-xs font-mono font-bold text-[#FCE79C] relative z-10">
                     TOKEN: EVOXIS26:TEAM:{registrationId.replace(/[^0-9]/g, '')}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 pt-1">
+                  <div className="grid grid-cols-2 gap-2 pt-1 relative z-10">
                     <button
                       type="button"
                       onClick={() => {
                         const tToken = `EVOXIS26:TEAM:${registrationId.replace(/[^0-9]/g, '')}`;
                         setViewingQR({
                           id: registrationId,
-                          name: `${teamName || 'Team'} (Master Team Pass)`,
+                          name: `${teamName || 'Team'} (Master Crew Pass)`,
                           url: qrUrlsMap[`TEAM-${registrationId}`] || qrDataUrl,
                           token: tToken,
                         });
                       }}
-                      className="py-2.5 px-3 rounded-xl text-xs font-bold font-mono bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center justify-center gap-1.5"
+                      className="py-2.5 px-3 rounded-xl text-xs font-bold font-mono bg-[#040814] hover:bg-[#0E1736] text-slate-200 border border-[#E6CA65]/30 flex items-center justify-center gap-1.5 shadow-sm"
                     >
-                      <Eye className="w-4 h-4 text-cyan-400" />
+                      <Eye className="w-4 h-4 text-[#00F2FE]" />
                       <span>View Pass</span>
                     </button>
                     <button
@@ -430,54 +430,54 @@ export const RegistrationSuccessPage: React.FC = () => {
                         const tToken = `EVOXIS26:TEAM:${registrationId.replace(/[^0-9]/g, '')}`;
                         handleDownloadSingleQR(tToken, `${registrationId}-TEAM-PASS`, `${teamName || 'Team'} Master Pass`);
                       }}
-                      className="py-2.5 px-3 rounded-xl text-xs font-bold font-mono bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-neon-cyan flex items-center justify-center gap-1.5"
+                      className="py-2.5 px-3 rounded-xl text-xs font-bold font-voyage bg-gradient-to-r from-[#E6CA65] to-[#FCE79C] text-[#040814] shadow-glow-gold flex items-center justify-center gap-1.5"
                     >
-                      <Download className="w-4 h-4" />
+                      <Download className="w-4 h-4 text-[#040814]" />
                       <span>Download Team QR</span>
                     </button>
                   </div>
                 </div>
 
                 {/* Individual Member Passes Container */}
-                <div className="p-6 rounded-2xl bg-gradient-to-b from-slate-900 to-cyber-card border border-cyan-500/30 shadow-glow-cyan/30 text-center space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-slate-300 uppercase tracking-widest text-left">
-                      Individual Member Passes
+                <div className="p-6 rounded-2xl bg-[#0A1128]/95 border border-[#E6CA65]/30 shadow-2xl text-center space-y-4 wanted-card-border">
+                  <div className="flex items-center justify-between relative z-10">
+                    <span className="text-xs font-mono font-bold text-[#FCE79C] uppercase tracking-widest text-left">
+                      Crew Member Passes
                     </span>
                     <button
                       type="button"
                       onClick={handleDownloadAllMemberQRs}
                       disabled={isDownloadingAll}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold font-display bg-purple-500/20 text-purple-300 border border-purple-500/40 hover:bg-purple-500/30 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold font-voyage bg-[#E6CA65]/20 text-[#FCE79C] border border-[#E6CA65]/40 hover:bg-[#E6CA65]/30 transition-colors shadow-sm"
                     >
                       <Download className="w-3.5 h-3.5" />
                       <span>{isDownloadingAll ? 'Downloading...' : 'DOWNLOAD ALL'}</span>
                     </button>
                   </div>
 
-                  <div className="space-y-4 max-h-[420px] overflow-y-auto pr-1">
+                  <div className="space-y-4 max-h-[420px] overflow-y-auto pr-1 relative z-10">
                     {fullRoster.map((m, idx) => {
                       const mUrl = qrUrlsMap[m.registrationId];
                       return (
                         <div
                           key={m.registrationId}
-                          className="p-4 rounded-xl bg-slate-900 border border-cyan-500/20 text-center flex flex-col items-center"
+                          className="p-4 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/25 text-center flex flex-col items-center wanted-card-border"
                         >
-                          <div className="w-full flex items-center justify-between mb-2">
-                            <span className="font-bold text-white text-xs truncate max-w-[140px]">
+                          <div className="w-full flex items-center justify-between mb-2 relative z-10">
+                            <span className="font-bold text-white text-xs truncate max-w-[140px] font-voyage">
                               {idx + 1}. {m.name}
                             </span>
                             <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
                               m.role === 'TEAM_HEAD'
-                                ? 'bg-cyan-500/20 text-cyan-300'
-                                : 'bg-purple-500/20 text-purple-300'
+                                ? 'bg-[#E6CA65]/20 text-[#FCE79C]'
+                                : 'bg-[#00F2FE]/20 text-[#00F2FE]'
                             }`}>
                               {m.role}
                             </span>
                           </div>
 
                           <div
-                            className="p-2.5 bg-white rounded-xl shadow-lg my-2 cursor-pointer group relative inline-block"
+                            className="p-2.5 bg-white rounded-xl shadow-lg my-2 cursor-pointer group relative inline-block border border-[#E6CA65]/30 z-10"
                             onClick={() => setViewingQR({ id: m.registrationId, name: m.name, url: mUrl, token: m.qrToken })}
                           >
                             {mUrl ? (
@@ -498,25 +498,25 @@ export const RegistrationSuccessPage: React.FC = () => {
                             </div>
                           </div>
 
-                          <span className="text-[10px] font-mono font-bold text-cyan-400 mb-2">
+                          <span className="text-[10px] font-mono font-bold text-[#FCE79C] mb-2 relative z-10">
                             {m.registrationId}
                           </span>
 
-                          <div className="grid grid-cols-2 gap-2 w-full">
+                          <div className="grid grid-cols-2 gap-2 w-full relative z-10">
                             <button
                               type="button"
                               onClick={() => setViewingQR({ id: m.registrationId, name: m.name, url: mUrl, token: m.qrToken })}
-                              className="py-1.5 px-2.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 flex items-center justify-center gap-1 transition-colors"
+                              className="py-1.5 px-2.5 rounded-lg text-xs font-semibold bg-[#040814] hover:bg-[#0E1736] text-slate-300 border border-[#E6CA65]/20 flex items-center justify-center gap-1 transition-colors"
                             >
-                              <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                              <Eye className="w-3.5 h-3.5 text-[#00F2FE]" />
                               <span>View</span>
                             </button>
                             <button
                               type="button"
                               onClick={() => handleDownloadSingleQR(m.qrToken, m.registrationId, m.name)}
-                              className="py-1.5 px-2.5 rounded-lg text-xs font-bold font-display bg-gradient-to-r from-cyan-400 to-sky-400 text-black shadow-glow-cyan flex items-center justify-center gap-1 transition-transform hover:scale-105"
+                              className="py-1.5 px-2.5 rounded-lg text-xs font-bold font-voyage bg-gradient-to-r from-[#E6CA65] to-[#FCE79C] text-[#040814] shadow-glow-gold flex items-center justify-center gap-1 transition-transform hover:scale-105"
                             >
-                              <Download className="w-3.5 h-3.5" />
+                              <Download className="w-3.5 h-3.5 text-[#040814]" />
                               <span>Download</span>
                             </button>
                           </div>
@@ -528,23 +528,23 @@ export const RegistrationSuccessPage: React.FC = () => {
                   <button
                     onClick={handleDownloadPass}
                     disabled={isDownloadingPass}
-                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-display font-bold text-sm text-black bg-gradient-to-r from-cyan-400 via-sky-400 to-purple-400 shadow-glow-cyan transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-voyage font-bold text-sm text-[#040814] bg-gradient-to-r from-[#E6CA65] via-[#FCE79C] to-[#00F2FE] shadow-glow-gold transition-all hover:scale-[1.02] active:scale-[0.98] relative z-10"
                   >
-                    <Download className="w-4 h-4" />
-                    <span>{isDownloadingPass ? 'Generating Pass...' : 'Download Registration Details'}</span>
+                    <Download className="w-4 h-4 text-[#040814]" />
+                    <span>{isDownloadingPass ? 'Generating Pass...' : 'Download Voyage Manifest Details'}</span>
                   </button>
                 </div>
               </div>
             ) : (
               /* Individual QR Pass Container */
-              <div className="p-6 rounded-2xl bg-gradient-to-b from-slate-900 to-cyber-card border border-cyan-500/30 shadow-glow-cyan/30 text-center">
-                <span className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-widest block mb-4">
-                  Official Check-In QR Pass
+              <div className="p-6 rounded-2xl bg-[#0A1128]/95 border-2 border-[#E6CA65]/40 shadow-glow-gold text-center wanted-card-border">
+                <span className="text-xs font-mono font-bold text-[#FCE79C] uppercase tracking-widest block mb-4 relative z-10">
+                  Official Voyage Check-In Pass
                 </span>
 
                 {/* QR Image Frame */}
                 <div
-                  className="relative inline-block p-4 rounded-2xl bg-white shadow-2xl mx-auto mb-4 cursor-pointer group"
+                  className="relative inline-block p-4 rounded-2xl bg-white shadow-2xl mx-auto mb-4 cursor-pointer group z-10 border-2 border-[#E6CA65]/40"
                   onClick={() => setViewingQR({ id: registrationId, name: participantName, url: qrDataUrl, token: qrToken })}
                 >
                   {qrDataUrl ? (
@@ -565,25 +565,25 @@ export const RegistrationSuccessPage: React.FC = () => {
                   </div>
                 </div>
 
-                <p className="text-[11px] font-mono text-slate-400 break-all px-2 mb-6">
-                  Token: <span className="text-slate-300">{qrToken}</span>
+                <p className="text-[11px] font-mono text-slate-300 break-all px-2 mb-6 relative z-10">
+                  Token: <span className="text-[#FCE79C]">{qrToken}</span>
                 </p>
 
-                <div className="space-y-2.5">
+                <div className="space-y-2.5 relative z-10">
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       onClick={() => setViewingQR({ id: registrationId, name: participantName, url: qrDataUrl, token: qrToken })}
-                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-semibold text-xs text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-cyan-500/40 transition-colors"
+                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-semibold text-xs text-white bg-[#040814] hover:bg-[#0E1736] border border-[#E6CA65]/30 transition-colors shadow-sm"
                     >
-                      <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                      <Eye className="w-3.5 h-3.5 text-[#00F2FE]" />
                       <span>View QR</span>
                     </button>
 
                     <button
                       onClick={() => handleDownloadSingleQR(qrToken, registrationId, participantName)}
-                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-semibold text-xs text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-cyan-500/40 transition-colors"
+                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-semibold text-xs text-white bg-[#040814] hover:bg-[#0E1736] border border-[#E6CA65]/30 transition-colors shadow-sm"
                     >
-                      <QrCode className="w-3.5 h-3.5 text-cyan-400" />
+                      <QrCode className="w-3.5 h-3.5 text-[#E6CA65]" />
                       <span>Download QR</span>
                     </button>
                   </div>
@@ -591,27 +591,27 @@ export const RegistrationSuccessPage: React.FC = () => {
                   <button
                     onClick={handleDownloadPass}
                     disabled={isDownloadingPass}
-                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-display font-bold text-sm text-black bg-gradient-to-r from-cyan-400 to-sky-400 hover:from-cyan-300 hover:to-sky-300 shadow-glow-cyan transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-voyage font-bold text-sm text-[#040814] bg-gradient-to-r from-[#E6CA65] via-[#FCE79C] to-[#00F2FE] shadow-glow-gold transition-all hover:scale-[1.02] active:scale-[0.98]"
                   >
-                    <Download className="w-4 h-4" />
-                    <span>{isDownloadingPass ? 'Generating Details...' : 'Download Registration Details'}</span>
+                    <Download className="w-4 h-4 text-[#040814]" />
+                    <span>{isDownloadingPass ? 'Generating Details...' : 'Download Voyage Pass Details'}</span>
                   </button>
                 </div>
               </div>
             )}
 
             {/* Quick Link to My Registration Portal */}
-            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 text-center space-y-3">
-              <p className="text-xs text-slate-400">
-                Need to view your attendance status or re-download your badge on event day?
+            <div className="p-5 rounded-2xl bg-[#040814]/90 border border-[#E6CA65]/25 text-center space-y-3 wanted-card-border shadow-md">
+              <p className="text-xs text-slate-300 font-sans relative z-10">
+                Need to view your challenge attendance status or re-download your pass on voyage day?
               </p>
               <Link
                 to="/my-registration"
-                className="inline-flex items-center gap-2 text-xs font-bold text-cyan-400 hover:text-cyan-300 hover:underline"
+                className="inline-flex items-center gap-2 text-xs font-bold text-[#FCE79C] hover:text-[#FFF5C0] hover:underline font-voyage relative z-10"
               >
-                <Search className="w-3.5 h-3.5" />
-                <span>Visit My Registration Portal</span>
-                <ArrowRight className="w-3 h-3" />
+                <Search className="w-3.5 h-3.5 text-[#E6CA65]" />
+                <span>Visit Voyage Pass Retrieval Portal</span>
+                <ArrowRight className="w-3 h-3 text-[#E6CA65]" />
               </Link>
             </div>
           </div>
@@ -627,32 +627,32 @@ export const RegistrationSuccessPage: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setViewingQR(null)}
-              className="fixed inset-0 bg-black/80 backdrop-blur-md"
+              className="fixed inset-0 bg-black/85 backdrop-blur-md"
             />
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="relative bg-[#0F172A] border border-cyan-500/30 rounded-3xl p-8 max-w-sm w-full text-center z-10 shadow-2xl"
+              className="relative bg-[#0A1128] border-2 border-[#E6CA65]/40 rounded-3xl p-8 max-w-sm w-full text-center z-10 shadow-2xl wanted-card-border"
             >
               <button
                 onClick={() => setViewingQR(null)}
-                className="absolute top-4 right-4 p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white"
+                className="absolute top-4 right-4 p-2 rounded-xl bg-[#040814] text-slate-400 hover:text-white border border-[#E6CA65]/20"
               >
                 <X className="w-5 h-5" />
               </button>
 
-              <h3 className="font-display font-black text-xl text-white mb-1">
-                Check-In QR Pass
+              <h3 className="font-voyage font-black text-xl text-white mb-1">
+                Voyage Check-In Pass
               </h3>
               <p className="text-sm font-bold text-slate-200 mb-0.5">
                 {viewingQR.name}
               </p>
-              <p className="text-xs text-cyan-400 font-mono mb-4">
+              <p className="text-xs text-[#FCE79C] font-mono mb-4">
                 {viewingQR.id}
               </p>
 
-              <div className="p-4 bg-white rounded-2xl inline-block shadow-inner mb-4">
+              <div className="p-4 bg-white rounded-2xl inline-block shadow-inner mb-4 border border-[#E6CA65]/40">
                 <img
                   src={viewingQR.url}
                   alt={`QR code for ${viewingQR.id}`}
@@ -663,14 +663,14 @@ export const RegistrationSuccessPage: React.FC = () => {
               <div className="flex gap-2">
                 <button
                   onClick={() => handleDownloadSingleQR(viewingQR.token, viewingQR.id, viewingQR.name)}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs text-black bg-cyan-400 hover:bg-cyan-300 shadow-glow-cyan"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-voyage font-bold text-xs text-[#040814] bg-gradient-to-r from-[#E6CA65] to-[#FCE79C] shadow-glow-gold"
                 >
-                  <Download className="w-3.5 h-3.5" />
+                  <Download className="w-3.5 h-3.5 text-[#040814]" />
                   <span>Download PNG</span>
                 </button>
                 <button
                   onClick={() => setViewingQR(null)}
-                  className="px-4 py-2.5 rounded-xl font-semibold text-xs text-slate-300 bg-slate-800 hover:bg-slate-700"
+                  className="px-4 py-2.5 rounded-xl font-semibold text-xs text-slate-300 bg-[#040814] hover:bg-[#0E1736] border border-[#E6CA65]/20"
                 >
                   Close
                 </button>

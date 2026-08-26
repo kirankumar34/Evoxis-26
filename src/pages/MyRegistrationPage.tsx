@@ -162,45 +162,45 @@ export const MyRegistrationPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 bg-cyber-dark text-slate-100 selection:bg-cyber-cyan selection:text-black">
+    <div className="min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-[#02050E] via-[#040814] to-[#0A1128] text-slate-100 selection:bg-[#E6CA65] selection:text-[#040814]">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 text-xs font-mono font-bold uppercase mb-4">
-            <ShieldCheck className="w-3.5 h-3.5" /> Participant Self-Service Portal
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#E6CA65]/10 border border-[#E6CA65]/35 text-[#FCE79C] text-xs font-mono font-bold uppercase mb-4 shadow-sm">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#E6CA65]" /> Voyage Pass Retrieval Portal
           </div>
-          <h1 className="text-3xl sm:text-4xl font-display font-black text-white mb-3">
-            Find Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">Registration Pass & Status</span>
+          <h1 className="text-3xl sm:text-4xl font-voyage font-black text-white mb-3">
+            Retrieve Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FCE79C] via-[#E6CA65] to-[#00F2FE]">Voyage Pass & Status</span>
           </h1>
-          <p className="text-slate-400 text-sm max-w-lg mx-auto">
-            Search with your Registration ID and Email/Phone to retrieve your check-in QR pass and view real-time event attendance.
+          <p className="text-slate-300 text-sm max-w-lg mx-auto font-sans leading-relaxed">
+            Search with your Voyage Pass ID and registered Email or Mobile to retrieve your check-in QR pass and view live challenge clearance status.
           </p>
         </div>
 
         {/* Lookup Box */}
-        <div className="p-6 sm:p-8 rounded-2xl bg-cyber-card border border-cyan-500/20 shadow-glass mb-10">
+        <div className="p-6 sm:p-8 rounded-2xl bg-[#0A1128]/95 border border-[#E6CA65]/30 shadow-2xl wanted-card-border mb-10 backdrop-blur-md">
           <form
             onSubmit={(e) => {
               e.preventDefault();
               handleLookup();
             }}
-            className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-end"
+            className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-end relative z-10"
           >
             <div className="sm:col-span-5">
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                Registration ID (e.g. EVOXIS26-00001)
+              <label className="block text-xs font-semibold text-[#FCE79C] uppercase tracking-wider mb-2 font-mono">
+                Voyage Pass ID (e.g. EVOXIS26-00001)
               </label>
               <input
                 type="text"
                 placeholder="EVOXIS26-XXXXX"
                 value={registrationId}
                 onChange={(e) => setRegistrationId(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 font-mono text-sm focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                className="w-full px-4 py-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 text-white placeholder-slate-500 font-mono text-sm focus:outline-none focus:border-[#E6CA65] focus:ring-1 focus:ring-[#E6CA65]"
               />
             </div>
 
             <div className="sm:col-span-5">
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-[#FCE79C] uppercase tracking-wider mb-2 font-mono">
                 Email or Mobile Number
               </label>
               <input
@@ -208,7 +208,7 @@ export const MyRegistrationPage: React.FC = () => {
                 placeholder="participant@college.edu or 9876543210"
                 value={emailOrPhone}
                 onChange={(e) => setEmailOrPhone(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                className="w-full px-4 py-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-[#E6CA65] focus:ring-1 focus:ring-[#E6CA65]"
               />
             </div>
 
@@ -216,13 +216,13 @@ export const MyRegistrationPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3 px-4 rounded-xl font-display font-bold text-sm text-black bg-gradient-to-r from-cyan-400 to-sky-400 hover:from-cyan-300 hover:to-sky-300 shadow-glow-cyan flex items-center justify-center gap-2 transition-transform hover:scale-105 active:scale-95 disabled:opacity-50"
+                className="cyber-button w-full py-3 px-4 rounded-xl font-voyage font-bold text-sm text-[#040814] bg-gradient-to-r from-[#E6CA65] to-[#FCE79C] hover:from-[#FFF5C0] shadow-glow-gold flex items-center justify-center gap-2 transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 border border-[#FFF5C0]/50"
               >
                 {isLoading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin text-[#040814]" />
                 ) : (
                   <>
-                    <Search className="w-4 h-4" />
+                    <Search className="w-4 h-4 text-[#040814]" />
                     <span>Search Pass</span>
                   </>
                 )}
@@ -234,7 +234,7 @@ export const MyRegistrationPage: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-4 p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-center gap-2.5"
+              className="mt-4 p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-center gap-2.5 relative z-10"
             >
               <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
               <span>{error}</span>
@@ -252,11 +252,11 @@ export const MyRegistrationPage: React.FC = () => {
               className="space-y-8"
             >
               {/* Top Banner Status */}
-              <div className="p-6 rounded-2xl bg-cyber-card border border-cyan-500/30 shadow-glass flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-purple-600 p-[2px]">
-                    <div className="w-full h-full bg-cyber-dark rounded-[10px] flex items-center justify-center">
-                      <QrCode className="w-6 h-6 text-cyan-400" />
+              <div className="p-6 rounded-2xl bg-[#0A1128]/95 border border-[#E6CA65]/35 shadow-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 wanted-card-border">
+                <div className="flex items-center gap-4 relative z-10">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#E6CA65] via-[#C8933C] to-[#E11D48] p-[2px] shadow-glow-gold">
+                    <div className="w-full h-full bg-[#070D1E] rounded-[10px] flex items-center justify-center">
+                      <QrCode className="w-6 h-6 text-[#FCE79C]" />
                     </div>
                   </div>
                   <div>
@@ -264,25 +264,25 @@ export const MyRegistrationPage: React.FC = () => {
                       <span className="text-xl font-mono font-black text-white">{activeMember?.registrationId || registrationData.registrationId}</span>
                       <button
                         onClick={handleCopyId}
-                        className="text-xs text-cyan-400 hover:text-cyan-300 p-1"
+                        className="text-xs text-[#E6CA65] hover:text-[#FCE79C] p-1"
                         title="Copy ID"
                       >
                         {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                       </button>
                     </div>
-                    <p className="text-xs text-slate-400">
-                      Registered on {registrationData.registrationDate}
+                    <p className="text-xs text-slate-400 font-sans">
+                      Manifest logged on {registrationData.registrationDate}
                     </p>
                   </div>
                 </div>
 
                 {/* Overall Attendance Tag */}
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-400">Reception Check-in:</span>
+                <div className="flex items-center gap-2 relative z-10">
+                  <span className="text-xs text-slate-300 font-sans">Port Reception Check-in:</span>
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-mono font-bold border ${
                       registrationData.overallAttendanceStatus === 'Present'
-                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-glow-sm'
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-sm'
                         : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
                     }`}
                   >
@@ -295,37 +295,37 @@ export const MyRegistrationPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
                 {/* Left: Participant & Per-Event Attendance (7 cols) */}
                 <div className="md:col-span-7 space-y-6">
-                  <div className="p-6 rounded-2xl bg-cyber-card border border-slate-800 space-y-5">
-                    <h3 className="font-display font-bold text-base text-white border-b border-slate-800 pb-3">
-                      Participant Details
+                  <div className="p-6 rounded-2xl bg-[#0A1128]/95 border border-[#E6CA65]/25 space-y-5 wanted-card-border">
+                    <h3 className="font-voyage font-bold text-base text-white border-b border-[#E6CA65]/20 pb-3 relative z-10">
+                      Manifest Details
                     </h3>
-                    <div className="grid grid-cols-2 gap-4 text-xs">
+                    <div className="grid grid-cols-2 gap-4 text-xs font-sans relative z-10">
                       <div>
-                        <span className="text-slate-400 block mb-1">Active Attendee</span>
-                        <span className="font-bold text-white text-sm">{activeMember?.name || registrationData.participantName}</span>
+                        <span className="text-slate-400 block mb-1 font-mono uppercase">Active Attendee</span>
+                        <span className="font-bold text-white text-sm font-voyage">{activeMember?.name || registrationData.participantName}</span>
                       </div>
                       <div>
-                        <span className="text-slate-400 block mb-1">College</span>
+                        <span className="text-slate-400 block mb-1 font-mono uppercase">College / Fleet</span>
                         <span className="font-semibold text-slate-200">{activeMember?.college || registrationData.collegeInstitution}</span>
                       </div>
                       <div>
-                        <span className="text-slate-400 block mb-1">Department / Year</span>
+                        <span className="text-slate-400 block mb-1 font-mono uppercase">Department / Year</span>
                         <span className="text-slate-300">{activeMember?.department || registrationData.department} ({registrationData.year})</span>
                       </div>
                       <div>
-                        <span className="text-slate-400 block mb-1">Contact</span>
+                        <span className="text-slate-400 block mb-1 font-mono uppercase">Contact</span>
                         <span className="text-slate-300 font-mono">{registrationData.mobileNumber}</span>
                       </div>
                     </div>
 
                     {/* Team Roster details if team registration */}
                     {registrationData.teamName && (
-                      <div className="pt-3 border-t border-slate-800/80">
+                      <div className="pt-3 border-t border-[#E6CA65]/15 relative z-10">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-mono font-bold text-cyan-400 uppercase">
-                            Team: <span className="text-white font-sans font-bold ml-1">{registrationData.teamName}</span>
+                          <span className="text-xs font-mono font-bold text-[#FCE79C] uppercase">
+                            Crew: <span className="text-white font-voyage font-bold ml-1">{registrationData.teamName}</span>
                           </span>
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#E6CA65]/15 text-[#FCE79C] border border-[#E6CA65]/35">
                             {fullRoster.length} Members (Click to Switch QR)
                           </span>
                         </div>
@@ -336,21 +336,21 @@ export const MyRegistrationPage: React.FC = () => {
                               key={tm.registrationId}
                               type="button"
                               onClick={() => setSelectedMemberIndex(idx)}
-                              className={`w-full px-3 py-2 rounded-lg border flex items-center justify-between text-xs transition-colors text-left ${
+                              className={`w-full px-3 py-2 rounded-lg border flex items-center justify-between text-xs transition-all text-left wanted-card-border ${
                                 selectedMemberIndex === idx
-                                  ? 'bg-cyan-500/20 border-cyan-500/50 text-white shadow-glow-cyan/20'
-                                  : 'bg-slate-900/60 border-slate-800 hover:bg-slate-800/60 text-slate-300'
+                                  ? 'bg-[#E6CA65]/20 border-[#E6CA65] text-white shadow-glow-gold/20'
+                                  : 'bg-[#040814]/80 border-[#E6CA65]/20 hover:bg-[#0E1736] text-slate-300'
                               }`}
                             >
-                              <div className="flex items-center gap-2">
-                                <span className="font-mono text-[10px] text-cyan-400 font-bold">{idx + 1}.</span>
+                              <div className="flex items-center gap-2 relative z-10">
+                                <span className="font-mono text-[10px] text-[#FCE79C] font-bold">{idx + 1}.</span>
                                 <span className="font-semibold">{tm.name}</span>
                                 <span className="text-[10px] font-mono text-slate-400">({tm.registrationId})</span>
                               </div>
-                              <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${
+                              <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold relative z-10 ${
                                 tm.role === 'TEAM_HEAD'
-                                  ? 'bg-cyan-500/20 text-cyan-300'
-                                  : 'bg-purple-500/20 text-purple-300'
+                                  ? 'bg-[#E6CA65]/20 text-[#FCE79C]'
+                                  : 'bg-[#00F2FE]/20 text-[#00F2FE]'
                               }`}>
                                 {tm.role}
                               </span>
@@ -362,40 +362,40 @@ export const MyRegistrationPage: React.FC = () => {
                   </div>
 
                   {/* Registered Events with Live Attendance Status */}
-                  <div className="p-6 rounded-2xl bg-cyber-card border border-slate-800 space-y-4">
-                    <h3 className="font-display font-bold text-base text-white border-b border-slate-800 pb-3 flex items-center justify-between">
-                      <span>Registered Events ({registrationData.events.length})</span>
-                      <span className="text-xs font-mono text-purple-400 font-normal">Live Desk Status</span>
+                  <div className="p-6 rounded-2xl bg-[#0A1128]/95 border border-[#E6CA65]/25 space-y-4 wanted-card-border">
+                    <h3 className="font-voyage font-bold text-base text-white border-b border-[#E6CA65]/20 pb-3 flex items-center justify-between relative z-10">
+                      <span>Enlisted Challenges ({registrationData.events.length})</span>
+                      <span className="text-xs font-mono text-[#FCE79C] font-normal">Live Desk Status</span>
                     </h3>
 
-                    <div className="space-y-3">
+                    <div className="space-y-3 relative z-10">
                       {registrationData.events.map((evt) => {
                         const fullEvt = EVENTS.find((e) => e.eventId === evt.eventId);
                         return (
                           <div
                             key={evt.eventId}
-                            className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                            className="p-4 rounded-xl bg-[#040814]/80 border border-[#E6CA65]/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 wanted-card-border"
                           >
-                            <div>
+                            <div className="relative z-10">
                               <div className="flex items-center gap-2 mb-1">
-                                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#E6CA65]/20 text-[#FCE79C] border border-[#E6CA65]/40">
                                   {evt.eventId}
                                 </span>
-                                <span className="font-display font-bold text-sm text-white">
+                                <span className="font-voyage font-bold text-sm text-white">
                                   {evt.eventName}
                                 </span>
                               </div>
-                              <span className="text-xs text-slate-400">
+                              <span className="text-xs text-slate-400 font-sans">
                                 {fullEvt ? fullEvt.schedule.venue : 'Sriram Campus'} • {fullEvt ? fullEvt.schedule.timeSlot : 'TBD'}
                               </span>
                             </div>
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 relative z-10">
                               <span
                                 className={`px-2.5 py-1 rounded-lg text-[11px] font-mono font-semibold border ${
                                   evt.attendanceStatus === 'Present'
                                     ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                                    : 'bg-slate-800 text-slate-400 border-slate-700'
+                                    : 'bg-[#040814] text-slate-400 border-slate-700'
                                 }`}
                               >
                                 {evt.attendanceStatus === 'Present' ? 'Marked Present' : 'Desk Pending'}
@@ -410,38 +410,38 @@ export const MyRegistrationPage: React.FC = () => {
 
                 {/* Right: QR Pass Card & Downloads (5 cols) */}
                 <div className="md:col-span-5 space-y-6">
-                  <div className="p-6 rounded-2xl bg-gradient-to-b from-slate-900 to-cyber-card border border-cyan-500/30 text-center">
-                    <span className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-widest block mb-2">
-                      Official Check-In QR Pass
+                  <div className="p-6 rounded-2xl bg-[#0A1128]/95 border-2 border-[#E6CA65]/40 shadow-glow-gold text-center wanted-card-border">
+                    <span className="text-xs font-mono font-bold text-[#FCE79C] uppercase tracking-widest block mb-2 relative z-10">
+                      Official Check-In Voyage Pass
                     </span>
-                    <p className="text-xs text-slate-300 font-bold mb-4">
+                    <p className="text-xs text-slate-200 font-bold mb-4 font-voyage relative z-10">
                       {activeMember?.name || registrationData.participantName}
                     </p>
 
-                    <div className="p-3 bg-white rounded-2xl inline-block shadow-xl mb-4">
+                    <div className="p-3 bg-white rounded-2xl inline-block shadow-xl mb-4 border-2 border-[#E6CA65]/40 relative z-10">
                       {qrDataUrl && (
                         <img src={qrDataUrl} alt="QR Code" className="w-48 h-48 rounded-lg mx-auto" />
                       )}
                     </div>
 
-                    <p className="text-[11px] font-mono text-slate-400 break-all px-2 mb-6">
-                      Token: <span className="text-slate-300">{activeMember?.qrToken || registrationData.qrToken}</span>
+                    <p className="text-[11px] font-mono text-slate-300 break-all px-2 mb-6 relative z-10">
+                      Token: <span className="text-[#FCE79C]">{activeMember?.qrToken || registrationData.qrToken}</span>
                     </p>
 
-                    <div className="space-y-3">
+                    <div className="space-y-3 relative z-10">
                       <button
                         onClick={handleDownloadPass}
-                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-display font-bold text-xs text-black bg-gradient-to-r from-cyan-400 to-sky-400 hover:from-cyan-300 transition-all shadow-glow-cyan"
+                        className="cyber-button w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-voyage font-bold text-xs text-[#040814] bg-gradient-to-r from-[#E6CA65] via-[#FCE79C] to-[#00F2FE] shadow-glow-gold"
                       >
-                        <Download className="w-4 h-4" />
+                        <Download className="w-4 h-4 text-[#040814]" />
                         <span>Download Badge / Pass (PNG)</span>
                       </button>
 
                       <button
                         onClick={handleDownloadQR}
-                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors"
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs text-slate-200 bg-[#040814] hover:bg-[#0E1736] border border-[#E6CA65]/30 transition-colors shadow-sm"
                       >
-                        <QrCode className="w-4 h-4 text-cyan-400" />
+                        <QrCode className="w-4 h-4 text-[#E6CA65]" />
                         <span>Download Standalone QR</span>
                       </button>
                     </div>

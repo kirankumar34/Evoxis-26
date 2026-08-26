@@ -4,70 +4,101 @@
 
 @layer base {
   :root {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
+    --background: 228 75% 3%;
+    --foreground: 45 40% 92%;
   }
 
   body {
-    background-color: #080C15;
-    color: #F1F5F9;
+    background-color: #040814;
+    color: #F8FAFC;
     font-feature-settings: "rlig" 1, "calt" 1;
     overflow-x: hidden;
   }
 }
 
-/* Custom Cyber Scrollbar */
+/* Custom Grand Voyage Nautical Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #080C15;
+  background: #040814;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1E293B;
+  background: #132247;
   border-radius: 4px;
-  border: 1px solid rgba(0, 242, 254, 0.2);
+  border: 1px solid rgba(230, 202, 101, 0.3);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #00F2FE;
-  box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+  background: #E6CA65;
+  box-shadow: 0 0 10px rgba(230, 202, 101, 0.6);
 }
 
-/* Cyber Glow Utilities */
+/* Grand Voyage Glass & Parchment Panels */
 .glass-panel {
-  background: rgba(13, 19, 34, 0.7);
+  background: rgba(10, 17, 40, 0.78);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(230, 202, 101, 0.18);
+  box-shadow: 0 10px 30px -5px rgba(2, 5, 14, 0.6);
 }
 
 .glass-panel:hover {
-  border-color: rgba(0, 242, 254, 0.35);
+  border-color: rgba(230, 202, 101, 0.4);
 }
 
 .glass-panel-purple {
-  background: rgba(20, 15, 38, 0.7);
+  background: rgba(14, 23, 54, 0.8);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(225, 29, 72, 0.2);
 }
 
 .glass-panel-purple:hover {
-  border-color: rgba(168, 85, 247, 0.4);
+  border-color: rgba(225, 29, 72, 0.45);
 }
 
+.parchment-panel {
+  background: linear-gradient(145deg, rgba(245, 230, 200, 0.08) 0%, rgba(10, 17, 40, 0.9) 100%);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(230, 202, 101, 0.25);
+  box-shadow: 0 12px 36px -8px rgba(0, 0, 0, 0.7);
+}
+
+.wanted-card-border {
+  border: 1px solid rgba(230, 202, 101, 0.28);
+  position: relative;
+}
+
+.wanted-card-border::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px dashed rgba(230, 202, 101, 0.14);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Glowing Typography */
 .neon-text-cyan {
   text-shadow: 0 0 15px rgba(0, 242, 254, 0.6), 0 0 30px rgba(0, 242, 254, 0.3);
 }
 
 .neon-text-purple {
-  text-shadow: 0 0 15px rgba(168, 85, 247, 0.6), 0 0 30px rgba(168, 85, 247, 0.3);
+  text-shadow: 0 0 15px rgba(225, 29, 72, 0.6), 0 0 30px rgba(225, 29, 72, 0.3);
 }
 
+.gold-text-glow {
+  text-shadow: 0 0 12px rgba(230, 202, 101, 0.5), 0 0 24px rgba(230, 202, 101, 0.25);
+}
+
+/* Buttons */
 .cyber-button {
   position: relative;
   overflow: hidden;
@@ -81,10 +112,24 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
   transition: 0.5s;
 }
 
 .cyber-button:hover::after {
   left: 100%;
+}
+
+.voyage-button-gold {
+  background: linear-gradient(135deg, #E6CA65 0%, #FCE79C 50%, #C8933C 100%);
+  color: #040814;
+  font-weight: 800;
+  box-shadow: 0 0 20px -3px rgba(230, 202, 101, 0.4);
+  border: 1px solid #FFF5C0;
+}
+
+.voyage-button-gold:hover {
+  background: linear-gradient(135deg, #FCE79C 0%, #FFFFFF 50%, #E6CA65 100%);
+  box-shadow: 0 0 30px 0 rgba(230, 202, 101, 0.6);
+  transform: translateY(-2px);
 }
