@@ -1628,7 +1628,7 @@ export const api = {
       data: {
         totalRegistered,
         receptionPresent,
-        totalEvents: 16,
+        totalEvents: EVENTS.length,
         eventStats,
       },
     };

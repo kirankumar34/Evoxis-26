@@ -203,8 +203,8 @@ describe('AC3, AC4, AC6, AC7, AC8: Full API Client & Database Service Layer', ()
   it('9. getDashboardStats aggregates registrations, attendance, and event statistics', async () => {
     const stats = await api.getDashboardStats();
     expect(stats.success).toBe(true);
-    expect(stats.data.totalEvents).toBe(16);
-    expect(stats.data.eventStats.length).toBe(16);
+    expect(stats.data.totalEvents).toBe(15);
+    expect(stats.data.eventStats.length).toBe(15);
     expect(typeof stats.data.totalRegistered).toBe('number');
     expect(typeof stats.data.receptionPresent).toBe('number');
   });
