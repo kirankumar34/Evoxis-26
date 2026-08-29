@@ -1,12 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, Sparkles, Calendar, MapPin, Award, Layers, QrCode, Compass } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { MobileDrawer } from './MobileDrawer';
 import { useRegistrationModal } from '@/context/RegistrationModalContext';
+import { sound } from '@/utils/audio';
+
+/* ─── colour tokens ──────────────────────────────────────────────────────── */
+const C = {
+  bone:      '#F8F8F8',
+  cream:     '#FFF3D6',
+  ink:       '#0B0B0B',
+  red:       '#E2231A',
+  deepRed:   '#9A1410',
+  blue:      '#0077C8',
+  deepBlue:  '#003B73',
+  gold:      '#FFC928',
+  deepGold:  '#B56A12',
+  rope:      '#C68B3F',
+  seafoam:   '#7ED9D6',
+};
 
 export const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
   const { openRegisterModal } = useRegistrationModal();
 
@@ -14,84 +30,128 @@ export const Navbar: React.FC = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(window.scrollY > 15);
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const navLinks = [
-    { name: '16 Challenges', href: isHomePage ? '#events' : '/events', icon: Award, badge: '16', isRoute: !isHomePage },
-    { name: 'Departments', href: isHomePage ? '#departments' : '/#departments', icon: Layers },
-    { name: 'Voyage Schedule', href: isHomePage ? '#schedule' : '/#schedule', icon: Calendar },
-    { name: 'Venue', href: isHomePage ? '#venue' : '/#venue', icon: MapPin },
-    { name: 'Voyage Pass / QR', href: '/my-registration', icon: QrCode, isRoute: true },
+    { name: 'Home', href: isHomePage ? '#home' : '/', isRoute: !isHomePage, icon: '🏠' },
+    { name: 'Departments', href: isHomePage ? '#departments' : '/#departments', icon: '🛡️' },
+    { name: 'Events', href: isHomePage ? '#events' : '/events', isRoute: !isHomePage, badge: '16', icon: '🏆' },
+    { name: 'Schedule', href: isHomePage ? '#schedule' : '/#schedule', icon: '⏳' },
+    { name: 'Venue', href: isHomePage ? '#venue' : '/#venue', icon: '📍' },
+    { name: 'Pass', href: '/my-registration', isRoute: true, icon: '🎫' },
   ];
 
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${
           isScrolled
-            ? 'bg-[#040814]/92 backdrop-blur-xl border-b border-[#E6CA65]/25 py-2.5 shadow-glass'
-            : 'bg-gradient-to-b from-[#040814]/90 via-[#040814]/40 to-transparent py-4'
+            ? 'bg-[#0B0B0B]/92 backdrop-blur-xl border-b border-white/10 py-2 sm:py-3 shadow-2xl'
+            : 'bg-gradient-to-b from-[#0B0B0B]/90 via-[#0B0B0B]/40 to-transparent py-2.5 sm:py-4'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          {/* Brand / Logo */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="relative w-11 h-11 rounded-xl bg-gradient-to-br from-[#E6CA65] via-[#C8933C] to-[#E11D48] p-[2px] shadow-glow-gold transition-transform group-hover:scale-105">
-              <div className="w-full h-full bg-[#070D1E] rounded-[9px] flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#E6CA65]/10 to-transparent pointer-events-none" />
-                <span className="font-voyage font-black text-transparent bg-clip-text bg-gradient-to-r from-[#FCE79C] via-[#E6CA65] to-[#00F2FE] text-lg tracking-wider">
-                  EX
-                </span>
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-voyage font-black text-xl tracking-wide text-white group-hover:text-[#E6CA65] transition-colors flex items-center gap-1.5">
-                  EvoXis<span className="text-[#E6CA65] font-sans">'26</span>
-                </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#E6CA65]/15 text-[#FCE79C] border border-[#E6CA65]/35 flex items-center gap-1">
-                  <Compass className="w-2.5 h-2.5 text-[#E6CA65] animate-compass" />
-                  GRAND VOYAGE
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400 font-medium hidden sm:block">
-                Sriram Engineering College
-              </p>
-            </div>
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+          {/* Brand / Manga Logo */}
+          <Link to="/" className="flex items-center gap-2 group flex-shrink-0">
+            <span
+              style={{
+                fontFamily: "'Anton', sans-serif",
+                fontSize: '1.35rem',
+                letterSpacing: '0.04em',
+                lineHeight: 1,
+              }}
+              className="bg-black px-2.5 py-1 border border-white/15 shadow-xl rounded-sm transition-transform group-hover:scale-105"
+            >
+              <span style={{ color: C.red }}>EVO</span>
+              <span style={{ color: C.bone }}>XIS</span>
+            </span>
+            <span
+              style={{
+                fontFamily: "'Noto Sans JP', sans-serif",
+                fontSize: '0.75rem',
+                color: C.gold,
+                marginLeft: '3px',
+                letterSpacing: '0.05em',
+              }}
+            >
+              海賊
+            </span>
+            <span className="hidden sm:inline-block text-[11px] font-mono text-white/50 pl-2 border-l border-white/20">
+              Symposium'26
+            </span>
           </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-2 mr-4">
-            {navLinks.map((link) => {
-              if (link.isRoute) {
+          {/* Desktop & Laptop Navigation Links (Normal horizontal pill bar for laptop view) */}
+          <nav
+            className="hidden lg:flex items-center gap-1 rounded-full px-2 py-1.5"
+            style={{
+              background: 'rgba(11,11,11,0.72)',
+              border: '1px solid rgba(255,255,255,0.14)',
+              backdropFilter: 'blur(14px)',
+            }}
+          >
+            {navLinks.map((lnk) => {
+              const isCurrent = (lnk.name === 'Home' && location.pathname === '/') || location.pathname === lnk.href;
+              
+              if (lnk.isRoute) {
                 return (
                   <Link
-                    key={link.name}
-                    to={link.href}
-                    className={`relative px-3.5 py-2 text-sm font-semibold transition-all rounded-xl flex items-center gap-1.5 ${
-                      location.pathname === link.href
-                        ? 'text-[#FCE79C] bg-[#E6CA65]/15 border border-[#E6CA65]/30 shadow-glow-gold/40'
-                        : 'text-slate-300 hover:text-[#E6CA65] hover:bg-[#E6CA65]/10'
-                    }`}
+                    key={lnk.name}
+                    to={lnk.href}
+                    onClick={() => sound.playTick?.()}
+                    className="px-4 py-1.5 rounded-full text-sm transition-all duration-200 flex items-center gap-1.5"
+                    style={{
+                      fontFamily: "'Inter', sans-serif",
+                      fontWeight: isCurrent ? 600 : 400,
+                      color: isCurrent ? C.ink : C.bone,
+                      background: isCurrent ? C.bone : 'transparent',
+                      letterSpacing: '0.01em',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isCurrent) e.currentTarget.style.color = C.gold;
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isCurrent) e.currentTarget.style.color = C.bone;
+                    }}
                   >
-                    <span>{link.name}</span>
+                    <span>{lnk.name}</span>
+                    {lnk.badge && (
+                      <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold bg-[#E2231A]/30 text-[#FFF3D6] border border-[#E2231A]/50">
+                        {lnk.badge}
+                      </span>
+                    )}
                   </Link>
                 );
               }
+
               return (
                 <a
-                  key={link.name}
-                  href={link.href}
-                  className="relative px-3.5 py-2 text-sm font-semibold text-slate-300 hover:text-[#E6CA65] transition-all rounded-xl hover:bg-[#E6CA65]/10 flex items-center gap-1.5"
+                  key={lnk.name}
+                  href={lnk.href}
+                  onClick={() => sound.playTick?.()}
+                  className="px-4 py-1.5 rounded-full text-sm transition-all duration-200 flex items-center gap-1.5"
+                  style={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontWeight: isCurrent ? 600 : 400,
+                    color: isCurrent ? C.ink : C.bone,
+                    background: isCurrent ? C.bone : 'transparent',
+                    letterSpacing: '0.01em',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isCurrent) e.currentTarget.style.color = C.gold;
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isCurrent) e.currentTarget.style.color = C.bone;
+                  }}
                 >
-                  <span>{link.name}</span>
-                  {link.badge && (
-                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold bg-[#E11D48]/20 text-[#FDA4AF] border border-[#E11D48]/40">
-                      {link.badge}
+                  <span>{lnk.name}</span>
+                  {lnk.badge && (
+                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold bg-[#E2231A]/30 text-[#FFF3D6] border border-[#E2231A]/50">
+                      {lnk.badge}
                     </span>
                   )}
                 </a>
@@ -99,36 +159,82 @@ export const Navbar: React.FC = () => {
             })}
           </nav>
 
-          {/* Right Header Actions */}
-          <div className="flex items-center">
-            {/* Desktop Only: Single Primary CTA */}
-            <div className="hidden lg:block">
-              <button
-                type="button"
-                onClick={() => openRegisterModal()}
-                className="cyber-button relative inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-voyage font-black text-xs xl:text-sm text-[#040814] bg-gradient-to-r from-[#E6CA65] via-[#FCE79C] to-[#00F2FE] hover:from-[#FFF5C0] hover:to-[#38BDF8] shadow-glow-gold transition-all hover:scale-[1.03] active:scale-[0.98] border border-[#FFF5C0]/60"
-              >
-                <Sparkles className="w-4 h-4 text-[#040814]" />
-                <span className="tracking-wider">REGISTER FOR THE VOYAGE</span>
-              </button>
-            </div>
-
-            {/* Mobile Header: Uncluttered Menu Trigger */}
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2.5 rounded-xl text-slate-300 hover:text-white bg-[#0A1128]/80 border border-[#E6CA65]/30 hover:border-[#E6CA65] transition-colors"
-              aria-label="Open Mobile Menu"
+          {/* Right Header Action Buttons */}
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            {/* Voyage Pass Shortcut (visible on tablet / desktop) */}
+            <Link
+              to="/my-registration"
+              onClick={() => sound.playTick?.()}
+              style={{
+                fontFamily: "'Bebas Neue', sans-serif",
+                letterSpacing: '0.08em',
+                fontSize: '0.9rem',
+                color: C.bone,
+                background: 'rgba(11,11,11,0.65)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '9999px',
+                padding: '6px 16px',
+                cursor: 'pointer',
+                backdropFilter: 'blur(8px)',
+                transition: 'all 0.2s',
+                textDecoration: 'none',
+              }}
+              className="hidden sm:inline-flex lg:hidden xl:inline-flex items-center gap-1.5"
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.14)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(11,11,11,0.65)'; }}
             >
-              <Menu className="w-6 h-6 text-[#E6CA65]" />
+              <span>🎫</span>
+              <span>Pass</span>
+            </Link>
+
+            {/* Set Sail Register CTA */}
+            <button
+              onClick={() => { sound.playCannon?.(); openRegisterModal(); }}
+              style={{
+                fontFamily: "'Bebas Neue', sans-serif",
+                letterSpacing: '0.08em',
+                fontSize: '0.95rem',
+                color: C.ink,
+                background: `linear-gradient(135deg, ${C.gold}, ${C.deepGold})`,
+                border: 'none',
+                borderRadius: '9999px',
+                padding: '7px 20px',
+                cursor: 'pointer',
+                boxShadow: '0 0 18px rgba(255,201,40,0.45)',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => { 
+                e.currentTarget.style.boxShadow = '0 0 30px rgba(255,201,40,0.7)'; 
+                e.currentTarget.style.transform = 'translateY(-1px)'; 
+              }}
+              onMouseLeave={(e) => { 
+                e.currentTarget.style.boxShadow = '0 0 18px rgba(255,201,40,0.45)'; 
+                e.currentTarget.style.transform = ''; 
+              }}
+            >
+              Set Sail
+            </button>
+
+            {/* Mobile & Tablet Only: Side Opening Menu Trigger */}
+            <button
+              onClick={() => { sound.playTick?.(); setDrawerOpen(true); }}
+              className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/70 border border-white/20 hover:border-[#FFC928] text-white transition-all shadow-md group cursor-pointer"
+              aria-label="Open Navigation Menu"
+              title="Open Navigation Menu"
+            >
+              <span className="hidden sm:inline font-mono text-xs text-[#FFC928] tracking-widest uppercase font-bold group-hover:text-white transition-colors">
+                MENU
+              </span>
+              <Menu className="w-5 h-5 text-[#FFC928] group-hover:scale-110 transition-transform" />
             </button>
           </div>
         </div>
       </header>
 
-      {/* Mobile Drawer */}
+      {/* Side Navigation Drawer for Mobile & Tablet */}
       <MobileDrawer
-        isOpen={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
+        isOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
         navLinks={navLinks}
       />
     </>

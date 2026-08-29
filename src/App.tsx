@@ -16,7 +16,7 @@ export const App: React.FC = () => {
   return (
     <BrowserRouter>
       <RegistrationModalProvider>
-        <div className="min-h-screen bg-cyber-dark text-slate-100 selection:bg-cyber-cyan selection:text-black flex flex-col justify-between">
+        <div className="w-full max-w-full min-h-screen bg-cyber-dark text-slate-100 selection:bg-cyber-cyan selection:text-black flex flex-col justify-between overflow-x-hidden">
           {/* Sticky Frosted Navbar */}
           <Navbar />
 
