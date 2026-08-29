@@ -153,3 +153,22 @@
     transform: translateY(-16px) translateX(8px);
   }
 }
+
+@keyframes marqueeLoop {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee-loop {
+  display: flex;
+  width: max-content;
+  animation: marqueeLoop 18s linear infinite;
+}
+
+.animate-marquee-loop:hover {
+  animation-play-state: paused;
+}

@@ -2,8 +2,9 @@ export type EventCategory = 'Technical' | 'Non-Technical' | 'Special';
 
 export type EventId =
   | 'TE01' | 'TE02' | 'TE03' | 'TE04' | 'TE05' | 'TE06'
-  | 'NT01' | 'NT02' | 'NT03' | 'NT04' | 'NT05' | 'NT06'
-  | 'SP01' | 'SP02' | 'SP03' | 'SP04';
+  | 'NT01' | 'NT02' | 'NT03' | 'NT04' | 'NT05' | 'NT06' | 'NT07' | 'NT08' | 'NT09'
+  | 'SP01' | 'SP02' | 'SP03' | 'SP04'
+  | string;
 
 export type ParticipationStatus =
   | 'Registered'
