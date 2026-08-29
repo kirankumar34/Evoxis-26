@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Navigation, Train, Bus, Phone, Compass, MapPin } from 'lucide-react';
+import { Navigation, Train, Bus, Phone, Compass } from 'lucide-react';
 
 export const VenueSection: React.FC = () => {
   const googleMapsUrl = "https://maps.google.com/?q=Sriram+Engineering+College+Perumalpattu";

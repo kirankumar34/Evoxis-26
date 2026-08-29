@@ -4,8 +4,8 @@ import { DepartmentsSection } from '@/components/departments/DepartmentsSection'
 import { EventsSection } from '@/components/events/EventsSection';
 import { ScheduleSection } from '@/components/schedule/ScheduleSection';
 import { VenueSection } from '@/components/venue/VenueSection';
-import { GallerySection } from '@/components/gallery/GallerySection';
-import { SponsorsSection } from '@/components/sponsors/SponsorsSection';
+// import { GallerySection } from '@/components/gallery/GallerySection';
+// import { SponsorsSection } from '@/components/sponsors/SponsorsSection';
 import { FAQSection } from '@/components/faqs/FAQSection';
 import { useRegistrationModal } from '@/context/RegistrationModalContext';
 import {FlowingMenu} from '@/components/ui/FlowingMenu';
@@ -54,10 +54,10 @@ export const HomePage: React.FC = () => {
       <VenueSection />
 
       {/* 6. Photo Highlights Gallery */}
-      <GallerySection />
+      {/* <GallerySection /> */}
 
       {/* 7. Corporate & Tech Partners */}
-      <SponsorsSection />
+      {/* <SponsorsSection /> */}
 
       {/* 8. Frequently Asked Questions */}
       <FAQSection />
