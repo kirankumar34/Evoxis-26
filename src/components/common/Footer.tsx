@@ -65,10 +65,10 @@ export const Footer: React.FC = () => {
             {/* Social Icons */}
             <div className="flex items-center gap-2.5 pt-1">
               {[
-                { href: 'https://instagram.com', Icon: Instagram, label: 'Instagram', hover: '#E2231A' },
-                { href: 'https://linkedin.com', Icon: Linkedin, label: 'LinkedIn', hover: '#0077C8' },
-                { href: 'https://youtube.com', Icon: Youtube, label: 'YouTube', hover: '#E2231A' },
-              ].map(({ href, Icon, label, hover }) => (
+                { href: 'https://instagram.com', Icon: Instagram, label: 'Instagram' },
+                { href: 'https://linkedin.com', Icon: Linkedin, label: 'LinkedIn' },
+                { href: 'https://youtube.com', Icon: Youtube, label: 'YouTube' },
+              ].map(({ href, Icon, label }) => (
                 <a
                   key={label}
                   href={href}
@@ -95,11 +95,11 @@ export const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-2 text-xs text-white/55">
               {[
-                'Comp. Science & Business Systems (CSBS)',
                 'Computer Science & Engineering (CSE)',
                 'AI & Data Science (AI&DS)',
                 'AI & Machine Learning (AIML)',
                 'Department of Cyber Security',
+                'Comp. Science & Business Systems (CSBS)',
               ].map((dept) => (
                 <li key={dept}>
                   <a href="#departments" className="hover:text-[#FFC928] transition-colors">
