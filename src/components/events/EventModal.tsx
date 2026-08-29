@@ -1,19 +1,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EventItem } from '@/types';
-import {
-  X,
-  Clock,
-  MapPin,
-  CheckCircle2,
-  Phone,
-  MessageSquare,
-  Sparkles,
-  AlertCircle,
-  ArrowRight,
-  Compass,
-  Coins,
-} from 'lucide-react';
+import { X, ArrowLeft, Phone, MessageSquare, Sparkles, ShieldCheck } from 'lucide-react';
+import { sound } from '@/utils/audio';
 
 interface EventModalProps {
   event: EventItem | null;
@@ -30,230 +19,368 @@ export const EventModal: React.FC<EventModalProps> = ({
 }) => {
   if (!event || !isOpen) return null;
 
+  const handleRegisterClick = () => {
+    sound.playCannon?.();
+    onClose();
+    onRegister(event);
+  };
+
+  const handleBackClick = () => {
+    sound.playTick?.();
+    onClose();
+  };
+
+  // Format Bounty amount
+  const bountyMatch = event.prizes.first.match(/₹[\d,]+/);
+  const bountyText = bountyMatch ? bountyMatch[0] : '₹5,000';
+
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-        {/* Backdrop */}
+      <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+        {/* Dark Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="fixed inset-0 bg-black/85 backdrop-blur-md"
+          onClick={handleBackClick}
+          className="fixed inset-0 bg-black/85 backdrop-blur-md cursor-pointer"
         />
 
-        {/* Modal Window: Captain's Log Challenge Scroll */}
+        {/* Modal Window: Manga Dossier */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-3xl max-h-[90vh] bg-[#0A1128] border border-[#E6CA65]/35 rounded-3xl shadow-2xl z-10 flex flex-col overflow-hidden text-slate-100 wanted-card-border"
+          exit={{ opacity: 0, scale: 0.95, y: 15 }}
+          transition={{ type: 'spring', damping: 26, stiffness: 320 }}
+          className="relative w-full max-w-3xl max-h-[92vh] bg-[#F7ECD4] text-black border-4 border-black rounded-lg shadow-[10px_10px_0px_0px_#000000] z-10 flex flex-col overflow-hidden select-none"
+          style={{ fontFamily: "'Inter', sans-serif" }}
         >
-          {/* Header Strip */}
-          <div className="relative p-6 sm:p-8 bg-gradient-to-r from-[#0E1736] via-[#0A1128] to-[#070D1E] border-b border-[#E6CA65]/25">
-            {/* Top Close Button */}
+          {/* ── TOP ACTION BAR ────────────────────────────────────────── */}
+          <div className="flex items-center justify-between p-3.5 sm:p-4 bg-[#F2DFC0] border-b-2 border-black flex-shrink-0">
+            {/* Back Button */}
             <button
-              onClick={onClose}
-              className="absolute top-5 right-5 p-2 rounded-xl bg-[#040814]/80 text-slate-400 hover:text-[#E6CA65] hover:bg-[#0E1736] transition-colors border border-[#E6CA65]/30 shadow-sm"
-              aria-label="Close modal"
+              onClick={handleBackClick}
+              className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-black text-[#FFC928] border-2 border-black hover:bg-[#E2231A] hover:text-white transition-all shadow-[2px_2px_0px_0px_#000] cursor-pointer"
+              style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1rem', letterSpacing: '0.08em' }}
             >
-              <X className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
+              <span>BACK TO CREW</span>
             </button>
 
-            {/* Badges */}
-            <div className="flex flex-wrap items-center gap-2 mb-3">
-              <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#E6CA65]/15 text-[#FCE79C] border border-[#E6CA65]/35 flex items-center gap-1">
-                <Compass className="w-3 h-3 text-[#E6CA65]" />
-                {event.category} Challenge
+            {/* File ID Badge & Close */}
+            <div className="flex items-center gap-2">
+              <span
+                style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.72rem' }}
+                className="hidden sm:inline-block px-3 py-1 bg-[#003B73] text-white font-bold rounded-sm border border-black uppercase"
+              >
+                FILE_NO.{event.eventId}_{event.sheetSlug.toUpperCase()}
               </span>
-              <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#040814] text-slate-300 border border-[#E6CA65]/20">
-                {event.teamSize.description}
-              </span>
-            </div>
 
-            {/* Title & Tagline */}
-            <h2 className="font-voyage font-black text-2xl sm:text-4xl text-white tracking-tight">
-              {event.title}
-            </h2>
-            <p className="mt-1 text-sm sm:text-base font-mono font-medium text-[#E6CA65]">
-              "{event.tagline}"
-            </p>
-
-            {/* Quick Logistics Strip */}
-            <div className="mt-4 flex flex-wrap items-center gap-4 text-xs sm:text-sm text-slate-300">
-              <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#040814]/80 border border-[#E6CA65]/20">
-                <Clock className="w-4 h-4 text-[#00F2FE]" />
-                <span>{event.schedule.timeSlot}</span>
-              </div>
-              <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#040814]/80 border border-[#E6CA65]/20">
-                <MapPin className="w-4 h-4 text-[#E11D48]" />
-                <span>{event.schedule.venue}</span>
-              </div>
+              <button
+                onClick={handleBackClick}
+                className="p-1.5 rounded-md bg-black/10 hover:bg-black/20 text-black border border-black transition-colors cursor-pointer"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
           </div>
 
-          {/* Scrollable Content Body */}
-          <div className="p-6 sm:p-8 space-y-8 overflow-y-auto max-h-[calc(90vh-180px)]">
-            {/* Overview */}
+          {/* ── SCROLLABLE DOSSIER BODY ───────────────────────────────── */}
+          <div className="p-4 sm:p-7 space-y-6 overflow-y-auto max-h-[calc(92vh-140px)] bg-[#F7ECD4]">
+            {/* 1. Manga Top Hero Red Box Banner */}
+            <div className="relative rounded-sm bg-[#E2231A] border-4 border-black p-5 sm:p-6 shadow-[5px_5px_0px_0px_#FFC928] overflow-hidden text-white">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span
+                    style={{
+                      fontFamily: "'Anton', sans-serif",
+                      fontSize: 'clamp(1.8rem, 4vw, 2.6rem)',
+                      lineHeight: 1,
+                      letterSpacing: '0.04em',
+                    }}
+                    className="uppercase font-black"
+                  >
+                    {event.category === 'Technical' ? '大航海開発' : '海賊競技'}
+                  </span>
+                  <span
+                    style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: '1.1rem' }}
+                    className="text-[#FFC928] font-bold"
+                  >
+                    // {event.category.toUpperCase()}
+                  </span>
+                </div>
+
+                <span
+                  style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.85rem' }}
+                  className="px-3.5 py-1 rounded-sm bg-white text-black font-extrabold border-2 border-black uppercase"
+                >
+                  // PRIZE: {bountyText}
+                </span>
+              </div>
+            </div>
+
+            {/* 2. Subtitle & Large Title Header */}
             <div>
-              <h4 className="font-voyage font-bold text-base text-[#FCE79C] uppercase tracking-wider mb-2 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#E6CA65]" />
-                <span>Voyage Mission Brief</span>
-              </h4>
-              <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-sans">
-                {event.fullDescription}
+              <p
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: '0.75rem',
+                  letterSpacing: '0.15em',
+                }}
+                className="text-[#9A1410] font-bold uppercase mb-1"
+              >
+                {event.category.toUpperCase()} // GRAND LINE EXPEDITION
+              </p>
+
+              <h1
+                style={{
+                  fontFamily: "'Anton', sans-serif",
+                  fontSize: 'clamp(2rem, 5vw, 2.8rem)',
+                  letterSpacing: '0.04em',
+                  lineHeight: 1.05,
+                }}
+                className="text-black uppercase font-black"
+              >
+                {event.title}
+              </h1>
+
+              <p
+                style={{
+                  fontFamily: "'Noto Sans JP', sans-serif",
+                  fontSize: '1rem',
+                  color: '#9A1410',
+                  fontWeight: 700,
+                }}
+                className="mt-1"
+              >
+                {event.tagline}
               </p>
             </div>
 
-            {/* Rounds Breakdown */}
-            {event.rounds && event.rounds.length > 0 && (
-              <div>
-                <h4 className="font-voyage font-bold text-base text-[#FCE79C] uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-[#00F2FE]" />
-                  <span>Trial Rounds</span>
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {event.rounds.map((round) => (
-                    <div
-                      key={round.roundNumber}
-                      className="p-4 rounded-2xl bg-[#040814]/80 border border-[#E6CA65]/20 flex flex-col justify-between shadow-md"
-                    >
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="px-2.5 py-0.5 rounded-md text-[11px] font-mono font-bold bg-[#E6CA65]/15 text-[#FCE79C] border border-[#E6CA65]/35">
-                            ROUND {round.roundNumber}
+            {/* 3. DATA FILE BIO // STATS BOX */}
+            <div className="rounded-sm bg-white border-2 border-black p-4 sm:p-6 shadow-[5px_5px_0px_0px_#000] space-y-5">
+              {/* Header Tab */}
+              <div className="flex items-center gap-2 pb-3 border-b-2 border-black/15">
+                <span
+                  style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.72rem' }}
+                  className="px-2.5 py-0.5 bg-[#FFC928] text-black font-extrabold border border-black uppercase shadow-[1px_1px_0px_0px_#000]"
+                >
+                  DATA FILE
+                </span>
+                <span
+                  style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem' }}
+                  className="text-black/60 font-bold uppercase tracking-wider"
+                >
+                  BIO // STATS & SPECS
+                </span>
+              </div>
+
+              {/* Description */}
+              <p className="text-xs sm:text-sm text-black/85 leading-relaxed font-sans font-medium">
+                {event.fullDescription}
+              </p>
+
+              {/* Specs Grid */}
+              <div
+                style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.8rem' }}
+                className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-black/15"
+              >
+                <div className="flex items-center justify-between p-2 rounded-sm bg-slate-50 border border-black/15">
+                  <span className="font-bold text-black/60 uppercase">TIME:</span>
+                  <span className="font-bold text-black">{event.schedule.timeSlot}</span>
+                </div>
+
+                <div className="flex items-center justify-between p-2 rounded-sm bg-slate-50 border border-black/15">
+                  <span className="font-bold text-black/60 uppercase">VENUE:</span>
+                  <span className="font-bold text-black text-right">{event.schedule.venue}</span>
+                </div>
+
+                <div className="flex items-center justify-between p-2 rounded-sm bg-slate-50 border border-black/15">
+                  <span className="font-bold text-black/60 uppercase">CREW SIZE:</span>
+                  <span className="font-bold text-black">{event.teamSize.description}</span>
+                </div>
+
+                <div className="flex items-center justify-between p-2 rounded-sm bg-[#FFC928]/20 border border-black/30">
+                  <span className="font-extrabold text-[#9A1410] uppercase">1ST PRIZE:</span>
+                  <span className="font-black text-black">{event.prizes.first}</span>
+                </div>
+              </div>
+
+              {/* 4. Trial Rounds Breakdown */}
+              {event.rounds && event.rounds.length > 0 && (
+                <div className="pt-4 border-t-2 border-black/15">
+                  <h4
+                    style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.8rem' }}
+                    className="font-extrabold text-[#9A1410] uppercase tracking-wider mb-3 flex items-center gap-1.5"
+                  >
+                    <span>⚔️</span>
+                    <span>TRIAL ROUNDS & TIMELINES</span>
+                  </h4>
+
+                  <div className="space-y-3">
+                    {event.rounds.map((rnd) => (
+                      <div
+                        key={rnd.roundNumber}
+                        className="p-3.5 rounded-sm bg-amber-50/70 border border-black/30 shadow-sm"
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span
+                            style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.72rem' }}
+                            className="px-2 py-0.5 rounded-xs bg-[#E2231A] text-white font-bold"
+                          >
+                            ROUND {rnd.roundNumber}: {rnd.title}
                           </span>
-                          {round.duration && (
-                            <span className="text-[11px] font-mono text-slate-400">
-                              ⏱ {round.duration}
+                          {rnd.duration && (
+                            <span
+                              style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.7rem' }}
+                              className="font-bold text-black/70"
+                            >
+                              ⏱ {rnd.duration}
                             </span>
                           )}
                         </div>
-                        <h5 className="font-voyage font-bold text-sm text-white mb-1.5">
-                          {round.title}
-                        </h5>
-                        <p className="text-xs text-slate-300/80 leading-relaxed font-sans">
-                          {round.description}
+                        <p className="text-xs text-black/80 font-sans mt-1.5 leading-relaxed font-medium">
+                          {rnd.description}
                         </p>
                       </div>
-                    </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 5. Rules & Protocols */}
+              <div className="pt-4 border-t-2 border-black/15">
+                <h4
+                  style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.8rem' }}
+                  className="font-extrabold text-[#9A1410] uppercase tracking-wider mb-3 flex items-center gap-1.5"
+                >
+                  <ShieldCheck className="w-4 h-4 text-[#E2231A]" />
+                  <span>VOYAGE RULES & PROTOCOLS</span>
+                </h4>
+
+                <ul className="space-y-2 text-xs text-black/90 font-medium">
+                  {event.rules.map((rule, idx) => (
+                    <li key={idx} className="flex items-start gap-2.5">
+                      <span className="w-2 h-2 rounded-full bg-[#E2231A] mt-1 flex-shrink-0" />
+                      <span>{rule}</span>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </div>
-            )}
 
-            {/* Rules & Guidelines */}
-            <div>
-              <h4 className="font-voyage font-bold text-base text-[#FCE79C] uppercase tracking-wider mb-3 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-[#E6CA65]" />
-                <span>Captain's Code & Regulations</span>
-              </h4>
-              <ul className="space-y-2.5">
-                {event.rules.map((rule, idx) => (
-                  <li key={idx} className="flex items-start gap-3 text-xs sm:text-sm text-slate-300">
-                    <CheckCircle2 className="w-4 h-4 text-[#E6CA65] shrink-0 mt-0.5" />
-                    <span>{rule}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Prizes & Recognition */}
-            <div>
-              <h4 className="font-voyage font-bold text-base text-[#FCE79C] uppercase tracking-wider mb-3 flex items-center gap-2">
-                <Coins className="w-4 h-4 text-[#E6CA65]" />
-                <span>Treasure Bounties & Rewards</span>
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="p-4 rounded-2xl bg-gradient-to-r from-[#E6CA65]/15 to-[#B8860B]/10 border border-[#E6CA65]/40 shadow-sm">
-                  <span className="text-xs font-mono font-bold text-[#FCE79C] uppercase">🥇 1st Place Bounty</span>
-                  <p className="text-sm font-bold text-white mt-1">{event.prizes.first}</p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-gradient-to-r from-[#0E1736] to-[#040814] border border-[#E6CA65]/25">
-                  <span className="text-xs font-mono font-bold text-slate-300 uppercase">🥈 2nd Place Bounty</span>
-                  <p className="text-sm font-bold text-white mt-1">{event.prizes.second}</p>
-                </div>
-
-                {event.prizes.third && (
-                  <div className="p-4 rounded-2xl bg-[#040814]/80 border border-[#E6CA65]/20 col-span-1 sm:col-span-2">
-                    <span className="text-xs font-mono font-bold text-slate-400 uppercase">🥉 3rd Place Bounty</span>
-                    <p className="text-sm font-bold text-slate-200 mt-1">{event.prizes.third}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Coordinators Contact Cards */}
-            <div>
-              <h4 className="font-voyage font-bold text-base text-[#FCE79C] uppercase tracking-wider mb-3 flex items-center gap-2">
-                <Phone className="w-4 h-4 text-[#00F2FE]" />
-                <span>Voyage Quartermasters (Direct Contact)</span>
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {event.coordinators.map((coord, idx) => (
-                  <div
-                    key={idx}
-                    className="p-4 rounded-2xl bg-[#040814]/90 border border-[#E6CA65]/20 flex flex-col justify-between"
+              {/* 6. Judging Criteria */}
+              {event.judgingCriteria && event.judgingCriteria.length > 0 && (
+                <div className="pt-4 border-t-2 border-black/15">
+                  <h4
+                    style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.8rem' }}
+                    className="font-extrabold text-[#9A1410] uppercase tracking-wider mb-2 flex items-center gap-1.5"
                   >
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-mono text-[#E6CA65]">{coord.role}</span>
-                        <span className="text-[10px] font-mono text-slate-400">{coord.department}</span>
-                      </div>
-                      <h5 className="font-voyage font-bold text-sm text-white">{coord.name}</h5>
-                    </div>
+                    <span>⚖️</span>
+                    <span>JUDGING CRITERIA</span>
+                  </h4>
 
-                    <div className="mt-3 flex items-center gap-2 pt-3 border-t border-[#E6CA65]/15">
-                      <a
-                        href={`tel:${coord.phone.replace(/\s+/g, '')}`}
-                        className="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold bg-[#0E1736] hover:bg-[#132247] text-[#FCE79C] border border-[#E6CA65]/30 flex items-center justify-center gap-1.5 transition-colors"
+                  <div className="flex flex-wrap gap-2">
+                    {event.judgingCriteria.map((item, idx) => (
+                      <span
+                        key={idx}
+                        style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.72rem' }}
+                        className="px-2.5 py-1 rounded-sm bg-black/5 text-black border border-black/25 font-bold"
                       >
-                        <Phone className="w-3.5 h-3.5 text-[#E6CA65]" />
-                        <span>Call</span>
-                      </a>
-
-                      {coord.whatsapp && (
-                        <a
-                          href={`https://wa.me/${coord.whatsapp}?text=Hi%20${encodeURIComponent(coord.name)},%20I%20have%20a%20query%20about%20${encodeURIComponent(event.title)}%20at%20EvoXis26.`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 flex items-center justify-center gap-1.5 transition-colors"
-                        >
-                          <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
-                          <span>WhatsApp</span>
-                        </a>
-                      )}
-                    </div>
+                        ✓ {item}
+                      </span>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
+
+              {/* 7. Coordinators Directory */}
+              {event.coordinators && event.coordinators.length > 0 && (
+                <div className="pt-4 border-t-2 border-black/15">
+                  <h4
+                    style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.8rem' }}
+                    className="font-extrabold text-[#9A1410] uppercase tracking-wider mb-3 flex items-center gap-1.5"
+                  >
+                    <span>📞</span>
+                    <span>ISLAND FLEET COORDINATORS</span>
+                  </h4>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {event.coordinators.map((c, i) => (
+                      <div
+                        key={i}
+                        className="p-3 rounded-sm bg-[#FDFBF7] border border-black/20 flex flex-col justify-between"
+                      >
+                        <div>
+                          <div className="flex items-center justify-between text-[11px] font-mono text-black/60">
+                            <span className="font-bold text-[#9A1410] uppercase">{c.role}</span>
+                            <span>{c.department}</span>
+                          </div>
+                          <p className="font-bold text-sm text-black mt-0.5">{c.name}</p>
+                        </div>
+
+                        <div className="mt-2.5 pt-2 border-t border-black/10 flex items-center gap-2">
+                          <a
+                            href={`tel:${c.phone.replace(/\s+/g, '')}`}
+                            className="flex-1 py-1 px-2.5 rounded-sm bg-black text-[#FFC928] hover:bg-[#E2231A] hover:text-white transition-colors text-[11px] font-mono font-bold flex items-center justify-center gap-1"
+                          >
+                            <Phone className="w-3 h-3" />
+                            <span>{c.phone}</span>
+                          </a>
+
+                          {c.whatsapp && (
+                            <a
+                              href={`https://wa.me/${c.whatsapp}?text=Hi%20${encodeURIComponent(c.name)},%20I%20have%20a%20query%20about%20${encodeURIComponent(event.title)}%20at%20EvoXis26.`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-1 px-2 rounded-sm bg-emerald-600 text-white hover:bg-emerald-700 transition-colors text-[11px] font-mono font-bold flex items-center justify-center"
+                              title="Chat on WhatsApp"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
 
-          {/* Sticky Bottom Actions */}
-          <div className="p-4 sm:p-6 bg-[#040814] border-t border-[#E6CA65]/25 flex items-center justify-between gap-4">
-            <button
-              onClick={onClose}
-              className="px-5 py-3 rounded-xl font-voyage font-medium text-sm text-slate-300 bg-[#0A1128] hover:bg-[#0E1736] border border-[#E6CA65]/30 transition-colors"
-            >
-              Close
-            </button>
+            {/* 8. Bottom Quote & Primary Register Action */}
+            <div className="rounded-sm bg-[#E2231A] border-4 border-black p-5 text-center text-white shadow-[6px_6px_0px_0px_#000]">
+              <span
+                style={{
+                  fontFamily: "'Anton', sans-serif",
+                  fontSize: 'clamp(1.2rem, 3vw, 1.8rem)',
+                  letterSpacing: '0.04em',
+                }}
+                className="block uppercase font-black mb-1"
+              >
+                "I'M GONNA BE KING OF THE PIRATES!"
+              </span>
+              <p
+                style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.72rem' }}
+                className="text-[#FFC928] font-bold uppercase mb-4 tracking-widest"
+              >
+                — {event.title.toUpperCase()} // STRAW HAT FLEET
+              </p>
 
-            <button
-              onClick={() => {
-                onClose();
-                onRegister(event);
-              }}
-              className="cyber-button px-8 py-3 rounded-xl font-voyage font-black text-sm text-[#040814] bg-gradient-to-r from-[#E6CA65] via-[#FCE79C] to-[#00F2FE] hover:from-[#FFF5C0] hover:to-[#38BDF8] shadow-glow-gold flex items-center gap-2 transition-all hover:scale-105 border border-[#FFF5C0]/60"
-            >
-              <span>Register for this Challenge</span>
-              <ArrowRight className="w-4 h-4 text-[#040814]" />
-            </button>
+              <button
+                type="button"
+                onClick={handleRegisterClick}
+                className="w-full py-3.5 px-6 rounded-sm bg-[#FFC928] text-black border-2 border-black font-black uppercase text-base tracking-widest hover:bg-white active:scale-[0.98] transition-all shadow-[4px_4px_0px_0px_#000] cursor-pointer flex items-center justify-center gap-2"
+                style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.25rem' }}
+              >
+                <Sparkles className="w-5 h-5 text-black" />
+                <span>BOARD THIS ISLAND (REGISTER) →</span>
+              </button>
+            </div>
           </div>
         </motion.div>
       </div>
     </AnimatePresence>
   );
 };
+
+export default EventModal;

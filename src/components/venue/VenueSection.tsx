@@ -1,143 +1,212 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Navigation, Train, Bus, Phone, Compass } from 'lucide-react';
+import { Navigation, Train, Bus, Phone, Compass, MapPin } from 'lucide-react';
 
 export const VenueSection: React.FC = () => {
   const googleMapsUrl = "https://maps.google.com/?q=Sriram+Engineering+College+Perumalpattu";
 
   return (
-    <section id="venue" className="relative py-24 bg-gradient-to-b from-[#0A1128] via-[#040814] to-[#0A1128] border-t border-[#E6CA65]/20">
-      {/* Background Ambience */}
-      <div className="absolute inset-0 bg-voyage-chart opacity-20 pointer-events-none" />
-      <div className="absolute top-1/2 left-1/4 w-80 h-80 bg-[#00F2FE]/5 rounded-full blur-3xl pointer-events-none" />
+    <section
+      id="venue"
+      className="relative py-16 sm:py-24 border-t-4 border-black"
+      style={{ background: '#F2DFC0', fontFamily: "'Inter', sans-serif" }}
+    >
+      {/* Parchment dots */}
+      <div className="absolute inset-0 opacity-[0.04] pointer-events-none"
+        style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'4\' height=\'4\' viewBox=\'0 0 4 4\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M1 3h1v1H1V3zm2-2h1v1H3V1z\' fill=\'%23000000\' fill-rule=\'evenodd\'/%3E%3C/svg%3E")' }}
+      />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-[#E6CA65]/10 border border-[#E6CA65]/35 text-[#FCE79C] text-xs font-mono font-bold uppercase tracking-wider mb-4 shadow-sm">
-            <Compass className="w-3.5 h-3.5 text-[#E6CA65] animate-compass" />
-            <span>Voyage Coordinates & Port of Call</span>
+
+        {/* ── Header ─────────────────────────────────────────────────── */}
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-16">
+          <div
+            className="inline-flex items-center gap-2 px-3 py-1 mb-4 bg-black text-[#FFC928] border-2 border-black uppercase tracking-widest font-bold text-[11px] shadow-[3px_3px_0px_0px_#E2231A]"
+            style={{ fontFamily: "'JetBrains Mono', monospace" }}
+          >
+            <Compass className="w-3.5 h-3.5" />
+            <span>Voyage Coordinates &amp; Port of Call</span>
           </div>
-          <h2 className="font-voyage font-black text-3xl sm:text-4xl md:text-5xl text-white tracking-tight">
-            How to Reach <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FCE79C] via-[#E6CA65] to-[#00F2FE]">Sriram Flagship Campus</span>
+
+          <h2
+            className="text-3xl sm:text-5xl md:text-6xl text-black uppercase leading-none tracking-tight mb-3"
+            style={{ fontFamily: "'Anton', sans-serif" }}
+          >
+            HOW TO REACH <span style={{ color: '#E2231A' }}>SRIRAM CAMPUS</span>
           </h2>
-          <p className="mt-4 text-slate-300 text-sm sm:text-base leading-relaxed">
-            Situated in Perumalpattu on the Chennai-Tiruvallur route with direct suburban rail connectivity and dedicated fleet shuttle buses.
+
+          <p
+            className="text-xs sm:text-sm text-black/70 leading-relaxed max-w-xl mx-auto"
+            style={{ fontFamily: "'JetBrains Mono', monospace" }}
+          >
+            Situated in Perumalpattu on the Chennai–Tiruvallur route with direct suburban rail
+            connectivity and dedicated fleet shuttle buses.
           </p>
         </div>
 
-        {/* 2-Column Grid: Map + Transit Info */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          {/* Map Embed Column */}
+        {/* ── 2-Col Grid ─────────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-stretch">
+
+          {/* Map Column */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="lg:col-span-7 rounded-3xl bg-[#0A1128]/90 border border-[#E6CA65]/30 p-2 sm:p-3 overflow-hidden shadow-2xl flex flex-col justify-between wanted-card-border"
+            className="lg:col-span-7 bg-white border-2 border-black p-2 sm:p-3 flex flex-col"
+            style={{ boxShadow: '6px 6px 0px #000' }}
           >
-            <div className="relative w-full h-72 sm:h-96 rounded-2xl overflow-hidden border border-[#E6CA65]/20">
+            <div className="relative w-full h-64 sm:h-96 overflow-hidden border-2 border-black">
               <iframe
                 title="Sriram Engineering College Location"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3885.5925429792014!2d79.9723947!3d13.1258169!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1248169!3m3!1m2!1s0x3a528659160bb47b%3A0x6b777a83d4204c32!2sSriram%20Engineering%20College!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
-                className="w-full h-full border-0 grayscale invert contrast-125 opacity-85 hover:opacity-100 hover:grayscale-0 hover:invert-0 transition-all duration-500"
+                className="w-full h-full border-0"
                 allowFullScreen={true}
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
               />
-
-              <div className="absolute bottom-3 left-3 right-3 p-3 rounded-xl bg-[#040814]/95 border border-[#E6CA65]/35 backdrop-blur-md flex items-center justify-between shadow-lg">
+              {/* Overlay card */}
+              <div className="absolute bottom-3 left-3 right-3 p-3 bg-white border-2 border-black flex items-center justify-between"
+                style={{ boxShadow: '3px 3px 0px #000' }}>
                 <div>
-                  <p className="text-xs font-bold text-white font-voyage">Sriram Engineering College</p>
-                  <p className="text-[11px] text-slate-400 truncate max-w-[220px] sm:max-w-md">
-                    Perumalpattu, Tiruvallur - 602024
+                  <p
+                    className="text-xs font-black text-black uppercase"
+                    style={{ fontFamily: "'Anton', sans-serif", letterSpacing: '0.04em' }}
+                  >
+                    Sriram Engineering College
+                  </p>
+                  <p className="text-[11px] text-black/60 font-mono truncate max-w-[200px] sm:max-w-sm">
+                    Perumalpattu, Tiruvallur — 602024
                   </p>
                 </div>
                 <a
                   href={googleMapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3.5 py-1.5 rounded-lg text-xs font-bold font-voyage bg-gradient-to-r from-[#E6CA65] to-[#FCE79C] hover:from-[#FFF5C0] text-[#040814] flex items-center gap-1.5 transition-all shrink-0 shadow-glow-gold/40 border border-[#FFF5C0]/60"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#E2231A] text-white border-2 border-black text-xs font-black uppercase hover:bg-black transition-colors"
+                  style={{ fontFamily: "'JetBrains Mono', monospace", boxShadow: '2px 2px 0px #000' }}
                 >
-                  <Navigation className="w-3.5 h-3.5" />
-                  <span>Navigate</span>
+                  <Navigation className="w-3 h-3" />
+                  Navigate
                 </a>
               </div>
             </div>
 
-            {/* Quick GPS Coordinates */}
-            <div className="mt-3 px-3 py-2 flex items-center justify-between text-xs font-mono text-slate-300">
-              <span className="flex items-center gap-1 text-[#E6CA65]">
-                <Compass className="w-3.5 h-3.5" />
+            {/* GPS line */}
+            <div
+              className="mt-3 px-2 py-1.5 flex items-center justify-between text-[11px] font-mono text-black/70 border-t-2 border-black/10"
+              style={{ fontFamily: "'JetBrains Mono', monospace" }}
+            >
+              <span className="flex items-center gap-1.5 text-[#0077C8] font-bold">
+                <Compass className="w-3 h-3" />
                 GPS: 13.1258° N, 79.9724° E
               </span>
-              <span className="text-[#00F2FE]">Anna University Code: 1118</span>
+              <span className="font-bold text-[#9A1410]">Anna Univ. Code: 1118</span>
             </div>
           </motion.div>
 
-          {/* Transit Options Column */}
+          {/* Transit Column */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="lg:col-span-5 flex flex-col justify-between gap-4"
+            className="lg:col-span-5 flex flex-col gap-4 sm:gap-5"
           >
-            {/* By Suburban Train */}
-            <div className="p-5 rounded-2xl bg-gradient-to-b from-[#0F1A36]/90 to-[#0A1128] border border-[#E6CA65]/25 hover:border-[#E6CA65]/50 transition-colors wanted-card-border shadow-lg">
+
+            {/* Suburban Train card */}
+            <div
+              className="bg-white border-2 border-black p-4 sm:p-5 hover:-translate-y-0.5 transition-transform duration-150"
+              style={{ boxShadow: '4px 4px 0px #003B73' }}
+            >
               <div className="flex items-center gap-3 mb-2.5">
-                <div className="w-10 h-10 rounded-xl bg-[#00F2FE]/15 text-[#00F2FE] border border-[#00F2FE]/30 flex items-center justify-center">
-                  <Train className="w-5 h-5" />
+                <div className="w-10 h-10 border-2 border-black bg-[#003B73] flex items-center justify-center"
+                  style={{ boxShadow: '2px 2px 0px #000' }}>
+                  <Train className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-voyage font-bold text-base text-white">By Suburban Rail Line</h3>
-                  <p className="text-xs font-mono text-[#00F2FE]">Chennai Central - Arakkonam EMU Line</p>
+                  <h3
+                    className="text-base text-black uppercase tracking-tight"
+                    style={{ fontFamily: "'Anton', sans-serif" }}
+                  >
+                    By Suburban Rail Line
+                  </h3>
+                  <p
+                    className="text-[11px] text-[#003B73] font-bold"
+                    style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                  >
+                    Chennai Central — Arakkonam EMU Line
+                  </p>
                 </div>
               </div>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
-                Alight at <strong className="text-[#FCE79C]">Veppampattu Railway Station</strong> (Frequent EMU trains from Chennai Central, Moore Market Complex, and Avadi every 15 mins). Campus is just 1.5 km from the station.
+              <p className="text-xs sm:text-sm text-black/75 leading-relaxed">
+                Alight at <strong className="text-[#E2231A]">Veppampattu Railway Station</strong> (Frequent
+                EMU trains from Chennai Central, Moore Market Complex, and Avadi every 15 mins).
+                Campus is just 1.5 km from the station.
               </p>
             </div>
 
-            {/* Free Campus Shuttle */}
-            <div className="p-5 rounded-2xl bg-gradient-to-b from-[#0F1A36]/90 to-[#0A1128] border border-[#E6CA65]/25 hover:border-[#E6CA65]/50 transition-colors wanted-card-border shadow-lg">
+            {/* Shuttle Bus card */}
+            <div
+              className="bg-white border-2 border-black p-4 sm:p-5 hover:-translate-y-0.5 transition-transform duration-150"
+              style={{ boxShadow: '4px 4px 0px #FFC928' }}
+            >
               <div className="flex items-center gap-3 mb-2.5">
-                <div className="w-10 h-10 rounded-xl bg-[#E6CA65]/15 text-[#E6CA65] border border-[#E6CA65]/35 flex items-center justify-center">
-                  <Bus className="w-5 h-5" />
+                <div className="w-10 h-10 border-2 border-black bg-[#FFC928] flex items-center justify-center"
+                  style={{ boxShadow: '2px 2px 0px #000' }}>
+                  <Bus className="w-5 h-5 text-black" />
                 </div>
                 <div>
-                  <h3 className="font-voyage font-bold text-base text-white">Free Fleet Shuttle Buses</h3>
-                  <p className="text-xs font-mono text-[#E6CA65]">From 08:00 AM to 10:00 AM</p>
+                  <h3
+                    className="text-base text-black uppercase tracking-tight"
+                    style={{ fontFamily: "'Anton', sans-serif" }}
+                  >
+                    Free Fleet Shuttle Buses
+                  </h3>
+                  <p
+                    className="text-[11px] text-[#9A1410] font-bold"
+                    style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                  >
+                    From 08:00 AM to 10:00 AM
+                  </p>
                 </div>
               </div>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
-                Free college fleet shuttles will run continuously between Veppampattu Railway Station and the symposium registration gates to welcome all crew & delegates.
+              <p className="text-xs sm:text-sm text-black/75 leading-relaxed">
+                Free college fleet shuttles will run continuously between Veppampattu Railway Station
+                and the symposium registration gates to welcome all crew &amp; delegates.
               </p>
             </div>
 
-            {/* Transport & Helpdesk Contacts */}
-            <div className="p-5 rounded-2xl bg-[#0A1128]/90 border border-[#E6CA65]/20">
-              <h4 className="text-xs font-mono font-bold text-[#FCE79C] uppercase mb-3 flex items-center gap-2">
-                <Phone className="w-3.5 h-3.5 text-[#E6CA65]" />
-                <span>Symposium Port & Transit Helpline</span>
+            {/* Helpline card */}
+            <div
+              className="bg-[#E2231A] border-2 border-black p-4 sm:p-5"
+              style={{ boxShadow: '4px 4px 0px #000' }}
+            >
+              <h4
+                className="text-[11px] font-bold uppercase text-white mb-3 flex items-center gap-2"
+                style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.12em' }}
+              >
+                <Phone className="w-3.5 h-3.5 text-[#FFC928]" />
+                Symposium Port &amp; Transit Helpline
               </h4>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <a
                   href="tel:+919840123456"
-                  className="p-2.5 rounded-xl bg-[#0E1736] hover:bg-[#132247] text-slate-200 flex items-center justify-between transition-colors border border-[#E6CA65]/20"
+                  className="p-2.5 bg-black text-[#FFC928] border border-black/30 flex items-center justify-between font-mono font-bold hover:bg-[#111] transition-colors"
                 >
-                  <span className="font-medium">Transit Lead</span>
-                  <span className="font-mono text-[#E6CA65]">Call</span>
+                  <span>Transit Lead</span>
+                  <span className="text-[#FFC928]">Call →</span>
                 </a>
                 <a
                   href="tel:+919840955443"
-                  className="p-2.5 rounded-xl bg-[#0E1736] hover:bg-[#132247] text-slate-200 flex items-center justify-between transition-colors border border-[#E6CA65]/20"
+                  className="p-2.5 bg-black text-white border border-black/30 flex items-center justify-between font-mono font-bold hover:bg-[#111] transition-colors"
                 >
-                  <span className="font-medium">Command Desk</span>
-                  <span className="font-mono text-[#00F2FE]">Call</span>
+                  <span>Command Desk</span>
+                  <span className="text-[#38BDF8]">Call →</span>
                 </a>
               </div>
             </div>
+
           </motion.div>
         </div>
       </div>

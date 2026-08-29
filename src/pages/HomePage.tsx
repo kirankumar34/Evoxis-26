@@ -8,6 +8,7 @@ import { GallerySection } from '@/components/gallery/GallerySection';
 import { SponsorsSection } from '@/components/sponsors/SponsorsSection';
 import { FAQSection } from '@/components/faqs/FAQSection';
 import { useRegistrationModal } from '@/context/RegistrationModalContext';
+import {FlowingMenu} from '@/components/ui/FlowingMenu';
 
 export const HomePage: React.FC = () => {
   const { openRegisterModal } = useRegistrationModal();
@@ -23,6 +24,23 @@ export const HomePage: React.FC = () => {
 
       {/* 2. Co-Hosting Departments Showcase */}
       <DepartmentsSection />
+
+      {/* Flowing Menu Component for Extra Decoration */}
+      <FlowingMenu
+        items={[
+          {
+            link: "#events",
+            text: "15 GRAND CHALLENGES",
+            image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=600&h=400&fit=crop&auto=format"
+          }
+        ]}
+        speed={15}
+        textColor="#FFC928"
+        bgColor="#070D1E"
+        marqueeBgColor="#E2231A"
+        marqueeTextColor="#FFFFFF"
+        borderColor="#ffffff25"
+      />
 
       {/* 3. Filterable 16 Events Catalog */}
       <EventsSection

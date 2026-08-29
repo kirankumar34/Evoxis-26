@@ -1,206 +1,215 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { EventItem } from '@/types';
-import {
-  FileText,
-  TrendingUp,
-  Zap,
-  Layout,
-  Cpu,
-  ShieldAlert,
-  Music,
-  Gamepad2,
-  Trophy,
-  Video,
-  Flame,
-  Sparkles,
-  Activity,
-  Award,
-  Crown,
-  Gamepad,
-  Users,
-  Clock,
-  MapPin,
-  ArrowUpRight,
-  Coins,
-} from 'lucide-react';
-
-const ICON_MAP: Record<string, React.ElementType> = {
-  FileText,
-  TrendingUp,
-  Zap,
-  Layout,
-  Cpu,
-  ShieldAlert,
-  Music,
-  Gamepad2,
-  Trophy,
-  Video,
-  Flame,
-  Sparkles,
-  Activity,
-  Award,
-  Crown,
-  Gamepad,
-};
+import PosterBg from '@/assets/Guideline_Section_Background.png';
+import { sound } from '@/utils/audio';
 
 interface EventCardProps {
   event: EventItem;
   onSelectEvent: (event: EventItem) => void;
-  onRegisterEvent: (event: EventItem) => void;
+  onRegisterEvent?: (event: EventItem) => void;
 }
 
 export const EventCard: React.FC<EventCardProps> = ({
   event,
   onSelectEvent,
-  onRegisterEvent,
 }) => {
-  const IconComp = ICON_MAP[event.iconName] || Trophy;
-
-  const getCategoryStyles = () => {
-    switch (event.category) {
-      case 'Technical':
-        return {
-          badge: 'bg-[#00F2FE]/10 text-[#38BDF8] border-[#00F2FE]/40',
-          categoryDisplay: 'Grand Voyage Challenge',
-          accent: '#00F2FE',
-          buttonGlow: 'hover:border-[#00F2FE]/50 hover:shadow-glow-cyan',
-        };
-      case 'Non-Technical':
-        return {
-          badge: 'bg-[#E11D48]/15 text-[#FDA4AF] border-[#E11D48]/40',
-          categoryDisplay: 'Crew Challenge',
-          accent: '#E11D48',
-          buttonGlow: 'hover:border-[#E11D48]/50 hover:shadow-glow-crimson',
-        };
-      case 'Special':
-        return {
-          badge: 'bg-[#E6CA65]/15 text-[#FCE79C] border-[#E6CA65]/40',
-          categoryDisplay: 'Grand Arena Event',
-          accent: '#E6CA65',
-          buttonGlow: 'hover:border-[#E6CA65]/50 hover:shadow-glow-gold',
-        };
-      default:
-        return {
-          badge: 'bg-slate-500/10 text-slate-300 border-slate-500/30',
-          categoryDisplay: event.category,
-          accent: '#38BDF8',
-          buttonGlow: '',
-        };
-    }
+  const handleClick = () => {
+    sound.playTick?.();
+    onSelectEvent(event);
   };
 
-  const style = getCategoryStyles();
+  // Format Bounty amount cleanly
+  const bountyMatch = event.prizes.first.match(/₹[\d,]+/);
+  const bountyText = bountyMatch ? bountyMatch[0] : '₹5,000';
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      whileHover={{ y: -6 }}
-      transition={{ duration: 0.3 }}
-      className="group relative rounded-2xl bg-gradient-to-b from-[#0F1A36]/95 via-[#0A1128]/95 to-[#070D1E] border border-[#E6CA65]/25 p-6 flex flex-col justify-between hover:border-[#E6CA65]/60 transition-all duration-300 shadow-xl overflow-hidden wanted-card-border"
+      whileHover={{ y: -6, scale: 1.01 }}
+      transition={{ duration: 0.25 }}
+      onClick={handleClick}
+      className="group relative rounded-lg  p-5 sm:p-6 flex flex-col justify-between cursor-pointer transition-all duration-300  overflow-hidden select-none "
+      style={{
+        backgroundImage: `url(${PosterBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
     >
-      {/* Background Subtle Gradient Corner & Nautical Map Mesh */}
-      <div
-        className="absolute top-0 right-0 w-36 h-36 rounded-full blur-3xl opacity-10 group-hover:opacity-30 transition-opacity pointer-events-none"
-        style={{ backgroundColor: style.accent }}
-      />
-      <div className="absolute inset-0 bg-voyage-chart opacity-15 pointer-events-none" />
+      {/* 4 Corner Metal Screws / Rivets */}
+      <div className="absolute top-2.5 left-2.5 w-4 h-4 rounded-full border border-black/60 flex items-center justify-center text-[10px] text-black/60 font-mono select-none">
+        ⊕
+      </div>
+      <div className="absolute top-2.5 right-2.5 w-4 h-4 rounded-full border border-black/60 flex items-center justify-center text-[10px] text-black/60 font-mono select-none">
+        ⊕
+      </div>
+      <div className="absolute bottom-2.5 left-2.5 w-4 h-4 rounded-full border border-black/60 flex items-center justify-center text-[10px] text-black/60 font-mono select-none">
+        ⊕
+      </div>
+      <div className="absolute bottom-2.5 right-2.5 w-4 h-4 rounded-full border border-black/60 flex items-center justify-center text-[10px] text-black/60 font-mono select-none">
+        ⊕
+      </div>
 
-      <div className="relative z-10">
-        {/* Card Header: Event ID + Category Display + Featured Tag */}
-        <div className="flex items-center justify-between gap-2 mb-4">
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-md text-xs font-mono font-black bg-[#E6CA65]/20 text-[#FCE79C] border border-[#E6CA65]/45 shadow-sm">
-              {event.eventId}
-            </span>
-            <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold border ${style.badge}`}>
-              {style.categoryDisplay}
-            </span>
-          </div>
-
-          {event.featuredTag && (
-            <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider bg-[#E11D48]/20 text-[#FDA4AF] border border-[#E11D48]/40 animate-pulse">
-              ⚔️ {event.featuredTag}
-            </span>
-          )}
-        </div>
-
-        {/* Icon & Title */}
-        <div className="flex items-start gap-3.5 mb-3">
-          <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border shadow-md transition-transform group-hover:scale-110"
-            style={{
-              backgroundColor: `${style.accent}18`,
-              borderColor: `${style.accent}50`,
-              color: style.accent,
-            }}
-          >
-            <IconComp className="w-6 h-6" />
-          </div>
-
-          <div>
-            <h3 className="font-voyage font-bold text-xl text-white group-hover:text-[#FCE79C] transition-colors line-clamp-1">
-              {event.title}
-            </h3>
-            <p className="text-xs text-[#E6CA65]/90 font-mono font-medium line-clamp-1">
-              {event.tagline}
-            </p>
-          </div>
-        </div>
-
-        {/* Short Description */}
-        <p className="text-xs sm:text-sm text-slate-300 line-clamp-2 leading-relaxed mb-4 font-sans">
-          {event.shortDescription}
+      {/* ── WANTED HEADER ────────────────────────────────────────── */}
+      <div className="text-center pt-2 pb-1 relative z-10">
+        <h2
+          style={{
+            fontFamily: "'Anton', 'Impact', sans-serif",
+            fontSize: 'clamp(2.4rem, 5vw, 3.2rem)',
+            letterSpacing: '0.12em',
+            lineHeight: 0.9,
+            color: '#1a130e',
+            textShadow: '1px 1px 0px rgba(0,0,0,0.3)',
+          }}
+          className="uppercase tracking-widest font-black"
+        >
+          WANTED
+        </h2>
+        <p
+          style={{
+            fontFamily: "'Cinzel', serif",
+            fontSize: '0.72rem',
+            letterSpacing: '0.28em',
+            color: '#4a3828',
+            fontWeight: 700,
+          }}
+          className="uppercase mt-1.5 flex items-center justify-center gap-1.5"
+        >
+          <span>★</span>
+          <span>DEAD • OR • ALIVE</span>
+          <span>★</span>
         </p>
+      </div>
 
-        {/* Info Grid (Team, Venue, Time) */}
-        <div className="space-y-1.5 py-3 px-3.5 rounded-xl bg-[#040814]/70 border border-[#E6CA65]/20 text-xs text-slate-300 mb-5 backdrop-blur-sm">
-          <div className="flex items-center gap-2">
-            <Users className="w-3.5 h-3.5 text-[#00F2FE] shrink-0" />
-            <span className="font-medium text-slate-200">{event.teamSize.description}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Clock className="w-3.5 h-3.5 text-[#E6CA65] shrink-0" />
-            <span className="text-slate-300">{event.schedule.timeSlot}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <MapPin className="w-3.5 h-3.5 text-[#E11D48] shrink-0" />
-            <span className="text-slate-300 line-clamp-1">{event.schedule.venue}</span>
-          </div>
+      {/* ── CATEGORY BADGE ──────────────────────────────────────── */}
+      <div className="flex justify-center my-2 relative z-10">
+        <span
+          style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '0.68rem',
+            letterSpacing: '0.15em',
+          }}
+          className="px-3 py-0.5 rounded-sm bg-[#FFC928] text-black font-extrabold uppercase border border-black shadow-[2px_2px_0px_0px_#000]"
+        >
+          {event.category === 'Technical' ? 'TECHNICAL QUEST' : 'NON-TECH ARENA'}
+        </span>
+      </div>
+
+      {/* ── EVENT TITLE BOX WITH METAL RIVETS ───────────────────── */}
+      <div className="relative my-2 p-3 bg-black/5 border-2 border-black/80 rounded-sm text-center z-10 shadow-inner group-hover:bg-[#E2231A]/10 transition-colors">
+        <span className="absolute top-1 left-1 text-[8px] text-black/50">⊕</span>
+        <span className="absolute top-1 right-1 text-[8px] text-black/50">⊕</span>
+        <span className="absolute bottom-1 left-1 text-[8px] text-black/50">⊕</span>
+        <span className="absolute bottom-1 right-1 text-[8px] text-black/50">⊕</span>
+
+        <h3
+          style={{
+            fontFamily: "'Anton', sans-serif",
+            fontSize: 'clamp(1.25rem, 2.5vw, 1.6rem)',
+            letterSpacing: '0.04em',
+            lineHeight: 1.1,
+            color: '#9A1410',
+          }}
+          className="uppercase font-bold tracking-tight line-clamp-2 px-2"
+        >
+          {event.title}
+        </h3>
+      </div>
+
+      {/* ── SHORT DESCRIPTION ───────────────────────────────────── */}
+      <p
+        style={{
+          fontFamily: "'Inter', sans-serif",
+          fontSize: '0.78rem',
+          color: '#3d3024',
+          lineHeight: 1.45,
+        }}
+        className="text-center my-2 line-clamp-2 px-1 relative z-10 font-medium"
+      >
+        {event.shortDescription}
+      </p>
+
+      {/* ── BOUNTY PRIZE POOL ───────────────────────────────────── */}
+      <div className="text-center my-3 relative z-10">
+        <span
+          style={{
+            fontFamily: "'Anton', 'Impact', sans-serif",
+            fontSize: 'clamp(1.8rem, 4vw, 2.5rem)',
+            letterSpacing: '0.06em',
+            color: '#1a130e',
+            lineHeight: 1,
+          }}
+          className="font-black tracking-tight"
+        >
+          {bountyText}
+        </span>
+        <span
+          style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '0.65rem',
+            letterSpacing: '0.12em',
+            color: '#9A1410',
+          }}
+          className="block uppercase font-bold mt-0.5"
+        >
+          BOUNTY REWARD // 1ST PRIZE
+        </span>
+      </div>
+
+      {/* ── METADATA STRIP (TIME, VENUE, CREW) ──────────────────── */}
+      <div
+        style={{
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: '0.72rem',
+          borderColor: 'rgba(0,0,0,0.25)',
+        }}
+        className="border-t pt-3 space-y-1.5 text-[#3d3024] relative z-10"
+      >
+        <div className="flex items-center justify-between">
+          <span className="font-bold flex items-center gap-1 text-[#9A1410]">
+            <span>🕒</span> TIME
+          </span>
+          <span className="font-semibold text-right text-black line-clamp-1">
+            {event.schedule.timeSlot}
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <span className="font-bold flex items-center gap-1 text-[#9A1410]">
+            <span>📍</span> VENUE
+          </span>
+          <span className="font-semibold text-right text-black line-clamp-1 max-w-[180px]">
+            {event.schedule.venue}
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <span className="font-bold flex items-center gap-1 text-[#9A1410]">
+            <span>👥</span> CREW
+          </span>
+          <span className="font-bold text-right text-[#1a130e]">
+            {event.teamSize.description.replace('per Team', '')}
+          </span>
         </div>
       </div>
 
-      {/* Footer: Bounty Prize & Action Buttons */}
-      <div className="relative z-10">
-        <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-[#E6CA65]/20">
-          <span className="text-xs text-[#E6CA65]/90 font-mono font-bold flex items-center gap-1">
-            <Coins className="w-3.5 h-3.5 text-[#E6CA65]" />
-            Bounty 1st Prize
-          </span>
-          <span className="text-xs font-bold text-[#FCE79C] font-mono truncate max-w-[170px]">
-            {event.prizes.first.split('+')[0]}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={() => onSelectEvent(event)}
-            className="py-2.5 px-3 rounded-xl text-xs font-bold font-voyage text-slate-200 bg-[#0E1736] hover:bg-[#132247] border border-[#E6CA65]/35 hover:border-[#E6CA65] transition-all flex items-center justify-center gap-1 shadow-sm"
-          >
-            <span>Challenge Rules</span>
-            <ArrowUpRight className="w-3.5 h-3.5 text-[#E6CA65]" />
-          </button>
-
-          <button
-            onClick={() => onRegisterEvent(event)}
-            className="py-2.5 px-3 rounded-xl text-xs font-bold font-voyage text-[#040814] bg-gradient-to-r from-[#E6CA65] via-[#FCE79C] to-[#00F2FE] hover:from-[#FFF5C0] hover:to-[#38BDF8] shadow-glow-gold/50 transition-all flex items-center justify-center gap-1 border border-[#FFF5C0]/60"
-          >
-            <span>Register</span>
-          </button>
-        </div>
+      {/* Hover Clue Indicator */}
+      <div className="mt-3 pt-2 text-center border-t border-black/15">
+        <span
+          style={{
+            fontFamily: "'Bebas Neue', sans-serif",
+            fontSize: '0.9rem',
+            letterSpacing: '0.12em',
+          }}
+          className="text-[#9A1410] font-bold group-hover:text-black transition-colors flex items-center justify-center gap-1"
+        >
+          CLICK TO OPEN DOSSIER & RULES →
+        </span>
       </div>
     </motion.div>
   );
 };
+
+export default EventCard;

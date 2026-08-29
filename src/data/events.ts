@@ -10,1008 +10,1121 @@ export const EVENTS: EventItem[] = [
     sheetSlug: 'paper-presentation',
     title: 'Paper Presentation',
     category: 'Technical',
-    tagline: 'Defend Innovations. Inspire Academic Breakthroughs.',
-    shortDescription: 'Present your novel research, architectures, and engineering prototypes before an esteemed jury of academic & industry researchers.',
-    fullDescription: 'Paper Presentation provides a premier platform for aspiring student researchers to present original work in cutting-edge computing paradigms including Generative AI, Quantum Computing, Blockchain, IoT, Cyber Defense, and Cloud-Native Distributed Systems.',
+    tagline: 'Present innovative research ideas & engineering breakthroughs.',
+    shortDescription: 'Present your novel research, original abstracts, and prototype demos before an esteemed panel of researchers and industry judges.',
+    fullDescription: 'Paper Presentation provides a premier platform for student researchers to present original work in cutting-edge computing paradigms. Original abstract required. Shortlisted teams only. Prototype demos are permitted with prior arrangement.',
     teamSize: {
       min: 1,
-      max: 3,
-      description: '1 to 3 Members per Team'
+      max: 4,
+      description: 'Maximum 4 Members per Team',
     },
     rounds: [
       {
         roundNumber: 1,
-        title: 'Abstract & Paper Screening',
-        description: 'Submission of IEEE format paper (maximum 6 pages) prior to symposium day for initial peer evaluation.',
-        duration: 'Pre-event'
+        title: 'Technical Research Presentation',
+        description: 'Each team will be allotted 5 to 7 minutes for their presentation, followed by Q&A with the judges. Teams demonstrating a prototype must ensure all arrangements are made in advance.',
+        duration: '5 - 7 Mins / Team',
       },
-      {
-        roundNumber: 2,
-        title: 'Live Technical Presentation',
-        description: '8-minute PPT presentation of research methodology, experimental results, and architectural diagrams followed by 3-minute Q&A with the jury.',
-        duration: '11 Mins / Team'
-      }
     ],
     rules: [
-      'Papers must strictly follow standard IEEE double-column conference format.',
-      'Plagiarism index must not exceed 15% as verified via Turnitin/iThenticate.',
-      'Teams must bring 2 hard copies of the full manuscript and their presentation on a formatted USB drive.',
-      'Decision of the jury panel regarding technical novelty and methodology is final and binding.'
+      'Participants shall report 15 minutes before the event.',
+      'All participants must carry a valid College ID card.',
+      'Any form of malpractice or plagiarism will result in disqualification.',
+      'Original work only; teams intending to demonstrate a prototype must ensure all necessary arrangements are made in advance.',
+      'The decision of the judges shall be final and binding.',
     ],
     judgingCriteria: [
-      'Technical Novelty & Innovation (30%)',
-      'Methodology & Implementation Rigor (25%)',
-      'Clarity of Presentation & Visual Slides (25%)',
-      'Response to Jury Cross-Examination (20%)'
+      'Technical Content',
+      'Innovation',
+      'Presentation Quality',
+      'Q&A Response',
     ],
     prizes: {
-      first: '₹5,000 Cash Prize + Memento + Certificate of Excellence',
+      first: '₹5,000 Cash Prize + Certificate of Excellence',
       second: '₹3,000 Cash Prize + Certificate of Excellence',
       third: '₹1,500 Cash Prize + Certificate of Merit',
-      allParticipants: 'Certificate of National Participation'
+      allParticipants: 'Certificate of National Participation',
     },
     coordinators: [
       {
-        name: 'Dr. S. Rajalakshmi',
-        role: 'Faculty Coordinator',
-        department: 'CSBS',
-        phone: '+91 98401 23456',
-        whatsapp: '919840123456',
-        email: 'rajalakshmi.csbs@sriram.edu.in'
+        name: 'Tippueswar S',
+        role: 'Coordinator',
+        department: 'IV AIML',
+        phone: '+91 93605 31687',
+        whatsapp: '919360531687',
       },
       {
-        name: 'Kavin Kumar R',
-        role: 'Student Coordinator',
-        department: 'CSE (Final Year)',
-        phone: '+91 91234 56780',
-        whatsapp: '919123456780'
-      }
+        name: 'Mohamad Areef A',
+        role: 'Organizer',
+        department: 'IV AIML',
+        phone: '+91 98401 00001',
+      },
+      {
+        name: 'Janani Sri',
+        role: 'Coordinator',
+        department: 'IV AIDS',
+        phone: '+91 98401 00002',
+      },
+      {
+        name: 'Dinesh',
+        role: 'Co-Coordinator',
+        department: 'III CSE',
+        phone: '+91 98401 00003',
+      },
+      {
+        name: 'Keerthi',
+        role: 'Co-Coordinator',
+        department: 'III CSE',
+        phone: '+91 98401 00004',
+      },
     ],
     schedule: {
       date: 'September 26, 2026',
       timeSlot: '10:00 AM - 01:00 PM',
-      venue: 'Main Auditorium / Seminar Hall 1'
+      venue: 'Main Seminar Hall 1',
     },
     featuredTag: 'Flagship Tech',
     iconName: 'FileText',
-    accentColor: '#00F2FE'
+    accentColor: '#00F2FE',
   },
   {
-    id: 'business-battle',
+    id: 'business-crisis',
     eventId: 'TE02',
-    sheetSlug: 'business-battle',
-    title: 'Business Battle',
+    sheetSlug: 'business-crisis',
+    title: 'Business Crisis',
     category: 'Technical',
-    tagline: 'From Code to Capital: The Ultimate Startup Pitch.',
-    shortDescription: 'Pitch your startup vision, revenue models, market defensibility, and tech prototypes before angel mentors and venture judges.',
-    fullDescription: 'Business Battle challenges entrepreneurial technologists to transform code into commercially viable ventures. Pitch your deck, defend unit economics, calculate customer acquisition cost (CAC), and prove market product-market fit.',
-    teamSize: {
-      min: 2,
-      max: 4,
-      description: '2 to 4 Members per Team'
-    },
-    rounds: [
-      {
-        roundNumber: 1,
-        title: 'Executive Pitch Deck Screening',
-        description: 'Submission of a 10-slide pitch deck covering Problem, Solution, Market Size, Tech Architecture, and Revenue Model.',
-        duration: 'Pre-event'
-      },
-      {
-        roundNumber: 2,
-        title: 'Shark Arena Live Defense',
-        description: '7-minute live investor pitch with product demo, followed by 5 minutes of intensive shark interrogation by VC judges.',
-        duration: '12 Mins / Team'
-      }
-    ],
-    rules: [
-      'Teams must submit their pitch deck in PDF format 24 hours prior to the event.',
-      'Working prototypes or live MVP links receive significant bonus points.',
-      'Plagiarized ideas or misleading financial projections result in disqualification.'
-    ],
-    judgingCriteria: [
-      'Market Opportunity & Problem Significance (25%)',
-      'Product Innovation & Technical Defensibility (25%)',
-      'Business Model, Monetization & Unit Economics (25%)',
-      'Pitch Delivery & Q&A Handling (25%)'
-    ],
-    prizes: {
-      first: '₹5,000 Cash Prize + Incubation Mentorship Pass + Trophy',
-      second: '₹3,000 Cash Prize + Certificate of Excellence',
-      third: '₹1,500 Cash Prize + Certificate of Merit',
-      allParticipants: 'Certificate of National Participation'
-    },
-    coordinators: [
-      {
-        name: 'Dr. A. Venkatesh',
-        role: 'Faculty Coordinator',
-        department: 'CSBS',
-        phone: '+91 98402 88776',
-        whatsapp: '919840288776'
-      },
-      {
-        name: 'Ananya S',
-        role: 'Student Coordinator',
-        department: 'CSBS (Final Year)',
-        phone: '+91 98401 11223',
-        whatsapp: '919840111223'
-      }
-    ],
-    schedule: {
-      date: 'September 26, 2026',
-      timeSlot: '10:30 AM - 01:30 PM',
-      venue: 'MBA Seminar Hall (Block 1)'
-    },
-    featuredTag: 'Startup Pitch',
-    iconName: 'TrendingUp',
-    accentColor: '#38BDF8'
-  },
-  {
-    id: 'mind-sparks',
-    eventId: 'TE03',
-    sheetSlug: 'mind-sparks',
-    title: 'Mind Sparks',
-    category: 'Technical',
-    tagline: 'High-Octane Algorithmic & Cognitive Trivia Clash.',
-    shortDescription: 'Test your computing speed, system trivia, algorithm deciphering, and tech puzzle-solving in an electrifying buzzer arena.',
-    fullDescription: 'Mind Sparks is not an ordinary quiz. It is a high-speed battle of intellect where teams crack cryptographic ciphers, identify obscure tech history, solve algorithmic logic riddles, and master rapid-fire buzzer rounds.',
-    teamSize: {
-      min: 1,
-      max: 2,
-      description: '1 or 2 Members per Team'
-    },
-    rounds: [
-      {
-        roundNumber: 1,
-        title: 'Pen & Pixel Prelims',
-        description: '30-minute written/digital test featuring 40 tricky algorithmic, OS, AI trivia, and puzzle questions. Top 6 teams qualify.',
-        duration: '30 Mins'
-      },
-      {
-        roundNumber: 2,
-        title: 'Grand Buzzer Stage Finals',
-        description: 'Live 4-stage finals: Tech Connect, Audio-Visual Clues, Code Output Deciphering, and Rapid-Fire Negative Buzzer Round.',
-        duration: '60 Mins'
-      }
-    ],
-    rules: [
-      'Electronic devices strictly prohibited during preliminary testing.',
-      'Negative marking applies in final buzzer round (-5 for wrong buzz).',
-      'Quizmaster decision is indisputable.'
-    ],
-    judgingCriteria: [
-      'Speed & Accuracy in Prelims (Rankings)',
-      'Stage Round Point Accumulation'
-    ],
-    prizes: {
-      first: '₹4,000 Cash Prize + Trophy + Certificate',
-      second: '₹2,500 Cash Prize + Certificate',
-      third: '₹1,000 Cash Prize + Certificate'
-    },
-    coordinators: [
-      {
-        name: 'Dr. M. K. Prakash',
-        role: 'Faculty Coordinator',
-        department: 'CSE',
-        phone: '+91 97890 12345',
-        whatsapp: '919789012345'
-      },
-      {
-        name: 'Siddharth M',
-        role: 'Student Coordinator',
-        department: 'CSE (3rd Year)',
-        phone: '+91 90031 99887',
-        whatsapp: '919003199887'
-      }
-    ],
-    schedule: {
-      date: 'September 26, 2026',
-      timeSlot: '11:00 AM - 01:00 PM',
-      venue: 'CSE Smart Classroom 2'
-    },
-    iconName: 'Zap',
-    accentColor: '#F59E0B'
-  },
-  {
-    id: 'editomania',
-    eventId: 'TE04',
-    sheetSlug: 'editomania',
-    title: 'EditoMania',
-    category: 'Technical',
-    tagline: 'UI/UX Prototyping & Visual Storytelling Showdown.',
-    shortDescription: 'Craft immersive modern user interfaces and motion graphics on surprise real-world product themes within tight time limits.',
-    fullDescription: 'EditoMania puts your creative frontend and design chops to the test. Combine Figma prototyping, aesthetic color theory, micro-interaction animation, and visual storytelling to build intuitive digital experiences.',
-    teamSize: {
-      min: 1,
-      max: 2,
-      description: 'Individual or Team of 2'
-    },
-    rounds: [
-      {
-        roundNumber: 1,
-        title: 'Theme Release & Rapid Prototyping',
-        description: 'Surprise problem statement unveiled. 90 minutes to design an end-to-end interactive mobile/web prototype in Figma.',
-        duration: '90 Mins'
-      },
-      {
-        roundNumber: 2,
-        title: 'Design Walkthrough & Critique',
-        description: '4-minute design defense presenting user journey, component hierarchy, accessibility choices, and micro-interactions.',
-        duration: '5 Mins / Team'
-      }
-    ],
-    rules: [
-      'Participants may use Figma, Adobe XD, or Illustrator.',
-      'Pre-built complete UI templates are strictly banned; pre-made icons/assets allowed with attribution.',
-      'Final submission must be a live interactive Figma prototype link.'
-    ],
-    judgingCriteria: [
-      'Aesthetic Design Quality & Modern Polish (35%)',
-      'UX Flow & Problem Solving Logic (30%)',
-      'Micro-Interactions & Prototyping Fidelity (20%)',
-      'Presentation Defense (15%)'
-    ],
-    prizes: {
-      first: '₹4,000 Cash Prize + Trophy + Certificate',
-      second: '₹2,500 Cash Prize + Certificate',
-      allParticipants: 'Certificate of National Participation'
-    },
-    coordinators: [
-      {
-        name: 'Prof. G. Hema',
-        role: 'Faculty Coordinator',
-        department: 'AI&DS',
-        phone: '+91 98412 34567',
-        whatsapp: '919841234567'
-      },
-      {
-        name: 'Rithanya S',
-        role: 'Student Coordinator',
-        department: 'AI&DS (3rd Year)',
-        phone: '+91 93456 78901',
-        whatsapp: '919345678901'
-      }
-    ],
-    schedule: {
-      date: 'September 26, 2026',
-      timeSlot: '10:00 AM - 01:00 PM',
-      venue: 'Design & Multimedia Lab (Block 3)'
-    },
-    iconName: 'Layout',
-    accentColor: '#EC4899'
-  },
-  {
-    id: 'lego-build-with-ai',
-    eventId: 'TE05',
-    sheetSlug: 'lego-build-with-ai',
-    title: 'Lego Build with AI',
-    category: 'Technical',
-    tagline: 'Bridging Physical Modular Hardware with Generative AI.',
-    shortDescription: 'Construct modular robotic/structural hardware prototypes and enhance them with custom AI prompt logic and vision systems.',
-    fullDescription: 'An exhilarating fusion of tactile physical engineering and generative AI intelligence. Teams receive physical modular building components and a surprise structural challenge that must be interfaced or conceptualized with AI models.',
+    tagline: 'Strategic thinking & entrepreneurial problem-solving under pressure.',
+    shortDescription: 'Analyze high-stakes real-world corporate crisis scenarios and formulate tactical turnaround strategies under strict time limits.',
+    fullDescription: "Evaluate participants' strategic thinking, decision-making, problem-solving, and entrepreneurial skills through a real-world business crisis. Teams pitch their model and formulate solutions under high pressure.",
     teamSize: {
       min: 2,
       max: 3,
-      description: '2 to 3 Members per Team'
+      description: '2 - 3 Participants per Team',
     },
     rounds: [
       {
         roundNumber: 1,
-        title: 'Prompt-Driven Architecture Plan',
-        description: 'Generate structural architectural blueprints using AI prompt engineering workflows.',
-        duration: '30 Mins'
+        title: 'Business Pitch',
+        description: 'Teams deliver an opening business pitch highlighting their venture strategy, financial acumen, and market vision.',
+        duration: '10 Mins Prep, 3 Mins Pitch',
       },
       {
         roundNumber: 2,
-        title: 'Physical Assembly & Integration',
-        description: 'Hands-on construction and functional demonstration before the evaluation jury.',
-        duration: '75 Mins'
-      }
+        title: 'Business Crisis Challenge',
+        description: 'Teams will be presented with a real-world business crisis. They must analyze the situation and develop a strategic solution within the 10-minute preparation time and deliver a 3-minute presentation.',
+        duration: '10 Mins Prep, 3 Mins Defense',
+      },
     ],
     rules: [
-      'Modular building kits will be provided at the venue.',
-      'Teams must bring at least one laptop for AI prompt synthesis and documentation.',
-      'Destructive handling of components will lead to instant disqualification.'
+      'Participants shall report 15 minutes before the event.',
+      'All participants must carry a valid College ID card.',
+      'Teams must strictly adhere to the 10-minute preparation and 3-minute presentation time limits.',
+      'All members of the team must actively participate in the presentation.',
+      'Any form of malpractice or plagiarism will result in disqualification.',
+      'The decision of the judges shall be final and binding.',
     ],
     judgingCriteria: [
-      'Structural Stability & Mechanical Ingenuity (35%)',
-      'Creativity of AI Prompt Integration (35%)',
-      'Demonstration & Live Testing (30%)'
+      'Problem Identification',
+      'Strategic Thinking',
+      'Creativity',
+      'Feasibility & Implementation',
+      'Presentation & Teamwork',
     ],
     prizes: {
-      first: '₹4,500 Cash Prize + Certificate of Excellence',
-      second: '₹2,500 Cash Prize + Certificate',
-      allParticipants: 'Certificate of National Participation'
+      first: '₹5,000 Cash Prize + Trophy',
+      second: '₹3,000 Cash Prize + Certificate of Excellence',
+      third: '₹1,500 Cash Prize + Certificate of Merit',
+      allParticipants: 'Certificate of National Participation',
     },
     coordinators: [
       {
-        name: 'Dr. R. Karthikeyan',
-        role: 'Faculty Coordinator',
-        department: 'AIML',
-        phone: '+91 98840 98765',
-        whatsapp: '919884098765'
+        name: 'M Vimitha',
+        role: 'Organizer',
+        department: 'IV CSBS',
+        phone: '+91 99946 08971',
+        whatsapp: '919994608971',
       },
       {
-        name: 'Dinesh Kumar T',
-        role: 'Student Coordinator',
-        department: 'AIML (Final Year)',
-        phone: '+91 97910 11223',
-        whatsapp: '919791011223'
-      }
+        name: 'M Chitee Venkat',
+        role: 'Coordinator',
+        department: 'IV AIDS',
+        phone: '+91 91235 94004',
+        whatsapp: '919123594004',
+      },
+      {
+        name: 'S Sabeetha',
+        role: 'Coordinator',
+        department: 'IV AIDS',
+        phone: '+91 91762 84496',
+        whatsapp: '919176284496',
+      },
+      {
+        name: 'Janani',
+        role: 'Co-Coordinator',
+        department: 'III CYS',
+        phone: '+91 63820 71519',
+        whatsapp: '916382071519',
+      },
+      {
+        name: 'R. Sundaravalli',
+        role: 'Co-Coordinator',
+        department: 'III CSE',
+        phone: '+91 63827 62919',
+        whatsapp: '916382762919',
+      },
+    ],
+    schedule: {
+      date: 'September 26, 2026',
+      timeSlot: '10:30 AM - 01:00 PM',
+      venue: 'MBA Seminar Hall / Room 204',
+    },
+    featuredTag: 'Strategy Arena',
+    iconName: 'TrendingUp',
+    accentColor: '#E6CA65',
+  },
+  {
+    id: 'lego-ai-challenge',
+    eventId: 'TE03',
+    sheetSlug: 'lego-ai-challenge',
+    title: 'LEGO AI Challenge',
+    category: 'Technical',
+    tagline: 'Design and develop AI-powered smart prototype solutions.',
+    shortDescription: 'Solve pressing global themes across Climate, Healthcare, and Smart Cities by architecting UI/UX designs and rapid AI prototypes.',
+    fullDescription: 'Design and develop AI-based solutions addressing global thematic tracks: Climate, Healthcare, Smart Cities, Food, Digital Society, and Open Innovation. Teams combine UI/UX design with working AI workflows and prototype demos.',
+    teamSize: {
+      min: 2,
+      max: 4,
+      description: '2 - 4 Participants per Team',
+    },
+    rounds: [
+      {
+        roundNumber: 1,
+        title: 'UI/UX Design Architecture',
+        description: 'Design interactive, user-centric interfaces and system workflow diagrams for the selected problem theme.',
+        duration: '45 Mins',
+      },
+      {
+        roundNumber: 2,
+        title: 'AI Prototype & Pitch',
+        description: 'Develop and demonstrate an AI-integrated prototype. Teams present problem understanding, AI tool integration, and technical feasibility.',
+        duration: '45 Mins',
+      },
+    ],
+    rules: [
+      'Participants shall report 15 minutes before the event.',
+      'All participants must carry a valid College ID card.',
+      'Participants must bring their own laptops.',
+      'AI tools and frameworks are permitted, but participants must clearly explain their AI architecture and implementation.',
+      'Any form of malpractice, plagiarism, or unauthorized pre-built full templates will result in disqualification.',
+      'The decision of the judges shall be final and binding.',
+    ],
+    judgingCriteria: [
+      'Problem Understanding',
+      'Innovation',
+      'AI Integration',
+      'Prototype Working & Completeness',
+      'Presentation & Pitch',
+    ],
+    prizes: {
+      first: '₹5,000 Cash Prize + Certificate of Excellence',
+      second: '₹3,000 Cash Prize + Certificate of Excellence',
+      third: '₹1,500 Cash Prize + Certificate of Merit',
+      allParticipants: 'Certificate of National Participation',
+    },
+    coordinators: [
+      {
+        name: 'Bhavana Shree J',
+        role: 'Event Head',
+        department: 'Final Year AD',
+        phone: '+91 99410 54740',
+        whatsapp: '919941054740',
+      },
+      {
+        name: 'Ganesh K',
+        role: 'Coordinator',
+        department: 'Final Year CSE',
+        phone: '+91 89395 17847',
+        whatsapp: '918939517847',
+      },
+      {
+        name: 'Nithya B',
+        role: 'Coordinator',
+        department: 'Final Year AD',
+        phone: '+91 79048 85546',
+        whatsapp: '917904885546',
+      },
+      {
+        name: 'Lakshania',
+        role: 'Co-Coordinator',
+        department: '3rd Year AD',
+        phone: '+91 97107 36868',
+        whatsapp: '919710736868',
+      },
+      {
+        name: 'Sarath Babu',
+        role: 'Co-Coordinator',
+        department: '3rd Year CYS',
+        phone: '+91 63831 64851',
+        whatsapp: '916383164851',
+      },
     ],
     schedule: {
       date: 'September 26, 2026',
       timeSlot: '11:00 AM - 01:30 PM',
-      venue: 'Robotics & Embedded Systems Lab'
+      venue: 'AI & Data Science Advanced Computing Lab',
     },
+    featuredTag: 'AI & UI/UX',
     iconName: 'Cpu',
-    accentColor: '#A855F7'
+    accentColor: '#9333EA',
   },
   {
     id: 'cyber-investigation',
-    eventId: 'TE06',
+    eventId: 'TE04',
     sheetSlug: 'cyber-investigation',
-    title: 'Cyber Investigation',
+    title: 'Cyber Investigation Challenge',
     category: 'Technical',
-    tagline: 'Trace the Intrusion. Decode Digital Forensics.',
-    shortDescription: 'Analyze simulated cyber security breaches, examine memory dumps, track malicious network packets, and solve CTF forensic clues.',
-    fullDescription: 'Step into the boots of a cyber threat intelligence investigator. You are presented with compromised server logs, encrypted disk images, and intercepted packet captures. Trace the hacker, uncover IOCs (Indicators of Compromise), and submit the forensics incident report.',
+    tagline: 'Digital forensics, crypto puzzles & incident response trials.',
+    shortDescription: 'Step into the shoes of a cyber detective to crack encrypted clues, analyze memory logs, and solve forensic investigation cases.',
+    fullDescription: 'Assess your analytical and cybersecurity skills in a high-intensity 2-round cyber detective trial. Solve computer-based cybersecurity puzzles followed by a simulated digital forensic investigation.',
     teamSize: {
-      min: 2,
+      min: 1,
       max: 3,
-      description: '2 to 3 Members per Team'
+      description: '1 - 3 Participants per Team',
     },
     rounds: [
       {
         roundNumber: 1,
-        title: 'Forensic Triage & Packet Analysis',
-        description: 'Identify the breach vector, decode Wireshark PCAPs, and extract the first malicious payload.',
-        duration: '45 Mins'
+        title: 'Cyber Puzzle',
+        description: 'Solve cryptographic challenges, decipher hidden encoded payloads, and bypass logic traps within the allocated time.',
+        duration: '30 Mins',
       },
       {
         roundNumber: 2,
-        title: 'CTF Reverse Engineering & Report',
-        description: 'Decrypt the adversary communication channel, retrieve the flag, and document the vulnerability patch.',
-        duration: '60 Mins'
-      }
+        title: 'Cyber Detective (Forensic Investigation)',
+        description: 'Conduct forensic log analysis, trace network packets, extract digital evidence, and present an incident response report.',
+        duration: '45 Mins',
+      },
     ],
     rules: [
-      'Teams must bring laptops configured with standard tools (Wireshark, FTK Imager, Ghidra, Volatility, CyberChef).',
-      'Attacking the tournament infrastructure will result in immediate disqualification and campus blacklisting.',
-      'Collaboration between different teams is strictly forbidden.'
+      'Participants shall report 15 minutes before the event.',
+      'All participants must carry a valid College ID card.',
+      'No internet browsing, unauthorized tools, or personal mobile devices during the investigation round.',
+      'Any form of malpractice or external assistance will result in disqualification.',
+      'The decision of the judges shall be final and binding.',
     ],
     judgingCriteria: [
-      'Accuracy of Captured Forensic Flags (50%)',
-      'Investigation Speed & Timestamp Records (30%)',
-      'Clarity of Incident Response Report (20%)'
+      'Accuracy of Forensic Findings',
+      'Logical Reasoning & Method',
+      'Completion Time & Speed',
     ],
     prizes: {
-      first: '₹5,000 Cash Prize + Shield + Certificate',
-      second: '₹3,000 Cash Prize + Certificate',
-      allParticipants: 'Certificate of National Participation'
+      first: '₹5,000 Cash Prize + Certificate of Excellence',
+      second: '₹3,000 Cash Prize + Certificate of Excellence',
+      third: '₹1,500 Cash Prize + Certificate of Merit',
+      allParticipants: 'Certificate of National Participation',
     },
     coordinators: [
       {
-        name: 'Dr. P. Sundaram',
-        role: 'Faculty Coordinator',
-        department: 'Cyber Security',
-        phone: '+91 94440 11223',
-        whatsapp: '919444011223'
+        name: 'Sathya Sai',
+        role: 'Organizer',
+        department: 'IV CYS',
+        phone: '+91 73056 62449',
+        whatsapp: '917305662449',
       },
       {
-        name: 'Pragatheeshwaran K',
-        role: 'Student Coordinator',
-        department: 'Cyber Security (Final Year)',
-        phone: '+91 96001 23499',
-        whatsapp: '919600123499'
-      }
+        name: 'Muktha Sree T',
+        role: 'Coordinator',
+        department: 'IV CYS',
+        phone: '+91 98401 00010',
+      },
+      {
+        name: 'Magisha N',
+        role: 'Coordinator',
+        department: 'IV CYS',
+        phone: '+91 98401 00011',
+      },
+      {
+        name: 'Shobana',
+        role: 'Co-Coordinator',
+        department: 'III CYS',
+        phone: '+91 98401 00012',
+      },
+      {
+        name: 'Koushik',
+        role: 'Co-Coordinator',
+        department: 'III CYS',
+        phone: '+91 98401 00013',
+      },
     ],
     schedule: {
       date: 'September 26, 2026',
-      timeSlot: '10:00 AM - 01:00 PM',
-      venue: 'Cyber Security War Room Lab'
+      timeSlot: '10:30 AM - 01:00 PM',
+      venue: 'Cyber Security Operations Lab',
     },
-    featuredTag: 'High Stakes CTF',
+    featuredTag: 'Cyber Defense',
     iconName: 'ShieldAlert',
-    accentColor: '#10B981'
+    accentColor: '#E11D48',
   },
-
-  // ==========================================
-  // NON-TECHNICAL EVENTS (6)
-  // ==========================================
   {
-    id: 'start-music',
-    eventId: 'NT01',
-    sheetSlug: 'start-music',
-    title: 'Start Music',
-    category: 'Non-Technical',
-    tagline: 'Feel the Beat. Name the Track in Seconds.',
-    shortDescription: 'The ultimate music guessing and rhythm showdown covering movie soundtracks, reverse melodies, and live karaoke cues.',
-    fullDescription: 'Start Music brings the high-energy excitement of television game shows to the college auditorium. Test your music memory across 90s classics, viral beats, BGM recognition, and reverse audio puzzles.',
+    id: 'tech-fusion',
+    eventId: 'TE05',
+    sheetSlug: 'tech-fusion',
+    title: 'Tech Fusion',
+    category: 'Technical',
+    tagline: 'BrandByte, IQ Infinity & Memory Attack multi-round battle.',
+    shortDescription: 'Test your broad CS fundamentals, logo intelligence, rapid-fire technical quiz, and memory recall across 3 action-packed rounds.',
+    fullDescription: 'Test your computer science knowledge and rapid problem-solving through a multi-stage arena featuring tech logo identification, technical trivia quiz, and technical memory challenges.',
     teamSize: {
       min: 2,
       max: 3,
-      description: '2 to 3 Members per Team'
+      description: '2 - 3 Participants per Team',
     },
     rounds: [
       {
         roundNumber: 1,
-        title: 'Buzzer Beats Prelims',
-        description: 'Guess the song from a 3-second isolated instrument intro or reverse audio clip.',
-        duration: '30 Mins'
+        title: 'BrandByte (Logo Identification)',
+        description: 'Multiple tech logos will be displayed on screen. Participants identify and choose the correct logo first to score points.',
+        duration: '45 Mins',
       },
       {
         roundNumber: 2,
-        title: 'Lyric Flip & Rapid Melody Stage',
-        description: 'Complete missing lyrics, identify singers, and buzz in on rapid medley mixes.',
-        duration: '45 Mins'
-      }
+        title: 'IQ Infinity (Technical Quiz)',
+        description: 'Participants answer a series of rapid-fire technical quiz questions covering algorithms, OS, cloud, and emerging tech within time limits.',
+        duration: '45 Mins',
+      },
+      {
+        roundNumber: 3,
+        title: 'Memory Attack (Technical Recall)',
+        description: 'Several technical terms are displayed for a limited time to memorize. Once hidden, teams recall and write down maximum correct words.',
+        duration: '45 Mins',
+      },
     ],
     rules: [
-      'Buzzer priority decides who answers; prompt answers required within 5 seconds of buzzing.',
-      'No Shazam, SoundHound, or smartphone assistance allowed.',
-      'Audience prompts will nullify the question.'
+      'Participants shall report 15 minutes before the event.',
+      'All participants must carry a valid College ID card.',
+      'Any form of malpractice, mobile phone usage, or plagiarism will result in immediate disqualification.',
+      'The decision of the judges shall be final and binding.',
+      'Participants unable to attend the first segment due to other symposium events will be accommodated in the second segment where the same rounds are conducted.',
     ],
-    judgingCriteria: ['Point accumulation in finals buzzer rounds'],
+    judgingCriteria: [
+      'Accuracy of Answers',
+      'Speed & Buzzer Timing',
+      'Number of Correct Words / Logos Identified',
+    ],
     prizes: {
-      first: '₹3,500 Cash Prize + Memento + Certificate',
-      second: '₹2,000 Cash Prize + Certificate'
+      first: '₹5,000 Cash Prize + Trophy',
+      second: '₹3,000 Cash Prize + Certificate of Excellence',
+      third: '₹1,500 Cash Prize + Certificate of Merit',
+      allParticipants: 'Certificate of National Participation',
     },
     coordinators: [
       {
-        name: 'Varun Teja',
-        role: 'Student Coordinator',
-        department: 'CSE (3rd Year)',
-        phone: '+91 98409 55443',
-        whatsapp: '919840955443'
-      }
+        name: 'Nandini',
+        role: 'Organizer',
+        department: 'IV CSE',
+        phone: '+91 98401 00020',
+      },
+      {
+        name: 'Lavanya',
+        role: 'Coordinator',
+        department: 'IV CSE',
+        phone: '+91 98401 00021',
+      },
+      {
+        name: 'Diwakar',
+        role: 'Co-Coordinator',
+        department: 'III CYS',
+        phone: '+91 98401 00022',
+      },
+      {
+        name: 'Parameshwari',
+        role: 'Co-Coordinator',
+        department: 'III CSE',
+        phone: '+91 98401 00023',
+      },
+    ],
+    schedule: {
+      date: 'September 26, 2026',
+      timeSlot: '10:00 AM - 01:15 PM (135 Mins)',
+      venue: 'Turing Computing Center (Lab 3)',
+    },
+    featuredTag: '3-in-1 Quiz',
+    iconName: 'Zap',
+    accentColor: '#00F2FE',
+  },
+  {
+    id: 'editomania',
+    eventId: 'TE06',
+    sheetSlug: 'editomania',
+    title: 'Editomania',
+    category: 'Technical',
+    tagline: 'High-octane video editing, storytelling & audio sync sprint.',
+    shortDescription: 'Craft a cinematic masterpiece from raw footage provided on the spot. Showcase pacing, VFX, color grading, and sound design.',
+    fullDescription: 'Evaluate your creativity, pacing, and video editing mastery under strict deadlines. Raw video and audio assets will be provided by organizers. Edit, grade, synchronize, and export your video before the clock expires.',
+    teamSize: {
+      min: 1,
+      max: 3,
+      description: '1 - 3 Participants per Team',
+    },
+    rounds: [
+      {
+        roundNumber: 1,
+        title: 'Video Editing Challenge',
+        description: 'Teams receive raw video footage and music tracks. Create a compelling story, apply color grading, sound design, transitions, and export within the deadline.',
+        duration: '90 Mins',
+      },
+    ],
+    rules: [
+      'Participants shall report 15 minutes before the event.',
+      'All participants must carry a valid College ID card.',
+      'Participants must bring their own laptops with their preferred editing software installed (Premiere Pro, DaVinci Resolve, After Effects, CapCut, etc.).',
+      'No pre-made project templates, pre-edited clips, or outside downloaded media allowed.',
+      'Late submissions will strictly not be accepted.',
+      'The decision of the judges shall be final and binding.',
+    ],
+    judgingCriteria: [
+      'Creativity & Concept',
+      'Visual Storytelling & Pacing',
+      'Editing Quality & Transitions',
+      'Audio Synchronization & Sound Design',
+      'Overall Visual Presentation',
+    ],
+    prizes: {
+      first: '₹5,000 Cash Prize + Trophy',
+      second: '₹3,000 Cash Prize + Certificate of Excellence',
+      third: '₹1,500 Cash Prize + Certificate of Merit',
+      allParticipants: 'Certificate of National Participation',
+    },
+    coordinators: [
+      {
+        name: 'Adwaith',
+        role: 'Organizer',
+        department: 'IV AIDS',
+        phone: '+91 86109 74409',
+        whatsapp: '918610974409',
+      },
+      {
+        name: 'Adithiya',
+        role: 'Coordinator',
+        department: 'IV AIDS',
+        phone: '+91 94873 33870',
+        whatsapp: '919487333870',
+      },
+      {
+        name: 'Manikandan',
+        role: 'Coordinator',
+        department: 'IV CSE',
+        phone: '+91 98401 00030',
+      },
+      {
+        name: 'Abinaya G',
+        role: 'Co-Coordinator',
+        department: 'III CSE',
+        phone: '+91 98401 00031',
+      },
+      {
+        name: 'Janani M',
+        role: 'Co-Coordinator',
+        department: 'III CSE',
+        phone: '+91 98401 00032',
+      },
+    ],
+    schedule: {
+      date: 'September 26, 2026',
+      timeSlot: '11:00 AM - 01:00 PM',
+      venue: 'Media & Digital Design Studio',
+    },
+    featuredTag: 'Video Editing',
+    iconName: 'Video',
+    accentColor: '#EC4899',
+  },
+
+  // ==========================================
+  // NON-TECHNICAL EVENTS (9)
+  // ==========================================
+  {
+    id: 'indo-japanese-games',
+    eventId: 'NT01',
+    sheetSlug: 'indo-japanese-games',
+    title: 'INDO – JAPANESE GAMES (🎌 🇮🇳)',
+    category: 'Non-Technical',
+    tagline: 'Treasure Trail, Reflection & Chopstick Beat Balance.',
+    shortDescription: 'A whirlwind 3-in-1 anime and cultural challenge testing teamwork, reflexes, cinema trivia, and chopstick speed.',
+    fullDescription: 'Experience an energetic fusion of Indian cinema and Japanese pop-culture challenges! Complete 3 thrilling mini-games in 10 minutes: Treasure Trail, Reflection, and Beat & Balance.',
+    teamSize: {
+      min: 2,
+      max: 4,
+      description: '2 - 4 Members per Team',
+    },
+    rounds: [
+      {
+        roundNumber: 1,
+        title: 'Tri-Game Speed Relay (10 Minutes Total)',
+        description: '1. Treasure Trail: Reach the treasure using props without touching the floor; unlock & answer min 8 anime/cinema questions. 2. Reflection: One player acts out clues for teammate to guess (target: 3 clues). 3. Beat & Balance: Sort coloured paper balls with chopsticks while continuing song lyrics without pause (target: 3 songs).',
+        duration: '10 Mins Total',
+      },
+    ],
+    rules: [
+      "Follow the event coordinators' instructions at all stations.",
+      'Complete all 3 mini-games within the 10-minute time limit.',
+      'Treasure Trail: Touching the floor will result in an immediate restart; must answer at least 8 questions to qualify.',
+      'Reflection: Complete 3 clue guesses without speaking.',
+      'Beat & Balance: Must sort paper balls using chopsticks while seamlessly singing/continuing 3 songs.',
+      'Teamwork, speed, and accuracy will determine the winners.',
+    ],
+    judgingCriteria: [
+      'Completion Time & Speed',
+      'Team Coordination & Agility',
+      'Trivia & Song Accuracy',
+    ],
+    prizes: {
+      first: '₹4,000 Cash Prize + Trophy',
+      second: '₹2,500 Cash Prize + Certificate of Excellence',
+      third: '₹1,000 Cash Prize + Certificate of Merit',
+      allParticipants: 'Certificate of National Participation',
+    },
+    coordinators: [
+      {
+        name: 'Sriram Cultural Board',
+        role: 'Event Lead',
+        department: 'Student Affairs',
+        phone: '+91 98401 23457',
+        whatsapp: '919840123457',
+      },
+    ],
+    schedule: {
+      date: 'September 26, 2026',
+      timeSlot: '11:00 AM - 02:00 PM',
+      venue: 'Open Air Amphitheatre / Indoor Courtyard',
+    },
+    featuredTag: 'Anime & Fun',
+    iconName: 'Flame',
+    accentColor: '#E2231A',
+  },
+  {
+    id: 'ipl-auction',
+    eventId: 'NT02',
+    sheetSlug: 'ipl-auction',
+    title: 'IPL Auction',
+    category: 'Non-Technical',
+    tagline: 'Cricket Strategy, Budget Management & RTM Card Bidding.',
+    shortDescription: 'Qualify through the cricket quiz, manage your purse, execute smart player retentions, and bid in the live mock IPL Auction.',
+    fullDescription: 'Step into the franchise boardroom! Take the cricket trivia quiz, qualify for the live auction floor, retain 4 star players, deploy strategic RTM (Right to Match) cards, and build a champion 16-player squad with a winning Playing XI.',
+    teamSize: {
+      min: 3,
+      max: 3,
+      description: 'Exactly 3 Members per Team',
+    },
+    rounds: [
+      {
+        roundNumber: 1,
+        title: 'Cricket Quiz Round',
+        description: 'Open to all teams. 10-minute rapid cricket quiz. The top 10 highest-scoring teams qualify for Round 2 (Live Auction).',
+        duration: '10 Mins',
+      },
+      {
+        roundNumber: 2,
+        title: 'Live Grand Auction & Squad Formation',
+        description: 'Each of the 10 teams gets an IPL franchise. Retain 4 players (or receive RTM cards), bid in live player auctions to reach a 16-player squad, and finalize a Playing XI of 11 players.',
+        duration: '90 Mins',
+      },
+    ],
+    rules: [
+      'The use of mobile phones is strictly prohibited during all rounds.',
+      'Participants must not seek assistance from the audience or volunteers.',
+      'Only the top 10 teams from Round 1 will qualify for Round 2.',
+      'Each team must retain exactly 4 players from their allotted IPL squad before auction commences.',
+      'RTM Rules: Retain 2 players -> 2 RTM cards; Retain 3 players -> 1 RTM card; Retain 4 players -> 0 RTM card.',
+      'RTM card allows a team to match the highest bid placed by another team on an eligible player from their original franchise.',
+      'Every team must complete a squad of 16 players and present a Playing XI of 11 players.',
+      'Decisions made by the event coordinators and auctioneer are final and binding.',
+      'Conducted in two segments to accommodate participants in other events.',
+    ],
+    judgingCriteria: [
+      'Playing XI Balance & Strength (Batting, Bowling, All-Rounders)',
+      'Budget Efficiency & Purse Management',
+      'Strategic Utilization of RTM Cards',
+    ],
+    prizes: {
+      first: '₹5,000 Cash Prize + IPL Winner Trophy',
+      second: '₹3,000 Cash Prize + Certificate of Excellence',
+      third: '₹1,500 Cash Prize + Certificate of Merit',
+      allParticipants: 'Certificate of National Participation',
+    },
+    coordinators: [
+      {
+        name: 'IPL Auction Committee',
+        role: 'Auctioneer Head',
+        department: 'CSE / AIDS',
+        phone: '+91 91234 56789',
+        whatsapp: '919123456789',
+      },
+    ],
+    schedule: {
+      date: 'September 26, 2026',
+      timeSlot: '11:00 AM - 02:30 PM (2 Segments)',
+      venue: 'Main Auditorium / Stage Hall',
+    },
+    featuredTag: 'Cricket Auction',
+    iconName: 'Trophy',
+    accentColor: '#FFC928',
+  },
+  {
+    id: 'kick-arena',
+    eventId: 'NT03',
+    sheetSlug: 'kick-arena',
+    title: 'Kick Arena',
+    category: 'Non-Technical',
+    tagline: '3v3 Street Football Tournament & Sudden Death Shootouts.',
+    shortDescription: 'Lace up your boots for intense 3v3 mini-football knockout matches. Fast-paced halves, tactical substitutions, and halfway-line penalty trials.',
+    fullDescription: 'High-intensity 3v3 mini-football knockout championship. Fast-paced halves, precise passing, tactical substitutions, yellow card suspension rules, and dramatic sudden-death penalty shootouts from the halfway line.',
+    teamSize: {
+      min: 3,
+      max: 4,
+      description: '3 Players on field (+ 1 Substitute)',
+    },
+    rounds: [
+      {
+        roundNumber: 1,
+        title: 'Knockout Round',
+        description: '3v3 knockout matches consisting of two halves of 7 minutes each. Winners advance to the Final. Ties decided via sudden-death halfway-line penalty shootouts.',
+        duration: '7 Mins / Half',
+      },
+      {
+        roundNumber: 2,
+        title: 'Grand Final',
+        description: 'Championship final consisting of two halves of 10 minutes each. Highest goal-scoring team crowned Champions.',
+        duration: '10 Mins / Half',
+      },
+    ],
+    rules: [
+      'Each match is played in a 3v3 format with 3 active field players.',
+      'Sliding tackles are strictly prohibited to prevent injuries.',
+      'Fouls (pushing, tripping, holding, dangerous play, handball) result in an indirect free kick (opponents 3m away).',
+      'Yellow card results in a 4-minute temporary suspension (team must substitute in another player).',
+      'Red card results in immediate match ejection and suspension from the subsequent match.',
+      'No penalty kicks during normal match play; penalty shootouts conducted from the halfway line without run-up if tied.',
+      'Decisions of the referee are final and binding.',
+    ],
+    judgingCriteria: [
+      'Goals Scored in Regulation Time',
+      'Penalty Shootout Performance',
+      'Fair Play & Disciplinary Record',
+    ],
+    prizes: {
+      first: '₹5,000 Cash Prize + Champion Trophy + Medals',
+      second: '₹3,000 Cash Prize + Runner-up Trophy + Medals',
+      allParticipants: 'Certificate of National Participation',
+    },
+    coordinators: [
+      {
+        name: 'Sports & Football Guild',
+        role: 'Head Referee',
+        department: 'Physical Education / SEC',
+        phone: '+91 98401 23458',
+        whatsapp: '919840123458',
+      },
+    ],
+    schedule: {
+      date: 'September 26, 2026',
+      timeSlot: '10:00 AM - 02:00 PM',
+      venue: 'Campus Football Turf / Sports Arena',
+    },
+    featuredTag: '3v3 Football',
+    iconName: 'Activity',
+    accentColor: '#10B981',
+  },
+  {
+    id: 'clash-of-minds',
+    eventId: 'NT04',
+    sheetSlug: 'clash-of-minds',
+    title: 'Clash of Minds',
+    category: 'Non-Technical',
+    tagline: 'Memory Game, Don’t Say It! & Humming Challenge.',
+    shortDescription: 'A balanced psychological mix of visual recall, restricted communication word-guessing, and musical melody humming.',
+    fullDescription: 'An exhilarating 3-round mental arena testing memory, communication, creativity, and music. Progress through Memory Game, the intense Taboo-style "Don’t Say It!", and the hilarious musical Humming Challenge.',
+    teamSize: {
+      min: 2,
+      max: 3,
+      description: '2 - 3 Participants per Team',
+    },
+    rounds: [
+      {
+        roundNumber: 1,
+        title: 'Memory Game',
+        description: 'Observe a set of images, words, and objects for a limited time. Once removed, recall and answer questions. (+1 point per correct answer).',
+        duration: '2 Mins',
+      },
+      {
+        roundNumber: 2,
+        title: '“Don’t Say It!” (Taboo Word Guess)',
+        description: 'Make teammate guess target words without saying the word or any forbidden keywords, without rhyming or spelling. (+2 points correct, -1 point forbidden word).',
+        duration: '30 Sec / Word',
+      },
+      {
+        roundNumber: 3,
+        title: 'Humming Challenge',
+        description: 'Hum a secret song melody without lyrics or speaking while teammate identifies the song name. (+1 point per correct song).',
+        duration: '1 Min',
+      },
+    ],
+    rules: [
+      'Teams must follow coordinator instructions and strict time limits.',
+      'No mobile phones, notes, or outside assistance permitted during rounds.',
+      '“Don’t Say It!”: No spelling, translating, rhyming, hand gestures, or pointing to venue objects.',
+      'Humming Challenge: Only humming is permitted — no speaking, lyrics, or mouth gestures.',
+      'The team with the highest total score across all 3 rounds will be declared the winner.',
+      'In case of a tie, a tie-breaker round will be conducted.',
+      "Judges' decisions will be final and binding.",
+    ],
+    judgingCriteria: [
+      'Visual Observation & Memory Recall',
+      'Vocabulary, Quick Thinking & Team Synergy',
+      'Melody Identification & Recognition',
+    ],
+    prizes: {
+      first: '₹4,000 Cash Prize + Trophy',
+      second: '₹2,500 Cash Prize + Certificate of Excellence',
+      third: '₹1,000 Cash Prize + Certificate of Merit',
+      allParticipants: 'Certificate of National Participation',
+    },
+    coordinators: [
+      {
+        name: 'Clash of Minds Committee',
+        role: 'Event Lead',
+        department: 'CSBS / CYS',
+        phone: '+91 98401 23459',
+        whatsapp: '919840123459',
+      },
+    ],
+    schedule: {
+      date: 'September 26, 2026',
+      timeSlot: '11:30 AM - 02:00 PM',
+      venue: 'Classroom Block C (Room 302)',
+    },
+    featuredTag: 'Mind Games',
+    iconName: 'Gamepad',
+    accentColor: '#38BDF8',
+  },
+  {
+    id: 'box-cricket',
+    eventId: 'NT05',
+    sheetSlug: 'box-cricket',
+    title: 'Box Cricket',
+    category: 'Non-Technical',
+    tagline: '4-over fast-paced indoor turf cricket championship.',
+    shortDescription: 'Experience rapid 4-over box cricket. 5 fielders + 1 sub, thrilling rules, super overs, and high-energy boundary hitting.',
+    fullDescription: 'High-intensity 4-over indoor box cricket championship! 5 main players + 1 substitute per squad. Fast-paced overs, running between wickets, no LBW, super over tiebreakers, strictly limited to 20 teams on first-come basis.',
+    teamSize: {
+      min: 5,
+      max: 6,
+      description: '5 Main Players + 1 Substitute',
+    },
+    rounds: [
+      {
+        roundNumber: 1,
+        title: '4-Over Knockout Matches',
+        description: 'Knockout fixtures of 4 overs per innings. In case of a tie, a Super Over will be played.',
+        duration: '20 Mins / Match',
+      },
+      {
+        roundNumber: 2,
+        title: 'Championship Semi-Finals & Finals',
+        description: 'Top qualifying teams battle in the semi-finals and championship finals for the Box Cricket Trophy.',
+        duration: '25 Mins / Match',
+      },
+    ],
+    rules: [
+      '4-over cricket matches (5 main players + 1 substitute).',
+      'No LBW rule in effect.',
+      "Umpire's decisions are strictly final and binding.",
+      'A player who has played in one team is not allowed to represent other teams.',
+      'In case of a tie, a Super Over will determine the winner.',
+      'Limited entry: Only 20 teams accepted on a strict first-come, first-served basis.',
+      'Teams coming late after 3 official calls will be disqualified.',
+      'Any violence, arguing with umpires, or misbehavior leads to immediate disqualification.',
+    ],
+    judgingCriteria: [
+      'Runs Scored in 4 Overs',
+      'Wickets Taken & Economy',
+      'Super Over Victory in Ties',
+    ],
+    prizes: {
+      first: '₹5,000 Cash Prize + Box Cricket Cup + Medals',
+      second: '₹3,000 Cash Prize + Runner-up Trophy',
+      allParticipants: 'Certificate of National Participation',
+    },
+    coordinators: [
+      {
+        name: 'Cricket Organizing Council',
+        role: 'Chief Umpire',
+        department: 'Sports Board',
+        phone: '+91 98401 23460',
+        whatsapp: '919840123460',
+      },
+    ],
+    schedule: {
+      date: 'September 26, 2026',
+      timeSlot: '09:30 AM - 02:30 PM',
+      venue: 'Enclosed Box Cricket Ground / Quadrangle',
+    },
+    featuredTag: 'Box Cricket',
+    iconName: 'Award',
+    accentColor: '#FFC928',
+  },
+  {
+    id: 'reel-rush',
+    eventId: 'NT06',
+    sheetSlug: 'reel-rush',
+    title: 'Reel Rush',
+    category: 'Non-Technical',
+    tagline: 'Shoot, edit & showcase viral short-form social reels.',
+    shortDescription: 'Capture the pulse of the symposium day, edit engaging 30-60s reels, and showcase your viral video creation skills.',
+    fullDescription: 'Unleash your social media creativity! Capture dynamic on-ground symposium moments, interviews, trends, or creative storylines, edit high-energy 30-60s short-form videos, and submit within the allotted deadline.',
+    teamSize: {
+      min: 2,
+      max: 3,
+      description: '2 - 3 Members per Team',
+    },
+    rounds: [
+      {
+        roundNumber: 1,
+        title: 'On-Campus Reel Creation',
+        description: 'Capture symposium moments, create original transitions, integrate trending audio, and submit final 30-60 second reels.',
+        duration: '90 Mins',
+      },
+    ],
+    rules: [
+      'Team size: 2–3 members.',
+      'No outside help or pre-recorded outside footage permitted.',
+      'Strictly follow the time limit for creation and submission.',
+      'Do not communicate with other competing teams during production.',
+      'Content must be decent, appropriate, and respectful of campus decorum.',
+      'If any team violates the rules or engages in unfair practices, the team will be disqualified.',
+      "Organizer's decision is final and binding.",
+    ],
+    judgingCriteria: [
+      'Originality & Creative Concept',
+      'Visual Engagement & Transitions',
+      'Audio Synchronization & Trend Usage',
+      'Overall Storytelling Impact',
+    ],
+    prizes: {
+      first: '₹3,500 Cash Prize + Trophy',
+      second: '₹2,000 Cash Prize + Certificate of Excellence',
+      allParticipants: 'Certificate of National Participation',
+    },
+    coordinators: [
+      {
+        name: 'Media & Socials Crew',
+        role: 'Event Lead',
+        department: 'Media Club / SEC',
+        phone: '+91 98401 23461',
+        whatsapp: '919840123461',
+      },
+    ],
+    schedule: {
+      date: 'September 26, 2026',
+      timeSlot: '11:00 AM - 01:30 PM',
+      venue: 'Campus Wide / Media Center Hub',
+    },
+    featuredTag: 'Viral Reels',
+    iconName: 'Video',
+    accentColor: '#EC4899',
+  },
+  {
+    id: 'free-fire',
+    eventId: 'NT07',
+    sheetSlug: 'free-fire',
+    title: 'Free Fire eSports',
+    category: 'Non-Technical',
+    tagline: 'Battle Royale & Clash Squad 7-Gun Championship.',
+    shortDescription: 'Squad up for high-stakes Free Fire mobile action. Bermuda Battle Royale room qualifications followed by Clash Squad semifinals & finals.',
+    fullDescription: 'The ultimate mobile gaming showdown! 24 squads battle in Bermuda Battle Royale rooms. The top 2 squads from each room advance to the intense 7-Gun Clash Squad semifinals and grand finals.',
+    teamSize: {
+      min: 4,
+      max: 4,
+      description: '4 Players Squad (Mobile Only)',
+    },
+    rounds: [
+      {
+        roundNumber: 1,
+        title: 'Round 1: Battle Royale (Max 24 Teams)',
+        description: '12 teams in Room A and 12 teams in Room B on Bermuda. Top 2 teams from each room qualify for the semifinals (4 teams total).',
+        duration: '30 Mins',
+      },
+      {
+        roundNumber: 2,
+        title: 'Round 2: Clash Squad Semi-Finals',
+        description: '4 teams battle in Clash Squad format (No rules match, 7 guns, gun attribute OFF, loadout OFF, airdrop OFF). 2 winners advance.',
+        duration: '20 Mins',
+      },
+      {
+        roundNumber: 3,
+        title: 'Round 3: Clash Squad Grand Finals',
+        description: 'Top 2 squads face off in the Grand Final for the Free Fire Champion trophy.',
+        duration: '20 Mins',
+      },
+    ],
+    rules: [
+      'Mode: Battle Royale Squad & Clash Squad (Bermuda map).',
+      'Device: Mobile only. Emulators / PC players strictly prohibited.',
+      'Custom rooms created exclusively by tournament officials.',
+      'Only registered players can participate; no substitutes during live matches.',
+      'No hacks, scripts, modified APKs, or third-party cheating tools.',
+      'No teaming up with opponent teams; cheating results in immediate tournament disqualification.',
+      'Officially Allowed Guns (Clash Squad): Desert Eagle, UMP, M1887, Woodpecker, AWM, M1014, MP40.',
+      'Gun attributes OFF, Loadout OFF, AirDrop OFF.',
+      "Tournament admin's decision on all disputes is final and binding.",
+    ],
+    judgingCriteria: [
+      'Battle Royale Placement & Kill Points',
+      'Clash Squad Round Victories',
+      'Strict Adherence to Weapon & Fairplay Guidelines',
+    ],
+    prizes: {
+      first: '₹5,000 Cash Prize + eSports Champion Trophy',
+      second: '₹3,000 Cash Prize + Runner-up Trophy',
+      third: '₹1,500 Cash Prize + Certificate of Merit',
+      allParticipants: 'Certificate of National Participation',
+    },
+    coordinators: [
+      {
+        name: 'Gaming & eSports Guild',
+        role: 'Tournament Admin',
+        department: 'CSE / IT',
+        phone: '+91 98401 23462',
+        whatsapp: '919840123462',
+      },
+    ],
+    schedule: {
+      date: 'September 26, 2026',
+      timeSlot: '11:00 AM - 02:00 PM',
+      venue: 'eSports Gaming Arena (Room 401)',
+    },
+    featuredTag: 'eSports Battle',
+    iconName: 'Gamepad2',
+    accentColor: '#E11D48',
+  },
+  {
+    id: 'elite-walk',
+    eventId: 'NT08',
+    sheetSlug: 'elite-walk',
+    title: 'Elite Walk',
+    category: 'Non-Technical',
+    tagline: 'Corporate & fashion ramp walk runway showcase.',
+    shortDescription: 'Flaunt your elegance, styling, posture, and poise on the runway following corporate and fashion aesthetics.',
+    fullDescription: 'A premier runway showcase of elegance, confidence, and styling! Teams or individuals present a themed corporate/fashion ramp walk, assessed on posture, attitude, music coordination, and overall stage presence.',
+    teamSize: {
+      min: 2,
+      max: 8,
+      description: '2 - 8 Members per Team / Group',
+    },
+    rounds: [
+      {
+        roundNumber: 1,
+        title: 'Runway Showcase & Presentation',
+        description: 'Teams perform a choreographed ramp walk in corporate/fashion attire with synchronized music and props within the allotted time.',
+        duration: '5 - 7 Mins / Team',
+      },
+    ],
+    rules: [
+      'Participants must register before the specified deadline.',
+      'Theme: Participants must follow the prescribed corporate/fashion theme.',
+      'Dress code: Outfits should be decent, presentable, and appropriate.',
+      'Props allowed must be safe and easy to handle.',
+      'Selected background music track must be submitted to organizers in advance.',
+      'No offensive gestures, vulgarity, political/religious content, or hazardous stunts.',
+      'Participants will be judged out of 100 marks across 5 criteria.',
+      "The judges' decision will be final and binding.",
+    ],
+    judgingCriteria: [
+      'Confidence & Attitude (20 Marks)',
+      'Walk & Posture (20 Marks)',
+      'Creativity & Choreography (20 Marks)',
+      'Outfit & Styling (20 Marks)',
+      'Overall Stage Presentation (20 Marks) — Total 100 Marks',
+    ],
+    prizes: {
+      first: '₹5,000 Cash Prize + Elite Walk Trophy',
+      second: '₹3,000 Cash Prize + Certificate of Excellence',
+      allParticipants: 'Certificate of National Participation',
+    },
+    coordinators: [
+      {
+        name: 'Fashion & Cultural Council',
+        role: 'Runway Director',
+        department: 'Cultural Committee',
+        phone: '+91 98401 23463',
+        whatsapp: '919840123463',
+      },
     ],
     schedule: {
       date: 'September 26, 2026',
       timeSlot: '01:30 PM - 03:30 PM',
-      venue: 'Open Air Amphitheatre'
+      venue: 'Main Auditorium Runway Stage',
     },
-    iconName: 'Music',
-    accentColor: '#EC4899'
-  },
-  {
-    id: 'indo-japanese-game',
-    eventId: 'NT02',
-    sheetSlug: 'indo-japanese-game',
-    title: 'Indo Japanese Game',
-    category: 'Non-Technical',
-    tagline: 'Traditional Strategy, Cognitive Reflexes & Dexterity.',
-    shortDescription: 'Compete in fun, tactical mini-games blending traditional Indian and Japanese cultural strategy and physical dexterity challenges.',
-    fullDescription: 'Experience an exotic blend of ancient cultural games and cognitive dexterity battles! From Kendama balance and Origami speed runs to Indian strategic board puzzles and chopstick bean sprints.',
-    teamSize: {
-      min: 1,
-      max: 2,
-      description: 'Individual or Duo'
-    },
-    rounds: [
-      {
-        roundNumber: 1,
-        title: 'Dexterity Sprint',
-        description: 'Chopstick precision relay, Kendama balance tricks, and quick puzzle assembly.',
-        duration: '30 Mins'
-      },
-      {
-        roundNumber: 2,
-        title: 'Strategic Mind Face-off',
-        description: 'Speed tactical board game elimination rounds.',
-        duration: '40 Mins'
-      }
-    ],
-    rules: [
-      'All game equipment provided by organizers.',
-      'Strict time limits for each mini-game station.',
-      'Fair play and sportsmanship mandatory.'
-    ],
-    judgingCriteria: ['Fastest completion time and total station score'],
-    prizes: {
-      first: '₹3,000 Cash Prize + Trophy + Certificate',
-      second: '₹1,500 Cash Prize + Certificate'
-    },
-    coordinators: [
-      {
-        name: 'Swetha R',
-        role: 'Student Coordinator',
-        department: 'CSBS (2nd Year)',
-        phone: '+91 97109 88776',
-        whatsapp: '919710988776'
-      }
-    ],
-    schedule: {
-      date: 'September 26, 2026',
-      timeSlot: '02:00 PM - 04:00 PM',
-      venue: 'Indoor Sports Complex Activity Hall'
-    },
-    iconName: 'Gamepad2',
-    accentColor: '#F59E0B'
-  },
-  {
-    id: 'ipl-auction',
-    eventId: 'NT03',
-    sheetSlug: 'ipl-auction',
-    title: 'IPL Auction',
-    category: 'Non-Technical',
-    tagline: 'Strategic Bidding. Build the Ultimate Championship Squad.',
-    shortDescription: 'Step into the shoes of franchise team owners with a fixed virtual purse to outbid rivals and assemble the highest-rated IPL XI.',
-    fullDescription: 'Do you have the analytical acumen and cricketing intuition of a franchise owner? Manage an ₹80 Crore virtual budget, make high-stakes bidding decisions, balance overseas quotas, and build a championship-winning playing 11.',
-    teamSize: {
-      min: 3,
-      max: 4,
-      description: '3 to 4 Members per Team'
-    },
-    rounds: [
-      {
-        roundNumber: 1,
-        title: 'Cricket Trivia & Roster Strategy Prelims',
-        description: 'Written cricket trivia & tactical player stats test to qualify for franchise bidding seats.',
-        duration: '25 Mins'
-      },
-      {
-        roundNumber: 2,
-        title: 'Live Auctioneer Hammer Round',
-        description: 'Intense live bidding with paddle raises, marquee player sets, accelerated bidding, and surprise player trade windows.',
-        duration: '90 Mins'
-      }
-    ],
-    rules: [
-      'Each squad must have exactly 11 players including min 4 bowlers, min 1 wicketkeeper, and max 4 overseas stars.',
-      'Teams going bankrupt before filling 11 slots are penalized heavily in ratings.',
-      'Player ratings are pre-determined based on international and IPL career metrics.'
-    ],
-    judgingCriteria: [
-      'Total Team Rating Points (60%)',
-      'Budget Efficiency & Remaining Purse (20%)',
-      'Squad Balance & Bowling Variety (20%)'
-    ],
-    prizes: {
-      first: '₹4,500 Cash Prize + Champions Trophy + Certificates',
-      second: '₹2,500 Cash Prize + Certificates'
-    },
-    coordinators: [
-      {
-        name: 'Gokulnath P',
-        role: 'Student Coordinator',
-        department: 'AI&DS (Final Year)',
-        phone: '+91 99401 55667',
-        whatsapp: '919940155667'
-      },
-      {
-        name: 'Harish Kumar S',
-        role: 'Student Coordinator',
-        department: 'CSE (3rd Year)',
-        phone: '+91 94451 22334',
-        whatsapp: '919445122334'
-      }
-    ],
-    schedule: {
-      date: 'September 26, 2026',
-      timeSlot: '01:30 PM - 04:30 PM',
-      venue: 'Main Auditorium Tier Hall'
-    },
-    featuredTag: 'High Energy Fan Favorite',
-    iconName: 'Trophy',
-    accentColor: '#38BDF8'
-  },
-  {
-    id: 'reel-rush',
-    eventId: 'NT04',
-    sheetSlug: 'reel-rush',
-    title: 'Reel Rush',
-    category: 'Non-Technical',
-    tagline: 'Shoot. Edit. Go Viral in 90 Minutes.',
-    shortDescription: 'Capture on-campus symposium energy, edit crisp dynamic Instagram reels, and showcase your viral cinematography storytelling.',
-    fullDescription: 'Reel Rush is the ultimate fast-paced filmmaking and video editing challenge. Participants receive dynamic campus prompts and have 90 minutes to shoot cinematic footage, add transitions, sound design, and submit a high-impact 30–60 second reel.',
-    teamSize: {
-      min: 1,
-      max: 2,
-      description: 'Individual or Duo'
-    },
-    rounds: [
-      {
-        roundNumber: 1,
-        title: 'Theme Drop & Shoot Window',
-        description: 'Campus prompt announced. Capture 4K/HD video clips across symposium event venues.',
-        duration: '60 Mins'
-      },
-      {
-        roundNumber: 2,
-        title: 'Rapid Cut & Color Grade',
-        description: 'Post-production editing on mobile/laptop with background music and effects.',
-        duration: '45 Mins'
-      }
-    ],
-    rules: [
-      'All footage must be recorded on campus on symposium day.',
-      'Reel duration must strictly be between 30 and 60 seconds.',
-      'Aspect ratio must be 9:16 (vertical mobile video).',
-      'No copyrighted watermark or offensive content.'
-    ],
-    judgingCriteria: [
-      'Cinematography & Camera Angles (30%)',
-      'Editing Pace, Transitions & Sound Sync (30%)',
-      'Creativity & Campus Vibe Capture (25%)',
-      'Visual Color Grading (15%)'
-    ],
-    prizes: {
-      first: '₹3,500 Cash Prize + Certificate',
-      second: '₹2,000 Cash Prize + Certificate'
-    },
-    coordinators: [
-      {
-        name: 'Monisha B',
-        role: 'Student Coordinator',
-        department: 'AIML (2nd Year)',
-        phone: '+91 93801 44556',
-        whatsapp: '919380144556'
-      }
-    ],
-    schedule: {
-      date: 'September 26, 2026',
-      timeSlot: '01:00 PM - 03:30 PM',
-      venue: 'Campus Wide / Media Center Hub'
-    },
-    iconName: 'Video',
-    accentColor: '#A855F7'
-  },
-  {
-    id: 'squid-game',
-    eventId: 'NT05',
-    sheetSlug: 'squid-game',
-    title: 'Squid Game',
-    category: 'Non-Technical',
-    tagline: 'Outsmart. Outlast. Survive the Elimination Arena.',
-    shortDescription: 'High-stakes obstacle rounds, red-light-green-light reaction tests, and survival strategy puzzles where one wrong move means elimination.',
-    fullDescription: 'Inspired by iconic survival challenges, Squid Game puts your patience, reflex speed, equilibrium balance, and psychological endurance to the test across 4 intense knockout rounds.',
-    teamSize: {
-      min: 1,
-      max: 1,
-      description: 'Individual Participation Only'
-    },
-    rounds: [
-      {
-        roundNumber: 1,
-        title: 'Motion Freeze (Red Light, Green Light)',
-        description: 'Sprint across the field and freeze immediately on sensory audio cue.',
-        duration: '15 Mins'
-      },
-      {
-        roundNumber: 2,
-        title: 'Honeycomb Precision Carve',
-        description: 'Delicate shape extraction without snapping fragile boundaries.',
-        duration: '15 Mins'
-      },
-      {
-        roundNumber: 3,
-        title: 'Glass Bridge Balance',
-        description: 'Memory step pathway across sensory ground pads.',
-        duration: '20 Mins'
-      }
-    ],
-    rules: [
-      'Strict single-elimination at every round.',
-      'Judges maintain zero tolerance on movement violations.',
-      'Sports shoes recommended for agility.'
-    ],
-    judgingCriteria: ['Last player standing / Fastest flawless completion'],
-    prizes: {
-      first: '₹4,000 Cash Prize + The Golden Survivor Trophy + Certificate',
-      second: '₹2,000 Cash Prize + Certificate'
-    },
-    coordinators: [
-      {
-        name: 'Sanjay Kumar V',
-        role: 'Student Coordinator',
-        department: 'Cyber Security (3rd Year)',
-        phone: '+91 98410 77889',
-        whatsapp: '919841077889'
-      }
-    ],
-    schedule: {
-      date: 'September 26, 2026',
-      timeSlot: '02:00 PM - 04:30 PM',
-      venue: 'Central Quadrangle Ground'
-    },
-    featuredTag: 'Knockout Arena',
-    iconName: 'Flame',
-    accentColor: '#EF4444'
-  },
-  {
-    id: 'clash-of-talent',
-    eventId: 'NT06',
-    sheetSlug: 'clash-of-talent',
-    title: 'Clash of Talent',
-    category: 'Non-Technical',
-    tagline: 'Own the Spotlight. Dazzle the Audience.',
-    shortDescription: 'An open-stage variety showcase for beatboxing, mimicry, stand-up comedy, instrumental solos, magic, and theatrical mastery.',
-    fullDescription: 'Step onto the grand stage and leave the crowd spellbound! Whether you are a master of acoustic guitar, an illusionist, a mimicry artist, or an electrifying solo performer, Clash of Talent is your canvas.',
-    teamSize: {
-      min: 1,
-      max: 2,
-      description: 'Solo or Duo Performance'
-    },
-    rounds: [
-      {
-        roundNumber: 1,
-        title: 'Stage Showcase & Live Performance',
-        description: '4-minute uninterrupted live performance before a 1,000+ member audience and celebrity artist jury.',
-        duration: '4 Mins / Performance'
-      }
-    ],
-    rules: [
-      'Props or background music must be submitted 30 minutes prior to event commencement on a pen drive.',
-      'Vulgarity, political satire, or offensive language will lead to immediate disqualification.',
-      'Time limit strictly enforced (buzzer rings at 3:45 mins).'
-    ],
-    judgingCriteria: [
-      'Stage Presence & Confidence (30%)',
-      'Artistic Talent & Technical Skill (35%)',
-      'Audience Engagement & Entertainment Value (25%)',
-      'Adherence to Time Limits (10%)'
-    ],
-    prizes: {
-      first: '₹4,000 Cash Prize + Memento + Certificate',
-      second: '₹2,500 Cash Prize + Certificate'
-    },
-    coordinators: [
-      {
-        name: 'Keerthana M',
-        role: 'Student Coordinator',
-        department: 'CSBS (Final Year)',
-        phone: '+91 97891 33221',
-        whatsapp: '919789133221'
-      }
-    ],
-    schedule: {
-      date: 'September 26, 2026',
-      timeSlot: '02:30 PM - 04:45 PM',
-      venue: 'Main Auditorium Grand Stage'
-    },
-    iconName: 'Sparkles',
-    accentColor: '#00F2FE'
-  },
-
-  // ==========================================
-  // SPECIAL EVENTS (4)
-  // ==========================================
-  {
-    id: 'box-cricket',
-    eventId: 'SP01',
-    sheetSlug: 'box-cricket',
-    title: 'Box Cricket',
-    category: 'Special',
-    tagline: 'Short Format. Maximum Voltage Turf Action.',
-    shortDescription: 'High-speed 6-over turf cricket with customized box boundaries, sudden death overs, and electric running between wickets.',
-    fullDescription: 'Box Cricket brings fast, thrilling cricket to the enclosed artificial turf. With restricted boundary dimensions, running bonus runs, and direct hit wickets, every ball delivers nail-biting suspense.',
-    teamSize: {
-      min: 6,
-      max: 7,
-      description: '6 Players + 1 Rolling Substitute'
-    },
-    rounds: [
-      {
-        roundNumber: 1,
-        title: 'Knockout Group Matches',
-        description: '5-over per side knockout fixtures.',
-        duration: '25 Mins / Match'
-      },
-      {
-        roundNumber: 2,
-        title: 'Grand Turf Final',
-        description: '6-over high-pressure championship match.',
-        duration: '40 Mins'
-      }
-    ],
-    rules: [
-      'Underarm bowling only; direct wall hits without pitch are declared out.',
-      'Tennis ball with standard safety turf gear.',
-      'Umpire decisions are final.'
-    ],
-    judgingCriteria: ['Match winning score and tournament bracket progress'],
-    prizes: {
-      first: '₹6,000 Cash Prize + Grand Champions Trophy + Medals',
-      second: '₹3,500 Cash Prize + Runner Trophy + Medals'
-    },
-    coordinators: [
-      {
-        name: 'Ashwin S',
-        role: 'Student Coordinator',
-        department: 'CSE (Final Year)',
-        phone: '+91 99621 88770',
-        whatsapp: '919962188770'
-      },
-      {
-        name: 'Praveen Raj',
-        role: 'Student Coordinator',
-        department: 'AIML (3rd Year)',
-        phone: '+91 98402 11990',
-        whatsapp: '919840211990'
-      }
-    ],
-    schedule: {
-      date: 'September 26, 2026',
-      timeSlot: '09:30 AM - 04:00 PM',
-      venue: 'Sriram Turf Ground 1'
-    },
-    featuredTag: 'Mega Championship',
-    iconName: 'Activity',
-    accentColor: '#10B981'
-  },
-  {
-    id: 'football',
-    eventId: 'SP02',
-    sheetSlug: 'football',
-    title: '5-a-Side Football',
-    category: 'Special',
-    tagline: 'Speed. Tiki-Taka. Unstoppable Strikes.',
-    shortDescription: '5-a-side knockout football tournament on synthetic turf testing tactical agility, fast passes, and goalkeeping reflexes.',
-    fullDescription: 'Experience the electric intensity of 5-a-side futsal. Short halves, rolling substitutions, and compact pitch dimensions demand quick decision making, crisp passing, and lethal finishing.',
-    teamSize: {
-      min: 5,
-      max: 7,
-      description: '5 on field + 2 Substitutes'
-    },
-    rounds: [
-      {
-        roundNumber: 1,
-        title: 'Knockout Stages',
-        description: '10-minute halves (5-minute break) knockout format.',
-        duration: '25 Mins / Match'
-      },
-      {
-        roundNumber: 2,
-        title: 'Championship Final',
-        description: '15-minute halves with sudden death penalty shootouts if tied.',
-        duration: '35 Mins'
-      }
-    ],
-    rules: [
-      'No sliding tackles permitted on turf.',
-      'Corner kicks and kick-ins from sidelines.',
-      'Yellow/Red card disciplinary rules apply strictly.'
-    ],
-    judgingCriteria: ['Goal tally and knockout tournament advancement'],
-    prizes: {
-      first: '₹6,000 Cash Prize + Football Cup + Medals',
-      second: '₹3,500 Cash Prize + Medals'
-    },
-    coordinators: [
-      {
-        name: 'Mohammed Faiz',
-        role: 'Student Coordinator',
-        department: 'Cyber Security (Final Year)',
-        phone: '+91 97901 66554',
-        whatsapp: '919790166554'
-      }
-    ],
-    schedule: {
-      date: 'September 26, 2026',
-      timeSlot: '09:30 AM - 04:00 PM',
-      venue: 'Sriram Sports Complex Turf 2'
-    },
-    iconName: 'Award',
-    accentColor: '#38BDF8'
-  },
-  {
-    id: 'fashion-walk',
-    eventId: 'SP03',
-    sheetSlug: 'fashion-walk',
-    title: 'Fashion Walk',
-    category: 'Special',
-    tagline: 'Couture. Poise. Thematic Runway Elegance.',
-    shortDescription: 'Thematic runway ramp walk expressing high-fashion aesthetics, sustainability, cultural fusion, and commanding stage poise.',
-    fullDescription: 'The runway is set! Fashion Walk invites style icons and creative designers to present curated themes: Cyberpunk Futurism, Indian Heritage Fusion, or Eco-Sustainable Haute Couture before an esteemed jury of fashion mentors.',
-    teamSize: {
-      min: 1,
-      max: 2,
-      description: 'Solo Model or Pair Walk'
-    },
-    rounds: [
-      {
-        roundNumber: 1,
-        title: 'Thematic Ramp Showcase',
-        description: 'Ramp walk with background thematic track followed by 1-minute theme explanation to the jury.',
-        duration: '3 Mins / Entry'
-      }
-    ],
-    rules: [
-      'Costumes and styling must maintain decorum and college cultural standards.',
-      'Theme tracks must be submitted in MP3 format to audio console 45 mins prior to the event.',
-      'Props allowed upon advance coordinator approval.'
-    ],
-    judgingCriteria: [
-      'Attire Design & Thematic Cohesion (35%)',
-      'Walk Confidence, Poise & Posture (35%)',
-      'Overall Stage Presence (30%)'
-    ],
-    prizes: {
-      first: '₹4,500 Cash Prize + Crown / Trophy + Certificate',
-      second: '₹2,500 Cash Prize + Certificate'
-    },
-    coordinators: [
-      {
-        name: 'Sneha Priyadharshini',
-        role: 'Student Coordinator',
-        department: 'AI&DS (3rd Year)',
-        phone: '+91 98408 22119',
-        whatsapp: '919840822119'
-      }
-    ],
-    schedule: {
-      date: 'September 26, 2026',
-      timeSlot: '03:00 PM - 05:00 PM',
-      venue: 'Main Auditorium Grand Ramp'
-    },
+    featuredTag: 'Fashion Runway',
     iconName: 'Crown',
-    accentColor: '#EC4899'
+    accentColor: '#9333EA',
   },
   {
-    id: 'e-sports',
-    eventId: 'SP04',
-    sheetSlug: 'e-sports',
-    title: 'E-Sports Arena',
-    category: 'Special',
-    tagline: 'Battlegrounds. Reflexes. Claim the Champion Chicken Dinner.',
-    shortDescription: 'High-octane mobile battle royale showdown (BGMI & Free Fire) with custom room lobby matches and live-streamed commentary.',
-    fullDescription: 'Gear up your squad for the ultimate gaming tournament! Compete in custom BGMI / Free Fire lobbies across Erangel and Bermuda maps. Coordinated rotations, zone control, and tactical gunplay will crown the supreme esports champions.',
+    id: 'start-music',
+    eventId: 'NT09',
+    sheetSlug: 'start-music',
+    title: 'Start Music',
+    category: 'Non-Technical',
+    tagline: 'Guess the song, lyric continuation & musical trivia frenzy.',
+    shortDescription: 'Tune into rapid melody cues, identify missing song lyrics, recognize classic tracks, and dominate the musical buzzer.',
+    fullDescription: 'The ultimate musical battle of tunes and tracks! Teams of 2 test their song memory, background score identification, lyric continuity, and music trivia across multiple interactive buzzer rounds.',
     teamSize: {
-      min: 4,
-      max: 4,
-      description: 'Squad of 4 Players'
+      min: 2,
+      max: 2,
+      description: 'Exactly 2 Members per Team',
     },
     rounds: [
       {
         roundNumber: 1,
-        title: 'Qualifying Lobby Matches',
-        description: '2 Erangel lobby matches. Top 8 squads qualify based on placement + kill points.',
-        duration: '45 Mins'
+        title: 'Tune & Lyric Recognition Arena',
+        description: 'Identify songs from short instrumental snippets, complete lyric lines from where the track pauses, and buzz in for rapid music trivia.',
+        duration: '45 Mins',
       },
-      {
-        roundNumber: 2,
-        title: 'Grand Finals Arena',
-        description: '3 consecutive tournament maps with real-time broadcast and big screen live spectator view.',
-        duration: '75 Mins'
-      }
     ],
     rules: [
-      'Players must bring their own mobile devices, charging cables, and earphones/headphones.',
-      'Emulators, triggers, iPad devices, and hack clients are strictly banned; hardware inspections conducted before lobbies start.',
-      'Stable college high-speed 5G Wi-Fi provided at the arena.'
+      'Team size: Strictly 2 members per team.',
+      'Mobile phones and smart devices are strictly prohibited during the event.',
+      'No communication with other teams or members in the audience.',
+      'No arguments with coordinators or quizmasters.',
+      'Rules will be strictly enforced; rule violations lead to immediate elimination.',
+      "Coordinator's decision will be final and binding.",
     ],
     judgingCriteria: [
-      'Kill Points (1 Pt / Frag) + Placement Multiplier Points'
+      'Buzzer Speed & Reaction Time',
+      'Accuracy of Song Identification',
+      'Lyric Continuation Precision',
     ],
     prizes: {
-      first: '₹5,000 Cash Prize + MVP Trophy + Certificates',
-      second: '₹3,000 Cash Prize + Certificates',
-      third: '₹1,500 Cash Prize + Certificates'
+      first: '₹4,000 Cash Prize + Trophy',
+      second: '₹2,500 Cash Prize + Certificate of Excellence',
+      third: '₹1,000 Cash Prize + Certificate of Merit',
+      allParticipants: 'Certificate of National Participation',
     },
     coordinators: [
       {
-        name: 'Naveen Kumar R',
-        role: 'Student Coordinator',
-        department: 'AIML (3rd Year)',
-        phone: '+91 99402 77881',
-        whatsapp: '919940277881'
+        name: 'Music & Fine Arts Club',
+        role: 'Event Lead',
+        department: 'Cultural Guild',
+        phone: '+91 98401 23464',
+        whatsapp: '919840123464',
       },
-      {
-        name: 'Deepak V',
-        role: 'Student Coordinator',
-        department: 'CSE (2nd Year)',
-        phone: '+91 98841 33445',
-        whatsapp: '919884133445'
-      }
     ],
     schedule: {
       date: 'September 26, 2026',
-      timeSlot: '11:00 AM - 03:30 PM',
-      venue: 'High Performance Computing Lab (Block 2)'
+      timeSlot: '01:00 PM - 03:00 PM',
+      venue: 'Mini Seminar Hall 2',
     },
-    featuredTag: 'Live Broadcast',
-    iconName: 'Gamepad',
-    accentColor: '#00F2FE'
-  }
+    featuredTag: 'Music Arena',
+    iconName: 'Music',
+    accentColor: '#FFC928',
+  },
 ];
