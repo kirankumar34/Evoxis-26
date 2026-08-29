@@ -1,20 +1,7 @@
 import { DepartmentInfo } from '@/types';
 
 export const DEPARTMENTS: DepartmentInfo[] = [
-  {
-    id: 'csbs',
-    shortCode: 'CSBS',
-    fullName: 'Computer Science and Business Systems',
-    hodName: 'Dr. S. Rajalakshmi',
-    tagline: 'Bridging Enterprise Strategy with Cutting-Edge Computation',
-    description: 'Pioneering multidisciplinary innovation by uniting advanced software engineering, computational finance, cloud ERP, and executive technology strategy.',
-    icon: 'Briefcase',
-    accentColor: '#00F2FE',
-    stats: [
-      { label: 'Industry Ties', value: '15+ MNCs' },
-      { label: 'Focus', value: 'Enterprise Tech' }
-    ]
-  },
+
   {
     id: 'cse',
     shortCode: 'CSE',
@@ -69,6 +56,20 @@ export const DEPARTMENTS: DepartmentInfo[] = [
     stats: [
       { label: 'War Room', value: 'CTF Arena' },
       { label: 'Focus', value: 'Defensive Ops' }
+    ]
+  },
+    {
+    id: 'csbs',
+    shortCode: 'CSBS',
+    fullName: 'Computer Science and Business Systems',
+    hodName: 'Dr. S. Rajalakshmi',
+    tagline: 'Bridging Enterprise Strategy with Cutting-Edge Computation',
+    description: 'Pioneering multidisciplinary innovation by uniting advanced software engineering, computational finance, cloud ERP, and executive technology strategy.',
+    icon: 'Briefcase',
+    accentColor: '#00F2FE',
+    stats: [
+      { label: 'Industry Ties', value: '15+ MNCs' },
+      { label: 'Focus', value: 'Enterprise Tech' }
     ]
   }
 ];

@@ -1,175 +1,706 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Sparkles, Calendar, MapPin, ArrowRight, Award, Users, Cpu, Compass, Anchor, Navigation } from 'lucide-react';
-import { CountdownTimer } from './CountdownTimer';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
+import BgImg from '../../assets/HeroSection_Background.png';
+import BgImg2 from '../../assets/HeroSection_Background1.png';
+import { sound } from '../../utils/audio';
 
-interface HeroSectionProps {
-  onOpenRegister: () => void;
-  eventDate: string;
+/* ─── colour tokens ──────────────────────────────────────────────────────── */
+const C = {
+  bone:      '#F8F8F8',
+  cream:     '#FFF3D6',
+  ink:       '#0B0B0B',
+  red:       '#E2231A',
+  deepRed:   '#9A1410',
+  blue:      '#0077C8',
+  deepBlue:  '#003B73',
+  gold:      '#FFC928',
+  deepGold:  '#B56A12',
+  rope:      '#C68B3F',
+  seafoam:   '#7ED9D6',
+};
+
+/* ─── background slides ─────────────────────────────────────────────────── */
+const BG_SLIDES = [
+  {
+    id: 1,
+    img: BgImg,
+    issue: 'ISSUE 007 // NEW WORLD // CHAPTER 1 OF 2',
+    chapter: 'CHAPTER 1',
+    pageIndex: '01 / 02',
+    tag: 'NEW WORLD SAGA',
+    bounty: '$ 3,000,000,000',
+    crew: 'STRAW HAT PIRATES',
+    sea: 'GRAND LINE',
+    quote: 'A dream that defies the seas, the marines, and the world itself — set sail for One Piece.',
+  },
+  {
+    id: 2,
+    img: BgImg2,
+    issue: 'ISSUE 008 // FINAL SAGA // CHAPTER 2 OF 2',
+    chapter: 'CHAPTER 2',
+    pageIndex: '02 / 02',
+    tag: 'EMPERORS ERA',
+    bounty: '$ 3,000,000,000',
+    crew: 'STRAW HAT FLEET',
+    sea: 'ALL SEAS',
+    quote: 'Inherited will, the tide of the times, and people’s dreams. As long as people seek freedom, these will never stop.',
+  },
+];
+
+
+
+
+/* ─── framer motion background slide variants ───────────────────────────── */
+const slideVariants: Variants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? '100%' : '-100%',
+    scale: 1.08,
+    opacity: 0.2,
+    filter: 'blur(4px)',
+  }),
+  center: {
+    x: 0,
+    scale: 1.05,
+    opacity: 1,
+    filter: 'blur(0px)',
+    transition: {
+      x: { type: 'spring', stiffness: 180, damping: 26, mass: 1 },
+      opacity: { duration: 0.7 },
+      scale: { duration: 1.2, ease: 'easeOut' },
+      filter: { duration: 0.6 },
+    },
+  },
+  exit: (direction: number) => ({
+    x: direction > 0 ? '-100%' : '100%',
+    scale: 1.0,
+    opacity: 0,
+    filter: 'blur(6px)',
+    transition: {
+      x: { type: 'spring', stiffness: 180, damping: 26, mass: 1 },
+      opacity: { duration: 0.7 },
+      filter: { duration: 0.5 },
+    },
+  }),
+};
+
+export interface HeroSectionProps {
+  onOpenRegister?: () => void;
+  eventDate?: string;
 }
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister, eventDate }) => {
-  const departments = ['CSBS', 'CSE', 'AI&DS', 'AIML', 'CYBER SECURITY'];
+/* ─── component ──────────────────────────────────────────────────────────── */
+export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () => {}, eventDate }) => {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [slideIndex, setSlideIndex] = useState(0);
+  const [direction, setDirection] = useState(1);
+  const [isAutoPlay, setIsAutoPlay] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  /* countdown calculation */
+  const targetDate = eventDate ? new Date(eventDate).getTime() : new Date('2026-08-27T09:00').getTime();
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
+
+  useEffect(() => {
+    const tick = () => {
+      const diff = targetDate - Date.now();
+      if (diff > 0) {
+        setTimeLeft({
+          days:  Math.floor(diff / 86400000),
+          hours: Math.floor((diff / 3600000) % 24),
+          mins:  Math.floor((diff / 60000) % 60),
+          secs:  Math.floor((diff / 1000) % 60),
+        });
+      } else {
+        setTimeLeft({ days: 0, hours: 0, mins: 0, secs: 0 });
+      }
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [targetDate]);
+
+  /* slide switcher */
+  const changeSlide = (newIndex: number, newDirection: number) => {
+    sound.playTick?.();
+    setDirection(newDirection);
+    setSlideIndex(newIndex);
+  };
+
+  const nextSlide = () => {
+    const nextIdx = (slideIndex + 1) % BG_SLIDES.length;
+    changeSlide(nextIdx, 1);
+  };
+
+  const prevSlide = () => {
+    const prevIdx = (slideIndex - 1 + BG_SLIDES.length) % BG_SLIDES.length;
+    changeSlide(prevIdx, -1);
+  };
+
+  /* Auto-slide window interval */
+  useEffect(() => {
+    if (!isAutoPlay) return;
+    const timer = setInterval(() => {
+      setDirection(1);
+      setSlideIndex((prev) => (prev + 1) % BG_SLIDES.length);
+    }, 7000);
+    return () => clearInterval(timer);
+  }, [isAutoPlay]);
+
+  /* parallax */
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return;
+    const r = containerRef.current.getBoundingClientRect();
+    setMousePos({
+      x: ((e.clientX - r.left) / r.width  - 0.5) * 2,
+      y: ((e.clientY - r.top)  / r.height - 0.5) * 2,
+    });
+  };
+
+  const activeSlide = BG_SLIDES[slideIndex];
 
   return (
-    <section className="relative min-h-[94vh] pt-32 pb-20 flex flex-col justify-center items-center overflow-hidden bg-gradient-to-b from-[#02050E] via-[#040814] to-[#0A1128]">
-      {/* Background Sea-Chart & Ocean Glow Effects */}
-      <div className="absolute inset-0 bg-voyage-chart bg-[size:48px_48px] opacity-35 pointer-events-none" />
-      
-      {/* Deep Ocean Ambient Light & Celestial Navigation Beams */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] sm:w-[1000px] h-[550px] bg-hero-glow blur-3xl pointer-events-none" />
-      <div className="absolute top-16 left-8 w-80 h-80 bg-[#00F2FE]/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 right-8 w-96 h-96 bg-[#E11D48]/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-[#E6CA65]/10 rounded-full blur-3xl pointer-events-none" />
+    <div
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsAutoPlay(false)}
+      onMouseLeave={() => setIsAutoPlay(true)}
+      className="relative w-full max-w-full h-[100dvh] min-h-[640px] max-h-[1080px] overflow-hidden text-white select-none flex flex-col justify-between"
+      style={{ fontFamily: "'Inter', sans-serif" }}
+    >
+      {/* ── FRAMER MOTION SLIDING BACKGROUND WINDOW ──────────────────── */}
+      <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
+        <AnimatePresence initial={false} custom={direction} mode="popLayout">
+          <motion.div
+            key={activeSlide.id}
+            custom={direction}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            className="absolute inset-0 w-full h-full"
+            style={{
+              backgroundImage: `url(${activeSlide.img})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center 20%',
+              backgroundRepeat: 'no-repeat',
+              transform: `translate3d(${mousePos.x * 12}px, ${mousePos.y * 8}px, 0)`,
+              transition: 'transform 0.15s ease-out',
+            }}
+          />
+        </AnimatePresence>
+      </div>
 
-      {/* Decorative Nautical Lines & Compass Watermark */}
-      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#0A1128] to-transparent pointer-events-none" />
+      {/* dark aesthetic manga gradient overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'linear-gradient(105deg, rgba(11,11,11,0.85) 0%, rgba(11,11,11,0.56) 48%, rgba(11,11,11,0.32) 100%)',
+          zIndex: 1,
+        }}
+      />
 
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
-        {/* Organizer & Accreditation Voyage Crest */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="inline-flex flex-wrap items-center justify-center gap-2 px-5 py-2 rounded-full bg-[#0A1128]/90 border border-[#E6CA65]/35 backdrop-blur-md shadow-glow-gold/20 mb-6"
+      {/* bottom gradient fade to seamlessly transition into next section */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-36 pointer-events-none"
+        style={{
+          background: 'linear-gradient(to top, rgba(4,8,20,0.98) 0%, rgba(4,8,20,0.5) 60%, transparent 100%)',
+          zIndex: 2,
+        }}
+      />
+
+      {/* subtle scanline overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-20"
+        style={{
+          backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.18) 3px, rgba(0,0,0,0.18) 4px)',
+          zIndex: 2,
+        }}
+      />
+
+      {/* ── LEFT VERTICAL LABEL ───────────────────────────────────────── */}
+      <div
+        className="absolute left-0 top-1/2 -translate-y-1/2 hidden lg:flex flex-col items-center gap-3"
+        style={{ zIndex: 20, padding: '0 10px' }}
+      >
+        <div
+          style={{
+            writingMode: 'vertical-rl',
+            transform: 'rotate(180deg)',
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '0.57rem',
+            letterSpacing: '0.18em',
+            color: C.bone,
+            textTransform: 'uppercase',
+            background: C.red,
+            padding: '6px 5px',
+          }}
         >
-          <Compass className="w-4 h-4 text-[#E6CA65] animate-compass" />
-          <span className="text-xs sm:text-sm font-medium text-slate-200 tracking-wide">
-            <span className="text-[#E6CA65] font-voyage font-bold">SRIRAM ENGINEERING COLLEGE</span> • Grand Symposium Voyage
-          </span>
-          <Anchor className="w-3.5 h-3.5 text-[#00F2FE] ml-0.5" />
-        </motion.div>
-
-        {/* 5 Co-Hosting Fleets Badge Strip */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 mb-6"
+          ISSUE 007
+        </div>
+        <div
+          style={{
+            writingMode: 'vertical-rl',
+            transform: 'rotate(180deg)',
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '0.55rem',
+            letterSpacing: '0.12em',
+            color: 'rgba(248,248,248,0.38)',
+            textTransform: 'uppercase',
+          }}
         >
-          <span className="text-xs text-[#E6CA65]/80 font-mono mr-1">Co-Hosted by Fleets:</span>
-          {departments.map((dept) => (
-            <span
-              key={dept}
-              className="px-3 py-0.5 rounded-lg text-[11px] font-mono font-bold tracking-wider bg-[#0E1736]/90 text-[#FCE79C] border border-[#E6CA65]/25 hover:border-[#E6CA65] hover:bg-[#E6CA65]/10 transition-all shadow-sm"
-            >
-              {dept}
-            </span>
-          ))}
-        </motion.div>
-
-        {/* Main Title: EvoXis'26 — Grand Voyage */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.7, delay: 0.2 }}
-          className="relative inline-block"
+          ONE PIECE // ワンピース // STORY
+        </div>
+        <div
+          className="w-px"
+          style={{ height: '55px', background: `linear-gradient(to bottom, transparent, ${C.gold}, transparent)` }}
+        />
+        <div
+          style={{
+            writingMode: 'vertical-rl',
+            transform: 'rotate(180deg)',
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '0.55rem',
+            letterSpacing: '0.12em',
+            color: 'rgba(248,248,248,0.38)',
+            textTransform: 'uppercase',
+          }}
         >
-          <div className="absolute -top-6 left-1/2 -translate-x-1/2 flex items-center gap-2 text-xs font-voyage tracking-widest text-[#E6CA65]/70 uppercase">
-            <span>⚔️</span>
-            <span>The Grand Odyssey</span>
-            <span>⚔️</span>
-          </div>
-          <h1 className="font-voyage font-black text-5xl sm:text-7xl md:text-8xl tracking-wider text-white uppercase drop-shadow-2xl">
-            Evo<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FCE79C] via-[#E6CA65] to-[#00F2FE]">Xis</span>
-            <span className="text-[#E6CA65] text-3xl sm:text-5xl md:text-6xl font-mono ml-1">'26</span>
-          </h1>
-        </motion.div>
-
-        {/* Official Tagline */}
-        <motion.p
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-4 font-display text-lg sm:text-2xl md:text-3xl font-semibold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-[#FFF5C0] via-slate-100 to-[#38BDF8]"
+          {activeSlide.tag}
+        </div>
+        <div
+          style={{
+            writingMode: 'vertical-rl',
+            transform: 'rotate(180deg)',
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '0.57rem',
+            letterSpacing: '0.18em',
+            color: C.bone,
+            textTransform: 'uppercase',
+            background: C.deepBlue,
+            padding: '6px 5px',
+          }}
         >
-          "Evolving Intelligence • Infinite Possibilities"
-        </motion.p>
+          {activeSlide.chapter}
+        </div>
+      </div>
 
-        {/* Event Date & Location Sub-header */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-5 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm sm:text-base text-slate-300"
-        >
-          <div className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-[#0A1128]/80 border border-[#E6CA65]/25 shadow-sm">
-            <Calendar className="w-4 h-4 text-[#E6CA65]" />
-            <span className="font-mono font-semibold text-slate-200">September 26, 2026</span>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-[#0A1128]/80 border border-[#00F2FE]/25 shadow-sm">
-            <MapPin className="w-4 h-4 text-[#00F2FE]" />
-            <span className="font-medium text-slate-200">Sriram Engineering College, Tiruvallur</span>
-          </div>
-        </motion.div>
-
-        {/* Live Countdown Timer Module */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.5 }}
-          className="mt-8 mb-10"
-        >
-          <div className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-[#E6CA65] uppercase mb-3 bg-[#E6CA65]/10 px-3 py-1 rounded-full border border-[#E6CA65]/25">
-            <Navigation className="w-3.5 h-3.5 text-[#E6CA65]" />
-            <span>Time Until Fleet Departure</span>
-          </div>
-          <CountdownTimer targetDate={eventDate} />
-        </motion.div>
-
-        {/* Action CTAs */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4 max-w-lg mx-auto w-full px-2"
-        >
-          <button
-            type="button"
-            onClick={onOpenRegister}
-            className="cyber-button w-full sm:w-auto min-h-[54px] px-8 py-4 rounded-2xl font-voyage font-black text-sm sm:text-base text-[#040814] bg-gradient-to-r from-[#E6CA65] via-[#FCE79C] to-[#00F2FE] hover:from-[#FFF5C0] hover:to-[#38BDF8] shadow-glow-gold flex items-center justify-center gap-2.5 transition-all hover:scale-105 active:scale-[0.98] border border-[#FFF5C0]/70"
+      {/* ── TOP-RIGHT DATA CARD ───────────────────────────────────────── */}
+      <div
+        className="absolute hidden lg:block"
+        style={{
+          top: '72px',
+          right: '32px',
+          zIndex: 40,
+          width: '245px',
+          background: 'rgba(248,248,248,0.97)',
+          border: `2px solid ${C.gold}`,
+          padding: '14px 16px',
+          color: C.ink,
+          boxShadow: '0 12px 36px rgba(0,0,0,0.5)',
+        }}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <span
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: '0.58rem',
+              letterSpacing: '0.15em',
+              color: C.deepRed,
+              textTransform: 'uppercase',
+            }}
           >
-            <Sparkles className="w-5 h-5 flex-shrink-0 text-[#040814]" />
-            <span className="tracking-wider">REGISTER FOR THE VOYAGE</span>
-            <ArrowRight className="w-4 h-4 ml-0.5 flex-shrink-0 text-[#040814]" />
+            DATA FILE
+          </span>
+          <span
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: '0.58rem',
+              letterSpacing: '0.1em',
+              color: C.rope,
+              textTransform: 'uppercase',
+            }}
+          >
+            FILE_NO.00{slideIndex + 1}
+          </span>
+        </div>
+
+        <div className="flex items-baseline gap-2 mb-1">
+          <span
+            style={{
+              fontFamily: "'Anton', sans-serif",
+              fontSize: '2.8rem',
+              lineHeight: 1,
+              color: C.red,
+            }}
+          >
+            25+
+          </span>
+          <span
+            style={{
+              fontFamily: "'Noto Sans JP', sans-serif",
+              fontSize: '0.72rem',
+              color: C.ink,
+              letterSpacing: '0.04em',
+            }}
+          >
+            二十五年航海
+          </span>
+        </div>
+        <div
+          style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '0.58rem',
+            letterSpacing: '0.18em',
+            color: C.rope,
+            textTransform: 'uppercase',
+            marginBottom: '12px',
+          }}
+        >
+          YEARS AT FULL SAIL
+        </div>
+
+        <div style={{ height: '1px', background: 'rgba(11,11,11,0.12)', marginBottom: '10px' }} />
+
+        {[
+          { label: 'BOUNTY', value: activeSlide.bounty },
+          { label: 'CREW',   value: activeSlide.crew },
+          { label: 'SEA',    value: activeSlide.sea },
+          { label: 'STATUS', value: '● ACTIVE', highlight: true },
+        ].map(({ label, value, highlight }) => (
+          <div key={label} className="flex items-center justify-between mb-1.5">
+            <span
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: '0.57rem',
+                letterSpacing: '0.12em',
+                color: 'rgba(11,11,11,0.45)',
+                textTransform: 'uppercase',
+              }}
+            >
+              {label}
+            </span>
+            <span
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: '0.6rem',
+                letterSpacing: '0.06em',
+                color: highlight ? C.red : C.ink,
+                fontWeight: 600,
+              }}
+            >
+              {value}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* ── MAIN CONTENT ──────────────────────────────────────────────── */}
+      <main
+        className="relative flex flex-col justify-end pb-24 min-h-screen px-8 sm:px-12 lg:px-20 xl:px-28 pt-28"
+        style={{ zIndex: 10 }}
+      >
+        {/* ISSUE badge */}
+        <div
+          className="mb-4 mt-auto transition-all duration-300"
+          style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '0.6rem',
+            letterSpacing: '0.2em',
+            color: C.gold,
+            textTransform: 'uppercase',
+          }}
+        >
+          {activeSlide.issue}
+        </div>
+
+        {/* BECOME THE PIRATE KING */}
+        <h1
+          className="max-w-[720px]"
+          style={{
+            fontFamily: "'Anton', sans-serif",
+            fontSize: 'clamp(3.8rem, 10vw, 8.5rem)',
+            letterSpacing: '-0.01em',
+            lineHeight: 0.92,
+            textTransform: 'uppercase',
+            marginBottom: '0.5rem',
+          }}
+        >
+          <span style={{ color: C.bone, display: 'block' }}>BECOME</span>
+          <span style={{ color: C.bone, display: 'block' }}>THE PIRATE</span>
+          <span
+            style={{
+              display: 'block',
+              color: 'transparent',
+              WebkitTextStroke: `3px ${C.red}`,
+            }}
+          >
+            KING
+          </span>
+        </h1>
+
+        {/* Japanese subtitle */}
+        <div
+          className="flex items-center gap-3 mb-4"
+          style={{
+            fontFamily: "'Noto Sans JP', sans-serif",
+            fontSize: '0.9rem',
+            letterSpacing: '0.06em',
+            color: C.gold,
+          }}
+        >
+          <span>海賊王に俺はなる</span>
+          <span style={{ color: 'rgba(255,255,255,0.28)' }}>//</span>
+          <span
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: '0.6rem',
+              color: 'rgba(255,255,255,0.3)',
+              letterSpacing: '0.15em',
+            }}
+          >
+            BOOK
+          </span>
+        </div>
+
+        {/* CTA: HOIST THE FLAG / For Registration */}
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 mb-3 sm:mb-4">
+          <button
+            onClick={() => { sound.playCannon?.(); onOpenRegister(); }}
+            className="group flex items-center gap-2.5 transition-all duration-200"
+            style={{
+              fontFamily: "'Bebas Neue', sans-serif",
+              fontSize: '0.95rem',
+              letterSpacing: '0.12em',
+              color: C.bone,
+              background: C.red,
+              border: '1px solid rgba(255,255,255,0.2)',
+              borderRadius: '4px',
+              padding: '9px 20px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(226,35,26,0.4)',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#b81c15'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = C.red; }}
+          >
+            For Registration
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '18px',
+                height: '18px',
+                borderRadius: '50%',
+                background: C.bone,
+                color: C.ink,
+                fontSize: '0.75rem',
+                fontWeight: 900,
+              }}
+            >
+              →
+            </span>
           </button>
 
-          <a
-            href="#events"
-            className="w-full sm:w-auto min-h-[52px] px-7 py-3.5 rounded-2xl font-voyage font-bold text-sm sm:text-base text-slate-200 bg-[#0E1736]/90 hover:bg-[#132247] border border-[#E6CA65]/35 hover:border-[#E6CA65] flex items-center justify-center gap-2 transition-all hover:scale-105 shadow-md"
-          >
-            <Award className="w-4 h-4 text-[#E6CA65] flex-shrink-0" />
-            <span>Explore 16 Challenges</span>
-          </a>
-        </motion.div>
+          {/* Quick Countdown pill in Hero */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-black/70 border border-white/15 text-[11px] font-mono">
+            <span className="text-[#FFC928]">⏳ DEPARTURE:</span>
+            <span className="text-white font-bold">{timeLeft.days}d {timeLeft.hours}h {timeLeft.mins}m {timeLeft.secs}s</span>
+          </div>
+        </div>
 
-        {/* Key Highlights Quick Stats Strip */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.7 }}
-          className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto"
-        >
-          {[
-            { label: 'Total Challenges', value: '16 Competitions', icon: Award, color: 'text-[#00F2FE]' },
-            { label: 'Treasure Chest', value: '₹50,000+ Pool', icon: Sparkles, color: 'text-[#E6CA65]' },
-            { label: 'Host Fleets', value: '5 Core Computing', icon: Cpu, color: 'text-[#E11D48]' },
-            { label: 'Voyage Crew', value: '1,500+ Delegates', icon: Users, color: 'text-[#10B981]' },
-          ].map((stat, i) => {
-            const IconComp = stat.icon;
-            return (
+        {/* MANIFESTO badge + text */}
+        <div className="flex items-start gap-2 sm:gap-3 mb-2 sm:mb-4 max-w-[440px]">
+          <span
+            style={{
+              fontFamily: "'Bebas Neue', sans-serif",
+              fontSize: '0.62rem',
+              letterSpacing: '0.15em',
+              color: C.ink,
+              background: C.gold,
+              padding: '2px 7px',
+              borderRadius: '2px',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+              alignSelf: 'flex-start',
+              marginTop: '2px',
+            }}
+          >
+            MANIFESTO
+          </span>
+          <p
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: '0.7rem',
+              color: 'rgba(248,248,248,0.5)',
+              lineHeight: 1.45,
+              margin: 0,
+            }}
+          >
+            Born from Oda's pen — a flag that stands for freedom,
+            friendship, and the courage to pursue impossible dreams.
+          </p>
+        </div>
+      </main>
+
+      {/* ── BOTTOM BAR (Interactive Slide Switcher + Sound Button) ───────── */}
+      <div
+        className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-4 sm:px-12 lg:px-20 xl:px-28 py-3"
+        style={{ zIndex: 30 }}
+      >
+        {/* Page counter & Slide Switcher buttons */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={prevSlide}
+              title="Previous Background"
+              className="w-7 h-7 rounded-full flex items-center justify-center bg-black/70 hover:bg-amber-400 hover:text-black border border-white/20 transition-all text-xs cursor-pointer"
+            >
+              ←
+            </button>
+            <span
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: '0.68rem',
+                letterSpacing: '0.15em',
+                color: 'rgba(248,248,248,0.7)',
+              }}
+            >
+              {activeSlide.pageIndex}
+            </span>
+            <button
+              onClick={nextSlide}
+              title="Next Background"
+              className="w-7 h-7 rounded-full flex items-center justify-center bg-black/70 hover:bg-amber-400 hover:text-black border border-white/20 transition-all text-xs cursor-pointer"
+            >
+              →
+            </button>
+          </div>
+
+          {/* Dynamic Progress indicator */}
+          <div
+            className="flex items-center gap-1.5 cursor-pointer"
+            onClick={nextSlide}
+            title="Click to toggle background"
+          >
+            {BG_SLIDES.map((slide, idx) => (
               <div
-                key={i}
-                className="p-4 rounded-2xl bg-[#0A1128]/70 border border-[#E6CA65]/20 backdrop-blur-md flex flex-col items-center justify-center hover:border-[#E6CA65]/50 transition-colors shadow-lg group"
-              >
-                <IconComp className={`w-5 h-5 ${stat.color} mb-1.5 transition-transform group-hover:scale-110`} />
-                <span className="font-display font-black text-lg sm:text-xl text-white">{stat.value}</span>
-                <span className="text-xs text-slate-300/80 font-mono mt-0.5">{stat.label}</span>
-              </div>
-            );
-          })}
-        </motion.div>
+                key={slide.id}
+                style={{
+                  width: slideIndex === idx ? '24px' : '10px',
+                  height: '4px',
+                  background: slideIndex === idx ? C.red : 'rgba(255,255,255,0.2)',
+                  borderRadius: '2px',
+                  transition: 'all 0.3s ease',
+                }}
+              />
+            ))}
+          </div>
+        </div>
+        {/* Right side controls: Slide Button + Integrated Sound FX button */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={nextSlide}
+            className="flex items-center gap-1.5 transition-all duration-200"
+            style={{
+              fontFamily: "'Bebas Neue', sans-serif",
+              fontSize: '0.8rem',
+              letterSpacing: '0.12em',
+              color: C.bone,
+              background: 'rgba(11,11,11,0.75)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              borderRadius: '9999px',
+              padding: '5px 14px',
+              cursor: 'pointer',
+              backdropFilter: 'blur(10px)',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = `${C.red}cc`; e.currentTarget.style.borderColor = C.red; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(11,11,11,0.75)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
+          >
+            <span style={{ fontSize: '0.75rem' }}>⚓</span>
+            SLIDE
+            <span>→</span>
+          </button>
+
+          <button
+            onClick={() => sound.playCannon?.()}
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 text-xs flex-shrink-0 cursor-pointer"
+            style={{
+              background: `linear-gradient(135deg, ${C.gold}, ${C.deepGold})`,
+              border: 'none',
+              color: C.ink,
+              boxShadow: '0 0 14px rgba(255,201,40,0.4)',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.1)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = ''; }}
+            title="Play Pirate Cannon Sound"
+          >
+            🔊
+          </button>
+        </div>
       </div>
-    </section>
+
+      {/* ── FLOATING PARTICLES ────────────────────────────────────────── */}
+      {[
+        { top: '18%', left: '12%',  size: 6, color: C.gold,    delay: 0   },
+        { top: '62%', left: '8%',   size: 4, color: C.seafoam, delay: 1.2 },
+        { top: '30%', right: '12%', size: 5, color: C.gold,    delay: 2.4 },
+        { top: '75%', right: '18%', size: 3, color: C.cream,   delay: 0.8 },
+        { top: '48%', left: '22%',  size: 4, color: C.rope,    delay: 3.1 },
+      ].map((p, i) => (
+        <div
+          key={i}
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            top: p.top,
+            left: p.left,
+            right: p.right,
+            width: `${p.size}px`,
+            height: `${p.size}px`,
+            background: p.color,
+            opacity: 0.55,
+            filter: 'blur(1px)',
+            animation: `floatParticle ${4 + i * 0.6}s ease-in-out ${p.delay}s infinite`,
+            zIndex: 5,
+          }}
+        />
+      ))}
+
+      {/* ── RIGHT VERTICAL LABEL ──────────────────────────────────────── */}
+      <div
+        className="absolute right-0 top-1/2 -translate-y-1/2 hidden xl:flex flex-col items-center gap-2"
+        style={{ zIndex: 20, padding: '0 10px' }}
+      >
+        <div
+          style={{
+            writingMode: 'vertical-rl',
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '0.55rem',
+            letterSpacing: '0.18em',
+            color: 'rgba(248,248,248,0.28)',
+            textTransform: 'uppercase',
+          }}
+        >
+          {activeSlide.issue}
+        </div>
+        <div
+          className="w-px"
+          style={{ height: '40px', background: `linear-gradient(to bottom, transparent, ${C.rope}, transparent)` }}
+        />
+        <div
+          style={{
+            writingMode: 'vertical-rl',
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '0.55rem',
+            letterSpacing: '0.18em',
+            color: 'rgba(248,248,248,0.28)',
+            textTransform: 'uppercase',
+          }}
+        >
+          ONE PIECE // ワンピース
+        </div>
+      </div>
+    </div>
   );
 };
+
+export default HeroSection;
