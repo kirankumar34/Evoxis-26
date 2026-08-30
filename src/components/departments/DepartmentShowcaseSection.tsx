@@ -3,13 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import InfiniteMenu, { MenuItem } from '@/components/ui/InfiniteMenu';
 import { OFFICE_BEARERS, OfficeBearer } from '@/data/officeBearers';
 import {
-  Compass,
   Crown,
   Award,
-  RotateCw,
-  Flame,
-  Shuffle,
-  Sparkles,
 } from 'lucide-react';
 
 export interface DisplayOfficeBearer extends OfficeBearer {
@@ -22,7 +17,7 @@ export const DepartmentShowcaseSection: React.FC = () => {
 
   // Controls which avatar pool slot is shown for each bearer
   const [randomSeed, setRandomSeed] = useState<number>(0);
-  const [isAutoShuffle, setIsAutoShuffle] = useState<boolean>(true);
+  const [isAutoShuffle] = useState<boolean>(true);
   const autoShuffleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // ── Auto-shuffle timer: every 4.5 s rotate through avatar pool ──────────

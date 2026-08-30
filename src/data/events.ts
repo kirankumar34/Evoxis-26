@@ -58,25 +58,7 @@ export const EVENTS: EventItem[] = [
         role: 'Organizer',
         department: 'IV AIML',
         phone: '+91 98401 00001',
-      },
-      {
-        name: 'Janani Sri',
-        role: 'Coordinator',
-        department: 'IV AIDS',
-        phone: '+91 98401 00002',
-      },
-      {
-        name: 'Dinesh',
-        role: 'Co-Coordinator',
-        department: 'III CSE',
-        phone: '+91 98401 00003',
-      },
-      {
-        name: 'Keerthi',
-        role: 'Co-Coordinator',
-        department: 'III CSE',
-        phone: '+91 98401 00004',
-      },
+      }
     ],
     schedule: {
       date: 'September 26, 2026',
@@ -151,27 +133,7 @@ export const EVENTS: EventItem[] = [
         phone: '+91 91235 94004',
         whatsapp: '919123594004',
       },
-      {
-        name: 'S Sabeetha',
-        role: 'Coordinator',
-        department: 'IV AIDS',
-        phone: '+91 91762 84496',
-        whatsapp: '919176284496',
-      },
-      {
-        name: 'Janani',
-        role: 'Co-Coordinator',
-        department: 'III CYS',
-        phone: '+91 63820 71519',
-        whatsapp: '916382071519',
-      },
-      {
-        name: 'R. Sundaravalli',
-        role: 'Co-Coordinator',
-        department: 'III CSE',
-        phone: '+91 63827 62919',
-        whatsapp: '916382762919',
-      },
+
     ],
     schedule: {
       date: 'September 26, 2026',
@@ -332,29 +294,12 @@ export const EVENTS: EventItem[] = [
         whatsapp: '917305662449',
       },
       {
-        name: 'Muktha Sree T',
-        role: 'Coordinator',
-        department: 'IV CYS',
-        phone: '+91 98401 00010',
-      },
-      {
         name: 'Magisha N',
         role: 'Coordinator',
         department: 'IV CYS',
         phone: '+91 98401 00011',
       },
-      {
-        name: 'Shobana',
-        role: 'Co-Coordinator',
-        department: 'III CYS',
-        phone: '+91 98401 00012',
-      },
-      {
-        name: 'Koushik',
-        role: 'Co-Coordinator',
-        department: 'III CYS',
-        phone: '+91 98401 00013',
-      },
+
     ],
     schedule: {
       date: 'September 26, 2026',
@@ -429,19 +374,7 @@ export const EVENTS: EventItem[] = [
         role: 'Coordinator',
         department: 'IV CSE',
         phone: '+91 98401 00021',
-      },
-      {
-        name: 'Diwakar',
-        role: 'Co-Coordinator',
-        department: 'III CYS',
-        phone: '+91 98401 00022',
-      },
-      {
-        name: 'Parameshwari',
-        role: 'Co-Coordinator',
-        department: 'III CSE',
-        phone: '+91 98401 00023',
-      },
+      }
     ],
     schedule: {
       date: 'September 26, 2026',
@@ -496,13 +429,7 @@ export const EVENTS: EventItem[] = [
       allParticipants: 'Certificate of National Participation',
     },
     coordinators: [
-      {
-        name: 'Adwaith',
-        role: 'Organizer',
-        department: 'IV AIDS',
-        phone: '+91 86109 74409',
-        whatsapp: '918610974409',
-      },
+
       {
         name: 'Adithiya',
         role: 'Coordinator',
@@ -515,19 +442,7 @@ export const EVENTS: EventItem[] = [
         role: 'Coordinator',
         department: 'IV CSE',
         phone: '+91 98401 00030',
-      },
-      {
-        name: 'Abinaya G',
-        role: 'Co-Coordinator',
-        department: 'III CSE',
-        phone: '+91 98401 00031',
-      },
-      {
-        name: 'Janani M',
-        role: 'Co-Coordinator',
-        department: 'III CSE',
-        phone: '+91 98401 00032',
-      },
+      }
     ],
     schedule: {
       date: 'September 26, 2026',
@@ -540,7 +455,7 @@ export const EVENTS: EventItem[] = [
   },
 
   // ==========================================
-  // NON-TECHNICAL EVENTS (9)
+  // NON-TECHNICAL & SPECIAL EVENTS (9)
   // ==========================================
   {
     id: 'indo-japanese-games',
@@ -578,9 +493,9 @@ export const EVENTS: EventItem[] = [
       'Trivia & Song Accuracy',
     ],
     prizes: {
-      first: '₹4,000 Cash Prize + Trophy',
-      second: '₹2,500 Cash Prize + Certificate of Excellence',
-      third: '₹1,000 Cash Prize + Certificate of Merit',
+      first: 'Certificate of Excellence + Winner Trophy',
+      second: 'Certificate of Merit + Runner-up Trophy',
+      third: 'Certificate of Merit',
       allParticipants: 'Certificate of National Participation',
     },
     coordinators: [
@@ -646,9 +561,9 @@ export const EVENTS: EventItem[] = [
       'Strategic Utilization of RTM Cards',
     ],
     prizes: {
-      first: '₹5,000 Cash Prize + IPL Winner Trophy',
-      second: '₹3,000 Cash Prize + Certificate of Excellence',
-      third: '₹1,500 Cash Prize + Certificate of Merit',
+      first: 'Certificate of Excellence + IPL Winner Trophy',
+      second: 'Certificate of Merit + Runner-up Trophy',
+      third: 'Certificate of Merit',
       allParticipants: 'Certificate of National Participation',
     },
     coordinators: [
@@ -674,7 +589,7 @@ export const EVENTS: EventItem[] = [
     eventId: 'NT03',
     sheetSlug: 'kick-arena',
     title: 'Kick Arena',
-    category: 'Non-Technical',
+    category: 'Special Event',
     tagline: '3v3 Street Football Tournament & Sudden Death Shootouts.',
     shortDescription: 'Lace up your boots for intense 3v3 mini-football knockout matches. Fast-paced halves, tactical substitutions, and halfway-line penalty trials.',
     fullDescription: 'High-intensity 3v3 mini-football knockout championship. Fast-paced halves, precise passing, tactical substitutions, yellow card suspension rules, and dramatic sudden-death penalty shootouts from the halfway line.',
@@ -712,8 +627,8 @@ export const EVENTS: EventItem[] = [
       'Fair Play & Disciplinary Record',
     ],
     prizes: {
-      first: '₹5,000 Cash Prize + Champion Trophy + Medals',
-      second: '₹3,000 Cash Prize + Runner-up Trophy + Medals',
+      first: 'Certificate of Excellence + Champion Trophy + Medals',
+      second: 'Certificate of Merit + Runner-up Trophy + Medals',
       allParticipants: 'Certificate of National Participation',
     },
     coordinators: [
@@ -783,9 +698,9 @@ export const EVENTS: EventItem[] = [
       'Melody Identification & Recognition',
     ],
     prizes: {
-      first: '₹4,000 Cash Prize + Trophy',
-      second: '₹2,500 Cash Prize + Certificate of Excellence',
-      third: '₹1,000 Cash Prize + Certificate of Merit',
+      first: 'Certificate of Excellence + Trophy',
+      second: 'Certificate of Merit + Trophy',
+      third: 'Certificate of Merit',
       allParticipants: 'Certificate of National Participation',
     },
     coordinators: [
@@ -811,7 +726,7 @@ export const EVENTS: EventItem[] = [
     eventId: 'NT05',
     sheetSlug: 'box-cricket',
     title: 'Box Cricket',
-    category: 'Non-Technical',
+    category: 'Special Event',
     tagline: '4-over fast-paced indoor turf cricket championship.',
     shortDescription: 'Experience rapid 4-over box cricket. 5 fielders + 1 sub, thrilling rules, super overs, and high-energy boundary hitting.',
     fullDescription: 'High-intensity 4-over indoor box cricket championship! 5 main players + 1 substitute per squad. Fast-paced overs, running between wickets, no LBW, super over tiebreakers, strictly limited to 20 teams on first-come basis.',
@@ -850,8 +765,8 @@ export const EVENTS: EventItem[] = [
       'Super Over Victory in Ties',
     ],
     prizes: {
-      first: '₹5,000 Cash Prize + Box Cricket Cup + Medals',
-      second: '₹3,000 Cash Prize + Runner-up Trophy',
+      first: 'Certificate of Excellence + Box Cricket Cup + Medals',
+      second: 'Certificate of Merit + Runner-up Trophy',
       allParticipants: 'Certificate of National Participation',
     },
     coordinators: [
@@ -910,8 +825,8 @@ export const EVENTS: EventItem[] = [
       'Overall Storytelling Impact',
     ],
     prizes: {
-      first: '₹3,500 Cash Prize + Trophy',
-      second: '₹2,000 Cash Prize + Certificate of Excellence',
+      first: 'Certificate of Excellence + Trophy',
+      second: 'Certificate of Merit + Trophy',
       allParticipants: 'Certificate of National Participation',
     },
     coordinators: [
@@ -983,9 +898,9 @@ export const EVENTS: EventItem[] = [
       'Strict Adherence to Weapon & Fairplay Guidelines',
     ],
     prizes: {
-      first: '₹5,000 Cash Prize + eSports Champion Trophy',
-      second: '₹3,000 Cash Prize + Runner-up Trophy',
-      third: '₹1,500 Cash Prize + Certificate of Merit',
+      first: 'Certificate of Excellence + eSports Champion Trophy',
+      second: 'Certificate of Merit + Runner-up Trophy',
+      third: 'Certificate of Merit',
       allParticipants: 'Certificate of National Participation',
     },
     coordinators: [
@@ -1011,7 +926,7 @@ export const EVENTS: EventItem[] = [
     eventId: 'NT08',
     sheetSlug: 'elite-walk',
     title: 'Elite Walk',
-    category: 'Non-Technical',
+    category: 'Special Event',
     tagline: 'Corporate & fashion ramp walk runway showcase.',
     shortDescription: 'Flaunt your elegance, styling, posture, and poise on the runway following corporate and fashion aesthetics.',
     fullDescription: 'A premier runway showcase of elegance, confidence, and styling! Teams or individuals present a themed corporate/fashion ramp walk, assessed on posture, attitude, music coordination, and overall stage presence.',
@@ -1046,8 +961,8 @@ export const EVENTS: EventItem[] = [
       'Overall Stage Presentation (20 Marks) — Total 100 Marks',
     ],
     prizes: {
-      first: '₹5,000 Cash Prize + Elite Walk Trophy',
-      second: '₹3,000 Cash Prize + Certificate of Excellence',
+      first: 'Certificate of Excellence + Elite Walk Trophy',
+      second: 'Certificate of Merit + Runner-up Trophy',
       allParticipants: 'Certificate of National Participation',
     },
     coordinators: [
@@ -1104,9 +1019,9 @@ export const EVENTS: EventItem[] = [
       'Lyric Continuation Precision',
     ],
     prizes: {
-      first: '₹4,000 Cash Prize + Trophy',
-      second: '₹2,500 Cash Prize + Certificate of Excellence',
-      third: '₹1,000 Cash Prize + Certificate of Merit',
+      first: 'Certificate of Excellence + Trophy',
+      second: 'Certificate of Merit + Trophy',
+      third: 'Certificate of Merit',
       allParticipants: 'Certificate of National Participation',
     },
     coordinators: [

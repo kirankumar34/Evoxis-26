@@ -1064,8 +1064,7 @@ export interface InfiniteMenuProps {
 
 const InfiniteMenu: FC<InfiniteMenuProps> = ({ items = [], scale = 1.0, backgroundColor = '#000000', onActiveItemChange }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null) as MutableRefObject<HTMLCanvasElement | null>;
-  const [activeItem, setActiveItem] = useState<MenuItem | null>(null);
-  const [isMoving, setIsMoving] = useState<boolean>(false);
+  const [, setActiveItem] = useState<MenuItem | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -1085,7 +1084,7 @@ const InfiniteMenu: FC<InfiniteMenuProps> = ({ items = [], scale = 1.0, backgrou
         canvas,
         source,
         handleActiveItem,
-        setIsMoving,
+        () => {},
         sk => sk.run(),
         scale
       );
@@ -1104,15 +1103,6 @@ const InfiniteMenu: FC<InfiniteMenuProps> = ({ items = [], scale = 1.0, backgrou
       window.removeEventListener('resize', handleResize);
     };
   }, [items, scale, onActiveItemChange]);
-
-  const handleButtonClick = () => {
-    if (!activeItem?.link) return;
-    if (activeItem.link.startsWith('http')) {
-      window.open(activeItem.link, '_blank');
-    } else {
-      console.log('Internal route:', activeItem.link);
-    }
-  };
 
   return (
     <div className="relative h-full w-full" style={{ backgroundColor }}>

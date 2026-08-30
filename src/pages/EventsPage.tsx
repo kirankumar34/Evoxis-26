@@ -22,11 +22,15 @@ export const EventsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeModalEvent, setActiveModalEvent] = useState<EventItem | null>(null);
 
+  const technicalCount = EVENTS.filter((e) => e.category === 'Technical').length;
+  const nonTechCount = EVENTS.filter((e) => e.category === 'Non-Technical').length;
+  const specialCount = EVENTS.filter((e) => e.category === 'Special Event').length;
+
   const categories = [
-    { name: 'All', label: 'All 16 Challenges', count: 16, icon: Sparkles },
-    { name: 'Technical', label: 'Grand Voyage (Technical)', count: 6, icon: Zap },
-    { name: 'Non-Technical', label: 'Crew Challenges (Non-Tech)', count: 6, icon: Gamepad2 },
-    { name: 'Special', label: 'Grand Arena (Special)', count: 4, icon: Trophy },
+    { name: 'All', label: `All Challenges (${EVENTS.length})`, count: EVENTS.length, icon: Sparkles },
+    { name: 'Technical', label: `Grand Voyage (Technical)`, count: technicalCount, icon: Zap },
+    { name: 'Non-Technical', label: `Crew Challenges (Non-Tech)`, count: nonTechCount, icon: Gamepad2 },
+    { name: 'Special Event', label: `Grand Arena (Special)`, count: specialCount, icon: Trophy },
   ];
 
   const filteredEvents = EVENTS.filter((event) => {

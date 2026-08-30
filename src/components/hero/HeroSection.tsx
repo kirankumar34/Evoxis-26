@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import BgImg from '../../assets/HeroSection_Background.png';
@@ -24,31 +25,30 @@ const BG_SLIDES = [
   {
     id: 1,
     img: BgImg,
-    issue: 'ISSUE 007 // NEW WORLD // CHAPTER 1 OF 2',
+    issue: 'EVOXIS 2026 // SRIRAM ENGINEERING COLLEGE // CHAPTER 1 OF 2',
     chapter: 'CHAPTER 1',
     pageIndex: '01 / 02',
-    tag: 'NEW WORLD SAGA',
-    bounty: '$ 3,000,000,000',
-    crew: 'STRAW HAT PIRATES',
-    sea: 'GRAND LINE',
-    quote: 'A dream that defies the seas, the marines, and the world itself — set sail for One Piece.',
+    tag: 'INNOVATION SAGA',
+    bounty: '1000+ PARTICIPANTS',
+    crew: 'SRIRAM ENGINEERING COLLEGE',
+    sea: 'TECH & INNOVATION',
+    quote:
+      'Where ideas become innovation, talent meets opportunity, and the next generation begins to build the future.',
   },
   {
     id: 2,
     img: BgImg2,
-    issue: 'ISSUE 008 // FINAL SAGA // CHAPTER 2 OF 2',
+    issue: 'EVOXIS 2026 // FUTURE AWAITS // CHAPTER 2 OF 2',
     chapter: 'CHAPTER 2',
     pageIndex: '02 / 02',
-    tag: 'EMPERORS ERA',
-    bounty: '$ 3,000,000,000',
-    crew: 'STRAW HAT FLEET',
-    sea: 'ALL SEAS',
-    quote: 'Inherited will, the tide of the times, and people’s dreams. As long as people seek freedom, these will never stop.',
+    tag: 'TECH ERA',
+    bounty: '25+ EVENTS',
+    crew: 'STUDENT INNOVATORS',
+    sea: 'ALL DEPARTMENTS',
+    quote:
+      'Connect. Compete. Create. EVOXIS brings together curious minds to challenge ideas and create what comes next.',
   },
 ];
-
-
-
 
 /* ─── framer motion background slide variants ───────────────────────────── */
 const slideVariants: Variants = {
@@ -89,7 +89,10 @@ export interface HeroSectionProps {
 }
 
 /* ─── component ──────────────────────────────────────────────────────────── */
-export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () => {}, eventDate }) => {
+export const HeroSection: React.FC<HeroSectionProps> = ({
+  onOpenRegister = () => {},
+  eventDate,
+}) => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [slideIndex, setSlideIndex] = useState(0);
   const [direction, setDirection] = useState(1);
@@ -97,25 +100,42 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
   const containerRef = useRef<HTMLDivElement>(null);
 
   /* countdown calculation */
-  const targetDate = eventDate ? new Date(eventDate).getTime() : new Date('2026-08-27T09:00').getTime();
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
+  const targetDate = eventDate
+    ? new Date(eventDate).getTime()
+    : new Date('2026-08-27T09:00').getTime();
+
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    mins: 0,
+    secs: 0,
+  });
 
   useEffect(() => {
     const tick = () => {
       const diff = targetDate - Date.now();
+
       if (diff > 0) {
         setTimeLeft({
-          days:  Math.floor(diff / 86400000),
+          days: Math.floor(diff / 86400000),
           hours: Math.floor((diff / 3600000) % 24),
-          mins:  Math.floor((diff / 60000) % 60),
-          secs:  Math.floor((diff / 1000) % 60),
+          mins: Math.floor((diff / 60000) % 60),
+          secs: Math.floor((diff / 1000) % 60),
         });
       } else {
-        setTimeLeft({ days: 0, hours: 0, mins: 0, secs: 0 });
+        setTimeLeft({
+          days: 0,
+          hours: 0,
+          mins: 0,
+          secs: 0,
+        });
       }
     };
+
     tick();
+
     const id = setInterval(tick, 1000);
+
     return () => clearInterval(id);
   }, [targetDate]);
 
@@ -132,27 +152,35 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
   };
 
   const prevSlide = () => {
-    const prevIdx = (slideIndex - 1 + BG_SLIDES.length) % BG_SLIDES.length;
+    const prevIdx =
+      (slideIndex - 1 + BG_SLIDES.length) % BG_SLIDES.length;
+
     changeSlide(prevIdx, -1);
   };
 
   /* Auto-slide window interval */
   useEffect(() => {
     if (!isAutoPlay) return;
+
     const timer = setInterval(() => {
       setDirection(1);
       setSlideIndex((prev) => (prev + 1) % BG_SLIDES.length);
     }, 7000);
+
     return () => clearInterval(timer);
   }, [isAutoPlay]);
 
   /* parallax */
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseMove = (
+    e: React.MouseEvent<HTMLDivElement>
+  ) => {
     if (!containerRef.current) return;
+
     const r = containerRef.current.getBoundingClientRect();
+
     setMousePos({
-      x: ((e.clientX - r.left) / r.width  - 0.5) * 2,
-      y: ((e.clientY - r.top)  / r.height - 0.5) * 2,
+      x: ((e.clientX - r.left) / r.width - 0.5) * 2,
+      y: ((e.clientY - r.top) / r.height - 0.5) * 2,
     });
   };
 
@@ -167,9 +195,17 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
       className="relative w-full max-w-full h-[100dvh] min-h-[640px] max-h-[1080px] overflow-hidden text-white select-none flex flex-col justify-between"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
+
       {/* ── FRAMER MOTION SLIDING BACKGROUND WINDOW ──────────────────── */}
-      <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
-        <AnimatePresence initial={false} custom={direction} mode="popLayout">
+      <div
+        className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none"
+        style={{ zIndex: 0 }}
+      >
+        <AnimatePresence
+          initial={false}
+          custom={direction}
+          mode="popLayout"
+        >
           <motion.div
             key={activeSlide.id}
             custom={direction}
@@ -190,20 +226,22 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
         </AnimatePresence>
       </div>
 
-      {/* dark aesthetic manga gradient overlay */}
+      {/* dark aesthetic gradient overlay */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'linear-gradient(105deg, rgba(11,11,11,0.85) 0%, rgba(11,11,11,0.56) 48%, rgba(11,11,11,0.32) 100%)',
+          background:
+            'linear-gradient(105deg, rgba(11,11,11,0.85) 0%, rgba(11,11,11,0.56) 48%, rgba(11,11,11,0.32) 100%)',
           zIndex: 1,
         }}
       />
 
-      {/* bottom gradient fade to seamlessly transition into next section */}
+      {/* bottom gradient fade */}
       <div
         className="absolute bottom-0 left-0 right-0 h-36 pointer-events-none"
         style={{
-          background: 'linear-gradient(to top, rgba(4,8,20,0.98) 0%, rgba(4,8,20,0.5) 60%, transparent 100%)',
+          background:
+            'linear-gradient(to top, rgba(4,8,20,0.98) 0%, rgba(4,8,20,0.5) 60%, transparent 100%)',
           zIndex: 2,
         }}
       />
@@ -212,7 +250,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
       <div
         className="absolute inset-0 pointer-events-none opacity-20"
         style={{
-          backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.18) 3px, rgba(0,0,0,0.18) 4px)',
+          backgroundImage:
+            'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.18) 3px, rgba(0,0,0,0.18) 4px)',
           zIndex: 2,
         }}
       />
@@ -235,8 +274,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
             padding: '6px 5px',
           }}
         >
-          ISSUE 007
+          EVOXIS 2026
         </div>
+
         <div
           style={{
             writingMode: 'vertical-rl',
@@ -248,12 +288,17 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
             textTransform: 'uppercase',
           }}
         >
-          ONE PIECE // ワンピース // STORY
+          EVOXIS // SYMPOSIUM // 2026
         </div>
+
         <div
           className="w-px"
-          style={{ height: '55px', background: `linear-gradient(to bottom, transparent, ${C.gold}, transparent)` }}
+          style={{
+            height: '55px',
+            background: `linear-gradient(to bottom, transparent, ${C.gold}, transparent)`,
+          }}
         />
+
         <div
           style={{
             writingMode: 'vertical-rl',
@@ -267,6 +312,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
         >
           {activeSlide.tag}
         </div>
+
         <div
           style={{
             writingMode: 'vertical-rl',
@@ -309,8 +355,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
               textTransform: 'uppercase',
             }}
           >
-            DATA FILE
+            EVENT FILE
           </span>
+
           <span
             style={{
               fontFamily: "'JetBrains Mono', monospace",
@@ -320,7 +367,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
               textTransform: 'uppercase',
             }}
           >
-            FILE_NO.00{slideIndex + 1}
+            EVOXIS.00{slideIndex + 1}
           </span>
         </div>
 
@@ -333,19 +380,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
               color: C.red,
             }}
           >
-            25+
-          </span>
-          <span
-            style={{
-              fontFamily: "'Noto Sans JP', sans-serif",
-              fontSize: '0.72rem',
-              color: C.ink,
-              letterSpacing: '0.04em',
-            }}
-          >
-            二十五年航海
+            EVOXIS
           </span>
         </div>
+
         <div
           style={{
             fontFamily: "'JetBrains Mono', monospace",
@@ -356,18 +394,27 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
             marginBottom: '12px',
           }}
         >
-          YEARS AT FULL SAIL
+          TECHNOLOGY SYMPOSIUM
         </div>
 
-        <div style={{ height: '1px', background: 'rgba(11,11,11,0.12)', marginBottom: '10px' }} />
+        <div
+          style={{
+            height: '1px',
+            background: 'rgba(11,11,11,0.12)',
+            marginBottom: '10px',
+          }}
+        />
 
         {[
-          { label: 'BOUNTY', value: activeSlide.bounty },
-          { label: 'CREW',   value: activeSlide.crew },
-          { label: 'SEA',    value: activeSlide.sea },
-          { label: 'STATUS', value: '● ACTIVE', highlight: true },
+          { label: 'EDITION', value: '2026' },
+          { label: 'COLLEGE', value: 'SRIRAM ENGINEERING' },
+          { label: 'DOMAIN', value: activeSlide.sea },
+          { label: 'STATUS', value: '● OPEN', highlight: true },
         ].map(({ label, value, highlight }) => (
-          <div key={label} className="flex items-center justify-between mb-1.5">
+          <div
+            key={label}
+            className="flex items-center justify-between mb-1.5"
+          >
             <span
               style={{
                 fontFamily: "'JetBrains Mono', monospace",
@@ -379,6 +426,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
             >
               {label}
             </span>
+
             <span
               style={{
                 fontFamily: "'JetBrains Mono', monospace",
@@ -413,7 +461,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
           {activeSlide.issue}
         </div>
 
-        {/* BECOME THE PIRATE KING */}
+        {/* EOXIS SYMPOSIUM */}
         <h1
           className="max-w-[720px]"
           style={{
@@ -425,8 +473,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
             marginBottom: '0.5rem',
           }}
         >
-          <span style={{ color: C.bone, display: 'block' }}>BECOME</span>
-          <span style={{ color: C.bone, display: 'block' }}>THE PIRATE</span>
+          <span style={{ color: C.bone, display: 'block' }}>
+            EVOXIS
+          </span>
+
+          <span style={{ color: C.bone, display: 'block' }}>
+            THE
+          </span>
+
           <span
             style={{
               display: 'block',
@@ -434,22 +488,28 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
               WebkitTextStroke: `3px ${C.red}`,
             }}
           >
-            KING
+            SYMPOSIUM
           </span>
         </h1>
 
-        {/* Japanese subtitle */}
+        {/* Symposium subtitle */}
         <div
           className="flex items-center gap-3 mb-4"
           style={{
-            fontFamily: "'Noto Sans JP', sans-serif",
+            fontFamily: "'Inter', sans-serif",
             fontSize: '0.9rem',
             letterSpacing: '0.06em',
             color: C.gold,
           }}
         >
-          <span>海賊王に俺はなる</span>
-          <span style={{ color: 'rgba(255,255,255,0.28)' }}>//</span>
+          <span>
+            INNOVATE // COMPETE // CREATE
+          </span>
+
+          <span style={{ color: 'rgba(255,255,255,0.28)' }}>
+            //
+          </span>
+
           <span
             style={{
               fontFamily: "'JetBrains Mono', monospace",
@@ -458,14 +518,17 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
               letterSpacing: '0.15em',
             }}
           >
-            BOOK
+            2026
           </span>
         </div>
 
-        {/* CTA: HOIST THE FLAG / For Registration */}
+        {/* CTA */}
         <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 mb-3 sm:mb-4">
           <button
-            onClick={() => { sound.playCannon?.(); onOpenRegister(); }}
+            onClick={() => {
+              sound.playCannon?.();
+              onOpenRegister();
+            }}
             className="group flex items-center gap-2.5 transition-all duration-200"
             style={{
               fontFamily: "'Bebas Neue', sans-serif",
@@ -479,10 +542,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
               cursor: 'pointer',
               boxShadow: '0 4px 14px rgba(226,35,26,0.4)',
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = '#b81c15'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = C.red; }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#b81c15';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = C.red;
+            }}
           >
-            For Registration
+            REGISTER NOW
+
             <span
               style={{
                 display: 'inline-flex',
@@ -501,14 +569,20 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
             </span>
           </button>
 
-          {/* Quick Countdown pill in Hero */}
+          {/* Countdown */}
           <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-black/70 border border-white/15 text-[11px] font-mono">
-            <span className="text-[#FFC928]">⏳ DEPARTURE:</span>
-            <span className="text-white font-bold">{timeLeft.days}d {timeLeft.hours}h {timeLeft.mins}m {timeLeft.secs}s</span>
+            <span className="text-[#FFC928]">
+              ⏳ EVENT STARTS:
+            </span>
+
+            <span className="text-white font-bold">
+              {timeLeft.days}d {timeLeft.hours}h {timeLeft.mins}m{' '}
+              {timeLeft.secs}s
+            </span>
           </div>
         </div>
 
-        {/* MANIFESTO badge + text */}
+        {/* MANIFESTO */}
         <div className="flex items-start gap-2 sm:gap-3 mb-2 sm:mb-4 max-w-[440px]">
           <span
             style={{
@@ -527,6 +601,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
           >
             MANIFESTO
           </span>
+
           <p
             style={{
               fontFamily: "'Inter', sans-serif",
@@ -536,18 +611,19 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
               margin: 0,
             }}
           >
-            Born from Oda's pen — a flag that stands for freedom,
-            friendship, and the courage to pursue impossible dreams.
+            EVOXIS is a platform for ideas, innovation, technology,
+            and competition — bringing together students to learn,
+            connect, create, and shape the future.
           </p>
         </div>
       </main>
 
-      {/* ── BOTTOM BAR (Interactive Slide Switcher + Sound Button) ───────── */}
+      {/* ── BOTTOM BAR ────────────────────────────────────────────────── */}
       <div
         className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-4 sm:px-12 lg:px-20 xl:px-28 py-3"
         style={{ zIndex: 30 }}
       >
-        {/* Page counter & Slide Switcher buttons */}
+        {/* Page counter & Slide Switcher */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <button
@@ -557,6 +633,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
             >
               ←
             </button>
+
             <span
               style={{
                 fontFamily: "'JetBrains Mono', monospace",
@@ -567,6 +644,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
             >
               {activeSlide.pageIndex}
             </span>
+
             <button
               onClick={nextSlide}
               title="Next Background"
@@ -586,9 +664,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
               <div
                 key={slide.id}
                 style={{
-                  width: slideIndex === idx ? '24px' : '10px',
+                  width:
+                    slideIndex === idx ? '24px' : '10px',
                   height: '4px',
-                  background: slideIndex === idx ? C.red : 'rgba(255,255,255,0.2)',
+                  background:
+                    slideIndex === idx
+                      ? C.red
+                      : 'rgba(255,255,255,0.2)',
                   borderRadius: '2px',
                   transition: 'all 0.3s ease',
                 }}
@@ -596,56 +678,16 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
             ))}
           </div>
         </div>
-        {/* Right side controls: Slide Button + Integrated Sound FX button */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={nextSlide}
-            className="flex items-center gap-1.5 transition-all duration-200"
-            style={{
-              fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: '0.8rem',
-              letterSpacing: '0.12em',
-              color: C.bone,
-              background: 'rgba(11,11,11,0.75)',
-              border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: '9999px',
-              padding: '5px 14px',
-              cursor: 'pointer',
-              backdropFilter: 'blur(10px)',
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = `${C.red}cc`; e.currentTarget.style.borderColor = C.red; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(11,11,11,0.75)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
-          >
-            <span style={{ fontSize: '0.75rem' }}>⚓</span>
-            SLIDE
-            <span>→</span>
-          </button>
 
-          <button
-            onClick={() => sound.playCannon?.()}
-            className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 text-xs flex-shrink-0 cursor-pointer"
-            style={{
-              background: `linear-gradient(135deg, ${C.gold}, ${C.deepGold})`,
-              border: 'none',
-              color: C.ink,
-              boxShadow: '0 0 14px rgba(255,201,40,0.4)',
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.1)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = ''; }}
-            title="Play Pirate Cannon Sound"
-          >
-            🔊
-          </button>
-        </div>
       </div>
 
       {/* ── FLOATING PARTICLES ────────────────────────────────────────── */}
       {[
-        { top: '18%', left: '12%',  size: 6, color: C.gold,    delay: 0   },
-        { top: '62%', left: '8%',   size: 4, color: C.seafoam, delay: 1.2 },
-        { top: '30%', right: '12%', size: 5, color: C.gold,    delay: 2.4 },
-        { top: '75%', right: '18%', size: 3, color: C.cream,   delay: 0.8 },
-        { top: '48%', left: '22%',  size: 4, color: C.rope,    delay: 3.1 },
+        { top: '18%', left: '12%', size: 6, color: C.gold, delay: 0 },
+        { top: '62%', left: '8%', size: 4, color: C.seafoam, delay: 1.2 },
+        { top: '30%', right: '12%', size: 5, color: C.gold, delay: 2.4 },
+        { top: '75%', right: '18%', size: 3, color: C.cream, delay: 0.8 },
+        { top: '48%', left: '22%', size: 4, color: C.rope, delay: 3.1 },
       ].map((p, i) => (
         <div
           key={i}
@@ -682,10 +724,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
         >
           {activeSlide.issue}
         </div>
+
         <div
           className="w-px"
-          style={{ height: '40px', background: `linear-gradient(to bottom, transparent, ${C.rope}, transparent)` }}
+          style={{
+            height: '40px',
+            background: `linear-gradient(to bottom, transparent, ${C.rope}, transparent)`,
+          }}
         />
+
         <div
           style={{
             writingMode: 'vertical-rl',
@@ -696,7 +743,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenRegister = () =>
             textTransform: 'uppercase',
           }}
         >
-          ONE PIECE // ワンピース
+          EVOXIS // SRIRAM ENGINEERING COLLEGE
         </div>
       </div>
     </div>
