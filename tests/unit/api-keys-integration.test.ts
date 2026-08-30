@@ -123,10 +123,11 @@ describe("EvoXis'26 — Comprehensive API Keys & Live Backend Verification", () 
     });
 
     it("executes team registration flow (3 Members)", async () => {
+      const teamTs = Date.now() + 5000;
       const teamRes = await api.registerParticipant({
         fullName: 'Team Leader Rahul',
-        email: `rahul.leader.${ts}@mitindia.edu`,
-        phone: `98403${String(ts).slice(-5)}`,
+        email: `rahul.leader.${teamTs}@mitindia.edu`,
+        phone: `98499${String(teamTs).slice(-5)}`,
         collegeName: 'MIT India',
         department: 'Computer Science',
         yearOfStudy: '4th Year',
@@ -135,8 +136,8 @@ describe("EvoXis'26 — Comprehensive API Keys & Live Backend Verification", () 
         isTeam: true,
         teamName: 'Titan Squad',
         teamMembers: [
-          { name: 'Member Varun', email: `varun.${ts}@mitindia.edu`, phone: `98404${String(ts).slice(-5)}`, college: 'MIT', department: 'CS' },
-          { name: 'Member Shruti', email: `shruti.${ts}@mitindia.edu`, phone: `98405${String(ts).slice(-5)}`, college: 'MIT', department: 'CS' },
+          { name: 'Member Varun', email: `varun.${teamTs}@mitindia.edu`, phone: `98488${String(teamTs).slice(-5)}`, college: 'MIT', department: 'CS' },
+          { name: 'Member Shruti', email: `shruti.${teamTs}@mitindia.edu`, phone: `98477${String(teamTs).slice(-5)}`, college: 'MIT', department: 'CS' },
         ],
         agreedToRules: true,
       });

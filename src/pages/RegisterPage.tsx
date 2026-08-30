@@ -279,7 +279,7 @@ export const RegisterPage: React.FC = () => {
                   {selectedEventIds.length} Selected
                 </span>
                 <div className="flex items-center gap-1.5 p-1 bg-[#040814]/90 rounded-xl border border-[#E6CA65]/20">
-                  {(['All', 'Technical', 'Non-Technical', 'Special'] as const).map((cat) => (
+                  {(['All', 'Technical', 'Non-Technical', 'Special Event'] as const).map((cat) => (
                     <button
                       key={cat}
                       type="button"
@@ -290,7 +290,7 @@ export const RegisterPage: React.FC = () => {
                           : 'text-slate-400 hover:text-[#E6CA65]'
                       }`}
                     >
-                      {cat}
+                      {cat === 'Special Event' ? 'Special' : cat}
                     </button>
                   ))}
                 </div>

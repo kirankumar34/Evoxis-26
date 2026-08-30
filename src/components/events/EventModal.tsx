@@ -30,9 +30,10 @@ export const EventModal: React.FC<EventModalProps> = ({
     onClose();
   };
 
-  // Format Bounty amount
+  // Format Bounty / Award amount
   const bountyMatch = event.prizes.first.match(/₹[\d,]+/);
-  const bountyText = bountyMatch ? bountyMatch[0] : '₹5,000';
+  const isCash = Boolean(bountyMatch);
+  const bountyText = isCash ? bountyMatch![0] : 'CERTIFICATE';
 
   return (
     <AnimatePresence>
@@ -101,7 +102,7 @@ export const EventModal: React.FC<EventModalProps> = ({
                     }}
                     className="uppercase font-black"
                   >
-                    {event.category === 'Technical' ? '大航海開発' : '海賊競技'}
+                    {event.category === 'Technical' ? '大航海開発' : event.category === 'Special Event' ? '特別競技' : '海賊競技'}
                   </span>
                   <span
                     style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: '1.1rem' }}
@@ -115,7 +116,7 @@ export const EventModal: React.FC<EventModalProps> = ({
                   style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.85rem' }}
                   className="px-3.5 py-1 rounded-sm bg-white text-black font-extrabold border-2 border-black uppercase"
                 >
-                  // PRIZE: {bountyText}
+                  // {isCash ? `PRIZE: ${bountyText}` : 'AWARD: CERTIFICATE ONLY'}
                 </span>
               </div>
             </div>

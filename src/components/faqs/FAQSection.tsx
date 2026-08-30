@@ -81,7 +81,7 @@ export const FAQSection: React.FC = () => {
                       {String(idx + 1).padStart(2, '0')}
                     </span>
                     <span
-                      className="text-sm sm:text-base text-black font-bold"
+                      className="text-sm sm:text-base text-black "
                       style={{ fontFamily: "'Anton', sans-serif", letterSpacing: '0.03em' }}
                     >
                       {faq.question}

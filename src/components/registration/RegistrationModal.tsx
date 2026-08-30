@@ -801,11 +801,11 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
                       {/* SPECIAL EVENTS */}
                       <div>
                         <div className="text-[11px] font-mono font-bold text-amber-400 uppercase tracking-wider mb-2 px-1 flex items-center justify-between">
-                          <span>🏆 Special Events (4)</span>
+                          <span>🏆 Special Events ({EVENTS.filter((e) => e.category === 'Special Event').length})</span>
                           <span className="text-[10px] text-slate-500">Track 3</span>
                         </div>
                         <div className="space-y-1">
-                          {EVENTS.filter((e) => e.category === 'Special').map((e) => {
+                          {EVENTS.filter((e) => e.category === 'Special Event').map((e) => {
                             const isChecked = formData.selectedEventIds.includes(e.eventId);
                             return (
                               <div

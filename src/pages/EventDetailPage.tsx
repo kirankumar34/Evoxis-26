@@ -54,18 +54,20 @@ export const EventDetailPage: React.FC = () => {
   const categoryColor =
     event.category === 'Technical'
       ? 'from-[#E6CA65]/20 to-[#00F2FE]/20 border-[#E6CA65]/40 text-[#FCE79C]'
-      : event.category === 'Non-Technical'
-      ? 'from-[#E11D48]/20 to-[#FDA4AF]/20 border-[#E11D48]/40 text-[#FDA4AF]'
-      : 'from-[#F59E0B]/20 to-[#FDE047]/20 border-[#F59E0B]/40 text-[#FDE047]';
+      : event.category === 'Special Event'
+      ? 'from-[#F59E0B]/20 to-[#FDE047]/20 border-[#F59E0B]/40 text-[#FDE047]'
+      : 'from-[#E11D48]/20 to-[#FDA4AF]/20 border-[#E11D48]/40 text-[#FDA4AF]';
 
   const categoryIcon =
     event.category === 'Technical' ? (
       <Zap className="w-4 h-4 text-[#E6CA65]" />
-    ) : event.category === 'Non-Technical' ? (
-      <Gamepad2 className="w-4 h-4 text-[#E11D48]" />
-    ) : (
+    ) : event.category === 'Special Event' ? (
       <Trophy className="w-4 h-4 text-[#F59E0B]" />
+    ) : (
+      <Gamepad2 className="w-4 h-4 text-[#E11D48]" />
     );
+
+  const isCash = Boolean(event.prizes.first.match(/₹[\d,]+/));
 
   return (
     <div className="min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-[#02050E] via-[#040814] to-[#0A1128] text-slate-100 selection:bg-[#E6CA65] selection:text-[#040814]">
@@ -139,10 +141,10 @@ export const EventDetailPage: React.FC = () => {
 
               <div className="relative z-10">
                 <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block mb-1">
-                  Top Bounty Prize
+                  {isCash ? 'Top Bounty Prize' : 'Winner Accolade'}
                 </span>
                 <span className="font-mono font-bold text-[#FCE79C] text-sm">
-                  {event.prizes.first.split('+')[0] || event.prizes.first}
+                  {event.prizes.first.split('+')[0]?.trim() || event.prizes.first}
                 </span>
               </div>
 

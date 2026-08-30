@@ -12,6 +12,7 @@ export function formatEventCategory(category: string) {
     case 'Non-Technical':
       return 'border-purple-500/30 text-purple-400 bg-purple-500/10';
     case 'Special':
+    case 'Special Event':
       return 'border-amber-500/30 text-amber-400 bg-amber-500/10';
     default:
       return 'border-slate-500/30 text-slate-300 bg-slate-500/10';

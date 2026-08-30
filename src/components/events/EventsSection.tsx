@@ -15,10 +15,15 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onOpenRegisterForE
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeModalEvent, setActiveModalEvent] = useState<EventItem | null>(null);
 
+  const techCount = EVENTS.filter((e) => e.category === 'Technical').length;
+  const nonTechCount = EVENTS.filter((e) => e.category === 'Non-Technical').length;
+  const specialCount = EVENTS.filter((e) => e.category === 'Special Event').length;
+
   const categories = [
-    { name: 'All', label: 'ALL ISLANDS (15)' },
-    { name: 'Technical', label: '⚔️ TECHNICAL (6)' },
-    { name: 'Non-Technical', label: '🎭 NON-TECH (9)' },
+    { name: 'All', label: `ALL ISLANDS (${EVENTS.length})` },
+    { name: 'Technical', label: `⚔️ TECHNICAL (${techCount})` },
+    { name: 'Non-Technical', label: `🎭 NON-TECH (${nonTechCount})` },
+    { name: 'Special Event', label: `🏆 SPECIAL (${specialCount})` },
   ];
 
   const filteredEvents = EVENTS.filter((event) => {

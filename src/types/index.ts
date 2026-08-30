@@ -1,4 +1,4 @@
-export type EventCategory = 'Technical' | 'Non-Technical' | 'Special';
+export type EventCategory = 'Technical' | 'Non-Technical' | 'Special Event';
 
 export type EventId =
   | 'TE01' | 'TE02' | 'TE03' | 'TE04' | 'TE05' | 'TE06'

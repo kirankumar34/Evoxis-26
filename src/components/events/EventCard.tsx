@@ -19,9 +19,10 @@ export const EventCard: React.FC<EventCardProps> = ({
     onSelectEvent(event);
   };
 
-  // Format Bounty amount cleanly
+  // Format Bounty / Award amount cleanly
   const bountyMatch = event.prizes.first.match(/₹[\d,]+/);
-  const bountyText = bountyMatch ? bountyMatch[0] : '₹5,000';
+  const isCash = Boolean(bountyMatch);
+  const bountyText = isCash ? bountyMatch![0] : 'CERTIFICATE';
 
   return (
     <motion.div
@@ -91,9 +92,19 @@ export const EventCard: React.FC<EventCardProps> = ({
             fontSize: '0.68rem',
             letterSpacing: '0.15em',
           }}
-          className="px-3 py-0.5 rounded-sm bg-[#FFC928] text-black font-extrabold uppercase border border-black shadow-[2px_2px_0px_0px_#000]"
+          className={`px-3 py-0.5 rounded-sm font-extrabold uppercase border border-black shadow-[2px_2px_0px_0px_#000] ${
+            event.category === 'Technical'
+              ? 'bg-[#FFC928] text-black'
+              : event.category === 'Special Event'
+              ? 'bg-[#F59E0B] text-black'
+              : 'bg-[#E2231A] text-white'
+          }`}
         >
-          {event.category === 'Technical' ? 'TECHNICAL QUEST' : 'NON-TECH ARENA'}
+          {event.category === 'Technical'
+            ? 'TECHNICAL QUEST'
+            : event.category === 'Special Event'
+            ? 'SPECIAL EVENT'
+            : 'NON-TECH ARENA'}
         </span>
       </div>
 
@@ -136,12 +147,12 @@ export const EventCard: React.FC<EventCardProps> = ({
         <span
           style={{
             fontFamily: "'Anton', 'Impact', sans-serif",
-            fontSize: 'clamp(1.8rem, 4vw, 2.5rem)',
+            fontSize: isCash ? 'clamp(1.8rem, 4vw, 2.5rem)' : 'clamp(1.3rem, 3.2vw, 1.8rem)',
             letterSpacing: '0.06em',
             color: '#1a130e',
             lineHeight: 1,
           }}
-          className="font-black tracking-tight"
+          className="font-black tracking-tight block"
         >
           {bountyText}
         </span>
@@ -154,7 +165,7 @@ export const EventCard: React.FC<EventCardProps> = ({
           }}
           className="block uppercase font-bold mt-0.5"
         >
-          BOUNTY REWARD // 1ST PRIZE
+          {isCash ? 'BOUNTY REWARD // 1ST PRIZE' : 'EXCELLENCE AWARD // CERTIFICATE ONLY'}
         </span>
       </div>
 
