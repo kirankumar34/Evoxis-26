@@ -101,7 +101,7 @@ export const VenueSection: React.FC = () => {
                 <Compass className="w-3 h-3" />
                 GPS: 13.1258° N, 79.9724° E
               </span>
-              <span className="font-bold text-[#9A1410]">Anna Univ. Code: 1118</span>
+              <span className="font-bold text-[#9A1410]">Anna Univ. Code: 1126</span>
             </div>
           </motion.div>
 

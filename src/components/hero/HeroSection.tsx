@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import BgImg from '../../assets/HeroSection_Background.png';
 import BgImg2 from '../../assets/HeroSection_Background1.png';
@@ -524,7 +525,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
         {/* CTA */}
         <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 mb-3 sm:mb-4">
-          <button
+          <Link
+            to="/register"
             onClick={() => {
               sound.playCannon?.();
               onOpenRegister();
@@ -541,6 +543,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               padding: '9px 20px',
               cursor: 'pointer',
               boxShadow: '0 4px 14px rgba(226,35,26,0.4)',
+              textDecoration: 'none',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = '#b81c15';
@@ -567,7 +570,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             >
               →
             </span>
-          </button>
+          </Link>
 
           {/* Countdown */}
           <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-black/70 border border-white/15 text-[11px] font-mono">

@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles, Compass } from 'lucide-react';
-import { useRegistrationModal } from '@/context/RegistrationModalContext';
 import { sound } from '@/utils/audio';
 
 export interface NavLinkItem {
@@ -24,7 +23,6 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   onClose,
   navLinks,
 }) => {
-  const { openRegisterModal } = useRegistrationModal();
 
   return (
     <AnimatePresence>
@@ -170,25 +168,25 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
 
             {/* Bottom Primary CTA */}
             <div className="pt-4 border-t border-white/10 mt-4">
-              <button
-                type="button"
+              <Link
+                to="/register"
                 onClick={() => {
                   sound.playCannon?.();
                   onClose();
-                  openRegisterModal();
                 }}
-                className="w-full min-h-[48px] py-3 px-4 rounded-xl text-[#0B0B0B] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-xl font-black cursor-pointer"
+                className="w-full min-h-[48px] py-3 px-4 rounded-xl text-[#0B0B0B] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-xl font-black cursor-pointer text-decoration-none"
                 style={{
                   fontFamily: "'Bebas Neue', sans-serif",
                   fontSize: '1.15rem',
                   letterSpacing: '0.1em',
                   background: 'linear-gradient(135deg, #FFC928, #B56A12)',
                   boxShadow: '0 0 24px rgba(255,201,40,0.45)',
+                  textDecoration: 'none',
                 }}
               >
                 <Sparkles className="w-4 h-4 text-[#0B0B0B]" />
                 <span>SET SAIL / REGISTER</span>
-              </button>
+              </Link>
             </div>
           </motion.div>
         </div>

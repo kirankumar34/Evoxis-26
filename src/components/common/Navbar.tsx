@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import { MobileDrawer } from './MobileDrawer';
-import { useRegistrationModal } from '@/context/RegistrationModalContext';
 import { sound } from '@/utils/audio';
 
 /* ─── colour tokens ──────────────────────────────────────────────────────── */
@@ -24,7 +23,6 @@ export const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
-  const { openRegisterModal } = useRegistrationModal();
 
   const isHomePage = location.pathname === '/';
 
@@ -39,7 +37,8 @@ export const Navbar: React.FC = () => {
   const navLinks = [
     { name: 'Home', href: isHomePage ? '#home' : '/', isRoute: !isHomePage, icon: '🏠' },
     { name: 'Departments', href: isHomePage ? '#departments' : '/#departments', icon: '🛡️' },
-    { name: 'Events', href: isHomePage ? '#events' : '/events', isRoute: !isHomePage, badge: '16', icon: '🏆' },
+    { name: 'Events', href: isHomePage ? '#events' : '/events', isRoute: !isHomePage, badge: '15', icon: '🏆' },
+    { name: 'Register', href: '/register', isRoute: true, icon: '⚔️' },
     { name: 'Schedule', href: isHomePage ? '#schedule' : '/#schedule', icon: '⏳' },
     { name: 'Venue', href: isHomePage ? '#venue' : '/#venue', icon: '📍' },
     { name: 'Pass', href: '/my-registration', isRoute: true, icon: '🎫' },
@@ -188,8 +187,9 @@ export const Navbar: React.FC = () => {
             </Link>
 
             {/* Set Sail Register CTA */}
-            <button
-              onClick={() => { sound.playCannon?.(); openRegisterModal(); }}
+            <Link
+              to="/register"
+              onClick={() => sound.playCannon?.()}
               style={{
                 fontFamily: "'Bebas Neue', sans-serif",
                 letterSpacing: '0.08em',
@@ -202,6 +202,10 @@ export const Navbar: React.FC = () => {
                 cursor: 'pointer',
                 boxShadow: '0 0 18px rgba(255,201,40,0.45)',
                 transition: 'all 0.2s',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
               onMouseEnter={(e) => { 
                 e.currentTarget.style.boxShadow = '0 0 30px rgba(255,201,40,0.7)'; 
@@ -213,7 +217,7 @@ export const Navbar: React.FC = () => {
               }}
             >
               Set Sail
-            </button>
+            </Link>
 
             {/* Mobile & Tablet Only: Side Opening Menu Trigger */}
             <button

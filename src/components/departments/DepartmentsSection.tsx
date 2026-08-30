@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { DEPARTMENTS } from '@/data/departments';
 import { Briefcase, Terminal, Brain, Cpu, ShieldCheck, UserCheck, Anchor } from 'lucide-react';
 
-const ICON_MAP: Record<string, React.ElementType> = {
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Briefcase,
   Terminal,
   Brain,

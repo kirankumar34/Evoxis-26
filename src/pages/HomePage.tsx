@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { HeroSection } from '@/components/hero/HeroSection';
 
 import { DepartmentShowcaseSection } from '@/components/departments/DepartmentShowcaseSection';
@@ -8,11 +9,12 @@ import { VenueSection } from '@/components/venue/VenueSection';
 // import { GallerySection } from '@/components/gallery/GallerySection';
 // import { SponsorsSection } from '@/components/sponsors/SponsorsSection';
 import { FAQSection } from '@/components/faqs/FAQSection';
-import { useRegistrationModal } from '@/context/RegistrationModalContext';
 import {FlowingMenu} from '@/components/ui/FlowingMenu';
+// import Lanyard from '@/components/ui/Lanyard';
+import { DepartmentsSection } from '@/components/departments/DepartmentsSection';
 
 export const HomePage: React.FC = () => {
-  const { openRegisterModal } = useRegistrationModal();
+  const navigate = useNavigate();
   const eventDate = import.meta.env.VITE_EVENT_DATE || '2026-09-26T09:00:00+05:30';
 
   return (
@@ -20,14 +22,10 @@ export const HomePage: React.FC = () => {
       {/* 1. Hero Section & Countdown */}
       <HeroSection
         eventDate={eventDate}
-        onOpenRegister={() => openRegisterModal(null)}
+        onOpenRegister={() => navigate('/register')}
       />
 
-      {/* 2. Co-Hosting Departments Showcase */}
-      {/* <DepartmentsSection /> */}
 
-      {/* 2.1 Department Associate Office Bearers 3D Infinite Showcase */}
-      <DepartmentShowcaseSection />
 
       {/* Flowing Menu Component for Extra Decoration */}
       <FlowingMenu
@@ -48,14 +46,21 @@ export const HomePage: React.FC = () => {
 
       {/* 3. Filterable 16 Events Catalog */}
       <EventsSection
-        onOpenRegisterForEvent={(event) => openRegisterModal(event)}
+        onOpenRegisterForEvent={(event) => navigate(`/register?event=${event.eventId}`)}
       />
+            {/* 2. Co-Hosting Departments Showcase */}
+      <DepartmentsSection />
+
+      {/* 2.1 Department Associate Office Bearers 3D Infinite Showcase */}
+      <DepartmentShowcaseSection />
 
       {/* 4. Interactive Master Day Schedule */}
       <ScheduleSection />
 
       {/* 5. Campus Venue Locator & Transit */}
       <VenueSection />
+
+      {/* <Lanyard position={[0, 0, 20]} gravity={[0, -40, 0]} /> */}
 
       {/* 6. Photo Highlights Gallery */}
       {/* <GallerySection /> */}
