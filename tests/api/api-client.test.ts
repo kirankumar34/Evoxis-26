@@ -19,6 +19,7 @@ describe('AC3, AC4, AC6, AC7, AC8: Full API Client & Database Service Layer', ()
       gender: 'Female',
       selectedEventIds: ['TE01', 'NT01'],
       isTeam: false,
+      agreedToRules: true,
     };
 
     const response = await api.registerParticipant(payload);
@@ -42,6 +43,7 @@ describe('AC3, AC4, AC6, AC7, AC8: Full API Client & Database Service Layer', ()
       yearOfStudy: '4th Year',
       selectedEventIds: ['TE01'],
       isTeam: false,
+      agreedToRules: true,
     };
 
     // First submission
@@ -67,6 +69,7 @@ describe('AC3, AC4, AC6, AC7, AC8: Full API Client & Database Service Layer', ()
       yearOfStudy: '2nd Year',
       selectedEventIds: ['TE02', 'SP04'],
       isTeam: false,
+      agreedToRules: true,
     };
 
     const reg = await api.registerParticipant(payload);
@@ -94,6 +97,7 @@ describe('AC3, AC4, AC6, AC7, AC8: Full API Client & Database Service Layer', ()
       yearOfStudy: '3rd Year',
       selectedEventIds: ['TE06', 'NT03'],
       isTeam: false,
+      agreedToRules: true,
     };
 
     const reg = await api.registerParticipant(payload);
@@ -116,6 +120,7 @@ describe('AC3, AC4, AC6, AC7, AC8: Full API Client & Database Service Layer', ()
       yearOfStudy: '4th Year',
       selectedEventIds: ['TE01'], // Registered for TE01 only
       isTeam: false,
+      agreedToRules: true,
     };
 
     const reg = await api.registerParticipant(payload);
@@ -143,6 +148,7 @@ describe('AC3, AC4, AC6, AC7, AC8: Full API Client & Database Service Layer', ()
       yearOfStudy: '3rd Year',
       selectedEventIds: ['TE03', 'NT05'],
       isTeam: false,
+      agreedToRules: true,
     };
 
     const reg = await api.registerParticipant(payload);
@@ -167,6 +173,7 @@ describe('AC3, AC4, AC6, AC7, AC8: Full API Client & Database Service Layer', ()
       yearOfStudy: '4th Year',
       selectedEventIds: ['TE05'],
       isTeam: false,
+      agreedToRules: true,
     };
 
     const reg = await api.registerParticipant(payload);
@@ -191,12 +198,13 @@ describe('AC3, AC4, AC6, AC7, AC8: Full API Client & Database Service Layer', ()
       yearOfStudy: '3rd Year',
       selectedEventIds: ['TE04'],
       isTeam: false,
+      agreedToRules: true,
     };
 
     const reg = await api.registerParticipant(payload);
     const regId = reg.data!.registrationId;
 
-    const updateRes = await api.updateParticipationStatus(regId, 'TE04', 'Winner');
+    const updateRes = await api.updateParticipationStatus(regId, 'TE04', 'Participated');
     expect(updateRes.success).toBe(true);
   });
 
@@ -369,7 +377,7 @@ describe('AC3, AC4, AC6, AC7, AC8: Full API Client & Database Service Layer', ()
     expect(lookup.success).toBe(true);
     expect(lookup.data?.referralSource).toBe('College Friend');
     expect(lookup.data?.events.length).toBe(3);
-    expect(lookup.data?.events.map((e) => e.eventId)).toEqual(['TE01', 'TE02', 'NT01']);
+    expect(lookup.data?.events.map((e: any) => e.eventId)).toEqual(['TE01', 'TE02', 'NT01']);
   });
 
   it('14. Prompt 10 TEST 3 — Other Referral Source (Other + WhatsApp Group)', async () => {

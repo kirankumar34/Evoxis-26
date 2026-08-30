@@ -1,6 +1,7 @@
 import React from 'react';
 import { HeroSection } from '@/components/hero/HeroSection';
-import { DepartmentsSection } from '@/components/departments/DepartmentsSection';
+
+import { DepartmentShowcaseSection } from '@/components/departments/DepartmentShowcaseSection';
 import { EventsSection } from '@/components/events/EventsSection';
 import { ScheduleSection } from '@/components/schedule/ScheduleSection';
 import { VenueSection } from '@/components/venue/VenueSection';
@@ -23,7 +24,10 @@ export const HomePage: React.FC = () => {
       />
 
       {/* 2. Co-Hosting Departments Showcase */}
-      <DepartmentsSection />
+      {/* <DepartmentsSection /> */}
+
+      {/* 2.1 Department Associate Office Bearers 3D Infinite Showcase */}
+      <DepartmentShowcaseSection />
 
       {/* Flowing Menu Component for Extra Decoration */}
       <FlowingMenu

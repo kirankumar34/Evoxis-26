@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { api } from '@/services/api';
 import { generateQRCodeDataUrl } from '@/lib/qr';
-import { EVENTS } from '@/data/events';
 
 describe("EvoXis'26 — Human-Centered Production Readiness Test Suite", () => {
   const ts = Date.now();
@@ -162,6 +161,7 @@ describe("EvoXis'26 — Human-Centered Production Readiness Test Suite", () => {
         phone: `98409${String(ts).slice(-5)}`,
         collegeName: 'Loyola College',
         department: 'VisCom',
+        yearOfStudy: '2nd Year',
         selectedEventIds: ['NT01'] as any[],
         agreedToRules: true,
       };

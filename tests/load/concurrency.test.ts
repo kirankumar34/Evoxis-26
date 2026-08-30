@@ -26,6 +26,7 @@ describe('AC5: Concurrency & High Load Test Simulation (100+ Concurrent Requests
         yearOfStudy: '3rd Year',
         selectedEventIds: ['TE01', 'NT01'],
         isTeam: false,
+        agreedToRules: true,
       });
     }
 
@@ -40,6 +41,7 @@ describe('AC5: Concurrency & High Load Test Simulation (100+ Concurrent Requests
         yearOfStudy: '3rd Year',
         selectedEventIds: ['TE01'], // Same event
         isTeam: false,
+        agreedToRules: true,
       });
     }
 
