@@ -933,7 +933,7 @@ export const EVENTS: EventItem[] = [
     teamSize: {
       min: 2,
       max: 8,
-      description: '2 - 8 Members per Team / Group',
+      description: '2 - 5 Members per Team / Group',
     },
     rounds: [
       {
