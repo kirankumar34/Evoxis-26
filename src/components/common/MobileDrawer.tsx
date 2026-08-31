@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles, Compass } from 'lucide-react';
 import { sound } from '@/utils/audio';
+import { REGISTRATION_FORM_URL } from '@/constants';
 
 export interface NavLinkItem {
   name: string;
   href: string;
   badge?: string;
   isRoute?: boolean;
+  isExternal?: boolean;
   icon?: string;
 }
 
@@ -90,6 +92,31 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
               {/* Navigation Items */}
               <nav className="mt-5 flex flex-col gap-1.5">
                 {navLinks.map((link) => {
+                  if (link.isExternal) {
+                    return (
+                      <a
+                        key={link.name}
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => { sound.playCannon?.(); onClose(); }}
+                        className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-200 hover:text-[#FFC928] hover:bg-white/5 border border-transparent hover:border-[#FFC928]/30 transition-all font-medium group"
+                      >
+                        <span className="flex items-center gap-3">
+                          <span className="text-base">{link.icon || '⚓'}</span>
+                          <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.15rem', letterSpacing: '0.08em' }}>
+                            {link.name}
+                          </span>
+                        </span>
+                        {link.badge && (
+                          <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-[#E2231A]/30 text-[#FFF3D6] border border-[#E2231A]/50">
+                            {link.badge}
+                          </span>
+                        )}
+                      </a>
+                    );
+                  }
+
                   if (link.isRoute) {
                     return (
                       <Link
@@ -168,8 +195,10 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
 
             {/* Bottom Primary CTA */}
             <div className="pt-4 border-t border-white/10 mt-4">
-              <Link
-                to="/register"
+              <a
+                href={REGISTRATION_FORM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 onClick={() => {
                   sound.playCannon?.();
                   onClose();
@@ -186,7 +215,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
               >
                 <Sparkles className="w-4 h-4 text-[#0B0B0B]" />
                 <span>SET SAIL / REGISTER</span>
-              </Link>
+              </a>
             </div>
           </motion.div>
         </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { MapPin, Mail, Phone, Heart, Instagram, Linkedin, Youtube, Compass, Anchor } from 'lucide-react';
+import { REGISTRATION_FORM_URL } from '@/constants';
 
 export const Footer: React.FC = () => {
   return (
@@ -121,15 +122,17 @@ export const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-2 text-xs text-white/55">
               {[
-                { href: '/register', label: '⚔️ Multi-Challenge Registration', accent: true },
+                { href: REGISTRATION_FORM_URL, label: '⚔️ Multi-Challenge Registration (Google Form)', accent: true, external: true },
                 { href: '/events', label: '🏆 16 Grand Challenges', accent: true },
                 { href: '/my-registration', label: '🎫 Voyage Pass & Check-In QR', accent: false },
                 { href: '/#schedule', label: '📅 Voyage Itinerary', accent: false },
                 { href: '/#venue', label: '📍 Flagship Port & Transit', accent: false },
-              ].map(({ href, label, accent }) => (
+              ].map(({ href, label, accent, external }) => (
                 <li key={label}>
                   <a
                     href={href}
+                    target={external ? '_blank' : undefined}
+                    rel={external ? 'noopener noreferrer' : undefined}
                     className={`transition-colors ${accent ? 'text-[#FFC928] hover:text-white' : 'hover:text-[#FFC928]'}`}
                   >
                     {label}

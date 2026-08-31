@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Sparkles,
   CheckCircle2,
   Users,
   AlertCircle,
@@ -11,10 +10,15 @@ import {
   Loader2,
   ArrowRight,
   X,
+  Flame,
+  Zap,
+  ShieldAlert,
+  Check,
 } from 'lucide-react';
 import { EVENTS } from '@/data/events';
 import { EventId, EventCategory, RegistrationFormData, TeamMember } from '@/types';
 import { api } from '@/services/api';
+import mangaPanelImg from '@/assets/MangaPanel.jpg';
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -23,7 +27,7 @@ export const RegisterPage: React.FC = () => {
 
   const [selectedCategory, setSelectedCategory] = useState<EventCategory | 'All'>('All');
   const [selectedEventIds, setSelectedEventIds] = useState<EventId[]>([]);
-  
+
   const [formData, setFormData] = useState<RegistrationFormData>({
     fullName: '',
     email: '',
@@ -57,7 +61,7 @@ export const RegisterPage: React.FC = () => {
     }
   }, [preselectedEvent]);
 
-  // Keep formData.selectedEventIds in sync
+  // Keep formData.selectedEventIds in sync and update isTeam status
   useEffect(() => {
     setFormData((prev) => ({
       ...prev,
@@ -157,16 +161,19 @@ export const RegisterPage: React.FC = () => {
     if (!formData.department.trim()) newErrors.department = 'Department is required.';
 
     if (selectedEventIds.length === 0) {
-      newErrors.events = 'Please select at least one event.';
+      newErrors.events = 'Please select at least one event challenge.';
     }
 
     if (formData.isTeam && !formData.teamName?.trim()) {
-      newErrors.teamName = 'Team Name is required for team events.';
+      newErrors.teamName = 'Crew / Team Name is required for team challenges.';
     }
 
     if (!formData.referralSource || formData.referralSource.trim() === '') {
       newErrors.referralSource = 'Please tell us how you heard about EvoXis 26.';
-    } else if (formData.referralSource === 'Other' && (!formData.referralSourceOther || !formData.referralSourceOther.trim())) {
+    } else if (
+      formData.referralSource === 'Other' &&
+      (!formData.referralSourceOther || !formData.referralSourceOther.trim())
+    ) {
       newErrors.referralSourceOther = 'Please specify how you heard about EvoXis 26.';
     }
 
@@ -183,7 +190,8 @@ export const RegisterPage: React.FC = () => {
     setServerError(null);
 
     if (!validateForm()) {
-      const firstError = document.querySelector('.error-message') || document.querySelector('.text-red-400');
+      const firstError =
+        document.querySelector('.error-message') || document.querySelector('.error-text');
       firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
@@ -194,7 +202,6 @@ export const RegisterPage: React.FC = () => {
       const result = await api.registerParticipant(formData);
 
       if (result.success && result.data) {
-        // Redirect directly to Registration Success Page
         navigate('/registration-success', {
           state: {
             registrationId: result.data.registrationId,
@@ -207,7 +214,8 @@ export const RegisterPage: React.FC = () => {
             selectedEvents: result.data.selectedEvents,
             totalEvents: result.data.totalEvents,
             referralSource: (result.data as any).referralSource || formData.referralSource,
-            referralSourceOther: (result.data as any).referralSourceOther || formData.referralSourceOther,
+            referralSourceOther:
+              (result.data as any).referralSourceOther || formData.referralSourceOther,
             isDuplicate: result.isDuplicate,
             teamName: result.data.teamName,
             teamMembers: result.data.teamMembers,
@@ -218,79 +226,290 @@ export const RegisterPage: React.FC = () => {
         setServerError(result.message || 'Registration could not be completed. Please try again.');
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unable to connect to the registration server. Please try again.';
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Unable to connect to the registration server. Please try again.';
       setServerError(message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const filteredEvents = selectedCategory === 'All'
-    ? EVENTS
-    : EVENTS.filter((e) => e.category === selectedCategory);
+  const filteredEvents =
+    selectedCategory === 'All'
+      ? EVENTS
+      : EVENTS.filter((e) => e.category === selectedCategory);
+
+  const techCount = EVENTS.filter((e) => e.category === 'Technical').length;
+  const nonTechCount = EVENTS.filter((e) => e.category === 'Non-Technical').length;
+  const specialCount = EVENTS.filter((e) => e.category === 'Special Event').length;
 
   return (
-    <div className="min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-[#02050E] via-[#040814] to-[#0A1128] text-slate-100 selection:bg-[#E6CA65] selection:text-[#040814]">
-      <div className="max-w-5xl mx-auto">
-        {/* Header Title */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#E6CA65]/10 border border-[#E6CA65]/35 text-[#FCE79C] text-xs font-mono font-bold tracking-wider uppercase mb-4 shadow-sm">
-            <Sparkles className="w-3.5 h-3.5 text-[#E6CA65]" />
-            Official Grand Voyage Pass Registration
+    <div
+      className="min-h-screen pt-24 pb-28 px-3 sm:px-6 lg:px-8 relative select-none bg-[#090A0F] text-slate-100 selection:bg-[#FFC928] selection:text-black overflow-hidden"
+      style={{
+        fontFamily: "'Inter', sans-serif",
+      }}
+    >
+      {/* ── Manga Screentone & Speedlines Texture Overlay (Dark Ink Tone) ── */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.14]"
+        style={{
+          backgroundImage: `radial-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px)`,
+          backgroundSize: '8px 8px',
+        }}
+      />
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.05]"
+        style={{
+          backgroundImage: `repeating-linear-gradient(
+            -45deg,
+            #FFF 0px,
+            #FFF 1px,
+            transparent 1px,
+            transparent 12px
+          )`,
+        }}
+      />
+
+      {/* Decorative Shonen Ambient Energy Glows */}
+      <div className="absolute top-10 left-1/4 w-96 h-96 bg-[#E2231A]/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-40 right-1/4 w-96 h-96 bg-[#FFC928]/10 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="max-w-6xl mx-auto relative z-10">
+        {/* ── Top Manga Issue Ribbon Header ────────────────────────────── */}
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-2 border-2 border-[#FFC928] bg-[#0E1017] px-4 py-2 text-xs uppercase text-[#FFC928] shadow-[4px_4px_0px_0px_#E2231A]">
+          <div className="flex items-center gap-2 font-black" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+            <span className="bg-[#E2231A] text-white px-2.5 py-0.5 text-[11px] font-black tracking-normal border border-white shadow-[2px_2px_0px_0px_#000]">
+              SHONEN EVOXIS
+            </span>
+            <span className="hidden sm:inline text-white">CH. 2026: THE GRAND AWAKENING</span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-voyage font-black tracking-tight text-white mb-4">
-            Enlist for <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FCE79C] via-[#E6CA65] to-[#00F2FE]">EvoXis'26</span>
-          </h1>
-          <p className="text-slate-300 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed font-sans">
-            Select your challenges across the 3 realms, enter your crew manifest details, and instantly generate your secure HMAC QR Voyage Pass.
-          </p>
+          <div className="flex items-center gap-3 text-[11px] font-bold text-slate-300" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+            <span className="text-[#FFC928]">⚡ 100% FREE ENTRY (₹0)</span>
+            <span className="hidden md:inline text-slate-600">|</span>
+            <span className="hidden md:inline text-white">16 BATTLE ARENAS</span>
+            <span className="hidden md:inline text-slate-600">|</span>
+            <span className="text-[#22c55e]">STATUS: OPEN</span>
+          </div>
         </div>
 
-        {serverError && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8 p-4 rounded-xl bg-red-500/10 border border-red-500/40 text-red-300 flex items-center gap-3"
+        {/* ── MANGA HERO COVER / SPLASH PANEL (DARK INK EDITION) ───────── */}
+        <div className="mb-10 p-6 sm:p-8 bg-[#12141D] border-3 border-[#FFC928] text-white shadow-[6px_6px_0px_0px_#E2231A] relative overflow-hidden">
+          {/* Manga Corner Stamp */}
+          <div
+            className="absolute top-0 right-0 bg-[#FFC928] text-black text-[11px] font-black px-4 py-1.5 border-b-2 border-l-2 border-black uppercase tracking-wider shadow-sm"
+            style={{ fontFamily: "'JetBrains Mono', monospace" }}
           >
-            <AlertCircle className="w-5 h-5 flex-shrink-0 text-red-400" />
-            <p className="text-sm font-medium">{serverError}</p>
-          </motion.div>
-        )}
+            ★ SPECIAL REGISTRATION ISSUE ★
+          </div>
 
-        <form onSubmit={handleSubmit} className="space-y-10">
-          {/* STEP 1: EVENT SELECTION */}
-          <div className="p-6 sm:p-8 rounded-2xl bg-[#0A1128]/90 border border-[#E6CA65]/30 shadow-2xl wanted-card-border backdrop-blur-md">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-[#E6CA65]/20">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-3">
+            {/* Left Column: Manga Typography & Dialogue Bubble */}
+            <div className="lg:col-span-7 space-y-4">
+              <div className="flex items-center gap-2">
+                <span
+                  className="px-3 py-1 bg-[#E2231A] text-white text-xs font-black tracking-widest uppercase border border-white shadow-[3px_3px_0px_0px_#000]"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  ドン!! DON!!
+                </span>
+                <span
+                  className="text-xs font-black text-[#FFC928] uppercase tracking-wider"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  GRAND VOYAGE ENLISTMENT
+                </span>
+              </div>
+
               <div>
-                <h2 className="text-xl font-voyage font-bold text-white flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-lg bg-[#E6CA65]/20 text-[#FCE79C] border border-[#E6CA65]/40 flex items-center justify-center text-sm font-mono font-black shadow-sm">
-                    1
+                <h1
+                  className="text-4xl sm:text-6xl uppercase font-black text-white leading-none tracking-tight drop-shadow-[2px_2px_0px_#E2231A]"
+                  style={{ fontFamily: "'Anton', sans-serif", letterSpacing: '0.03em' }}
+                >
+                  AWAKEN FOR <br />
+                  <span className="text-[#FFC928] drop-shadow-[2px_2px_0px_#000]">
+                    EVOXIS '26
                   </span>
-                  <span>SELECT VOYAGE CHALLENGES (16 COMPETITIONS) *</span>
-                </h2>
-                <p className="text-xs text-slate-300 mt-1 font-sans">
-                  You can register for multiple challenges across Grand Voyage, Crew & Arena tracks.
+                </h1>
+                <p
+                  className="text-slate-300 text-xs sm:text-sm font-bold uppercase mt-1.5 tracking-widest"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  指名手配 // GEAR 5 REGISTRATION PORTAL
                 </p>
               </div>
 
-              {/* Category Filter Pills & Counter */}
+              {/* Manga Dialogue Speech Bubble (Dark Comic Style) */}
+              <div className="relative bg-[#090A10] text-slate-100 p-4 border-2 border-[#FFC928] shadow-[4px_4px_0px_0px_#000] mt-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-lg">👒</span>
+                  <span
+                    className="font-black text-xs uppercase tracking-wider text-[#FFC928]"
+                    style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                  >
+                    Captain Luffy (Gear 5):
+                  </span>
+                </div>
+                <p className="font-medium text-slate-200 text-xs sm:text-sm leading-snug italic">
+                  &ldquo;A-HA-HA-HA-HA! The battle reaches its finale! Select your challenges across the 3 realms, enlist your crew, and let's finish this!!&rdquo;
+                </p>
+                <div
+                  className="mt-2 text-[11px] font-black text-slate-300 flex items-center gap-2 border-t border-slate-800 pt-1.5"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  <span className="text-[#E2231A]">⚡ KA-BOOM!!</span>
+                  <span>Instant HMAC QR Voyage Pass generated upon confirmation.</span>
+                </div>
+              </div>
+
+              {/* Info Badges */}
+              <div className="flex flex-wrap items-center gap-2.5 pt-2">
+                <div className="px-3 py-1.5 bg-[#090A0F] text-slate-200 border border-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                  <Flame className="w-3.5 h-3.5 text-[#E2231A]" />
+                  <span>16 Arena Challenges</span>
+                </div>
+                <div className="px-3 py-1.5 bg-[#090A0F] text-slate-200 border border-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                  <Users className="w-3.5 h-3.5 text-[#38BDF8]" />
+                  <span>Solo & Crew Formats</span>
+                </div>
+                <div className="px-3 py-1.5 bg-[#090A0F] text-[#22c55e] border border-emerald-500/40 text-xs font-black flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>₹0 Registration Fee</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Featured Framed Manga Panel */}
+            <div className="lg:col-span-5 flex justify-center">
+              <div className="relative group">
+                {/* Sound effect comic badge */}
+                <div
+                  className="absolute -top-4 -right-3 z-20 bg-[#E2231A] text-white text-xs font-black px-3 py-1 border-2 border-white shadow-[4px_4px_0px_0px_#000] transform rotate-6"
+                  style={{ fontFamily: "'Anton', sans-serif" }}
+                >
+                  KA-BOOM!! 💥
+                </div>
+
+                <div
+                  className="absolute -bottom-3 -left-3 z-20 bg-[#FFC928] text-black text-[11px] font-black px-3 py-1 border-2 border-black shadow-[3px_3px_0px_0px_#000] transform -rotate-3"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  CH. 1044 / GEAR 5
+                </div>
+
+                {/* Framed Manga Art */}
+                <div className="w-72 sm:w-80 overflow-hidden border-3 border-[#FFC928] bg-black shadow-[6px_6px_0px_0px_#000] transition-transform duration-300 group-hover:scale-[1.02]">
+                  <div className="relative aspect-[3/4] bg-black">
+                    <img
+                      src={mangaPanelImg}
+                      alt="One Piece Gear 5 Manga Panel"
+                      className="w-full h-full object-cover object-top filter contrast-125 brightness-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent pointer-events-none" />
+                    <div className="absolute bottom-2 left-3 right-3 text-center">
+                      <p
+                        className="text-xs font-black text-[#FFC928] uppercase tracking-wider drop-shadow-md"
+                        style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                      >
+                        &quot;NOW, LET'S FINISH THIS!!&quot;
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Server Error Comic Alert ─────────────────────────────────── */}
+        {serverError && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mb-8 p-4 bg-[#18090C] border-2 border-[#E2231A] text-red-200 shadow-[4px_4px_0px_0px_#E2231A] flex items-center gap-3"
+          >
+            <ShieldAlert className="w-7 h-7 flex-shrink-0 text-[#E2231A]" />
+            <div>
+              <span
+                className="font-black text-[#E2231A] block text-xs uppercase"
+                style={{ fontFamily: "'JetBrains Mono', monospace" }}
+              >
+                [ TRANSMISSION ERROR // 通信エラー ]
+              </span>
+              <p className="text-sm font-bold">{serverError}</p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── REGISTRATION FORM WITH DARK MANGA PANELS ─────────────────── */}
+        <form onSubmit={handleSubmit} className="space-y-10">
+
+          {/* ============================================================ */}
+          {/* PANEL 01: BATTLE CHALLENGES (第1コマ // BAAAM!! ドォン)     */}
+          {/* ============================================================ */}
+          <div className="bg-[#12141D] border-3 border-slate-700 p-6 sm:p-8 shadow-[6px_6px_0px_0px_#000] relative">
+            {/* Panel Header Strip */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b-2 border-slate-700">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span
+                    className="px-2.5 py-0.5 bg-[#FFC928] text-black text-xs font-black uppercase border border-black"
+                    style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                  >
+                    PANEL 01 // 第1コマ
+                  </span>
+                  <span
+                    className="text-xs font-black text-[#E2231A]"
+                    style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                  >
+                    [ BAAAM!! ドォン ]
+                  </span>
+                </div>
+                <h2
+                  className="text-2xl sm:text-3xl text-white uppercase leading-tight font-black"
+                  style={{ fontFamily: "'Anton', sans-serif", letterSpacing: '0.03em' }}
+                >
+                  CHOOSE YOUR BATTLE CHALLENGES (16 EVENTS) *
+                </h2>
+                <p
+                  className="text-xs text-slate-400 font-bold mt-0.5"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  Select your competitions across Grand Line, Crew & Arena tracks. You can select multiple events!
+                </p>
+              </div>
+
+              {/* Category Filter Comic Tabs & Counter */}
               <div className="flex items-center gap-2 self-start flex-wrap">
-                <span className="px-3 py-1 rounded-lg text-xs font-mono font-bold bg-[#E6CA65]/15 text-[#FCE79C] border border-[#E6CA65]/35 shadow-sm">
+                <span
+                  className="px-3 py-1.5 text-xs font-black bg-[#FFC928] text-black border border-black shadow-[2px_2px_0px_0px_#000]"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
                   {selectedEventIds.length} Selected
                 </span>
-                <div className="flex items-center gap-1.5 p-1 bg-[#040814]/90 rounded-xl border border-[#E6CA65]/20">
-                  {(['All', 'Technical', 'Non-Technical', 'Special Event'] as const).map((cat) => (
+                <div className="flex items-center gap-1 p-1 bg-[#090A0F] border border-slate-700 shadow-[2px_2px_0px_0px_#000]">
+                  {(
+                    [
+                      { id: 'All', label: 'All (16)' },
+                      { id: 'Technical', label: `⚔️ Tech (${techCount})` },
+                      { id: 'Non-Technical', label: `🎭 Non-Tech (${nonTechCount})` },
+                      { id: 'Special Event', label: `🏆 Special (${specialCount})` },
+                    ] as const
+                  ).map((cat) => (
                     <button
-                      key={cat}
+                      key={cat.id}
                       type="button"
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                        selectedCategory === cat
-                          ? 'bg-gradient-to-r from-[#E6CA65] to-[#FCE79C] text-[#040814] font-bold shadow-glow-gold/40'
-                          : 'text-slate-400 hover:text-[#E6CA65]'
+                      onClick={() => setSelectedCategory(cat.id as any)}
+                      className={`px-3 py-1.5 text-xs font-extrabold transition-all border cursor-pointer ${
+                        selectedCategory === cat.id
+                          ? 'bg-[#E2231A] text-white border-white shadow-[2px_2px_0px_0px_#000]'
+                          : 'bg-[#12141D] text-slate-300 border-transparent hover:text-white hover:border-slate-600'
                       }`}
+                      style={{ fontFamily: "'JetBrains Mono', monospace" }}
                     >
-                      {cat === 'Special Event' ? 'Special' : cat}
+                      {cat.label}
                     </button>
                   ))}
                 </div>
@@ -299,9 +518,12 @@ export const RegisterPage: React.FC = () => {
 
             {/* Selected Events Chips Bar */}
             {selectedEventIds.length > 0 && (
-              <div className="mb-6 p-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 flex flex-wrap items-center gap-2">
-                <span className="text-[11px] font-mono text-[#E6CA65] font-bold uppercase tracking-wider mr-1">
-                  Selected ({selectedEventIds.length}):
+              <div className="mb-6 p-4 bg-[#090A0F] border-2 border-[#FFC928]/60 flex flex-wrap items-center gap-2 shadow-inner">
+                <span
+                  className="text-xs font-black uppercase tracking-wider mr-1 text-[#FFC928] flex items-center gap-1.5"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  <span>⚔️ Selected ({selectedEventIds.length}):</span>
                 </span>
                 {selectedEventIds.map((eid) => {
                   const found = EVENTS.find((e) => e.eventId === eid);
@@ -309,12 +531,15 @@ export const RegisterPage: React.FC = () => {
                     <span
                       key={eid}
                       onClick={() => toggleEventSelection(eid)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-[#E6CA65]/20 text-[#FCE79C] border border-[#E6CA65]/40 cursor-pointer hover:bg-red-500/20 hover:border-red-500/40 hover:text-red-300 transition-colors"
-                      title="Click to remove"
+                      className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-[#161926] text-slate-100 border border-[#FFC928]/80 cursor-pointer hover:bg-[#E2231A] hover:text-white hover:border-[#E2231A] transition-all shadow-[2px_2px_0px_0px_#000]"
+                      style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                      title="Click to remove from roster"
                     >
-                      <span>{eid}</span>
-                      <span className="text-slate-300 font-normal">({found ? found.title : eid})</span>
-                      <X className="w-3.5 h-3.5 ml-1" />
+                      <span className="font-black text-[#FFC928]">{eid}</span>
+                      <span className="font-medium truncate max-w-[150px] text-slate-200">
+                        ({found ? found.title : eid})
+                      </span>
+                      <X className="w-3.5 h-3.5 ml-0.5 text-red-400" />
                     </span>
                   );
                 })}
@@ -322,87 +547,152 @@ export const RegisterPage: React.FC = () => {
             )}
 
             {errors.events && (
-              <p className="error-message text-red-400 text-xs font-medium mb-4 flex items-center gap-1.5">
-                <AlertCircle className="w-4 h-4" /> {errors.events}
+              <p
+                className="error-message error-text text-red-400 text-xs font-black mb-4 flex items-center gap-1.5 p-3 bg-red-950/40 border border-red-500/50"
+                style={{ fontFamily: "'JetBrains Mono', monospace" }}
+              >
+                <AlertCircle className="w-4 h-4 text-red-400" /> {errors.events}
               </p>
             )}
 
-            {/* Event Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Event Grid in Dark Manga Clash Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredEvents.map((evt) => {
                 const isSelected = selectedEventIds.includes(evt.eventId);
                 return (
                   <div
                     key={evt.eventId}
                     onClick={() => toggleEventSelection(evt.eventId)}
-                    className={`cursor-pointer relative p-4 rounded-xl transition-all border wanted-card-border ${
+                    className={`cursor-pointer relative p-5 transition-all flex flex-col justify-between border-2 ${
                       isSelected
-                        ? 'bg-[#E6CA65]/15 border-[#E6CA65] shadow-glow-gold/40 scale-[1.02]'
-                        : 'bg-[#040814]/70 border-[#E6CA65]/20 hover:border-[#E6CA65]/50 hover:bg-[#0E1736]/80'
+                        ? 'bg-[#181C2B] border-[#FFC928] shadow-[4px_4px_0px_0px_#E2231A] -translate-y-0.5'
+                        : 'bg-[#0B0C12] border-slate-800 hover:border-slate-600 hover:bg-[#10121B] shadow-[3px_3px_0px_0px_#000]'
                     }`}
                   >
-                    <div className="flex items-start justify-between gap-2 mb-2 relative z-10">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#E6CA65]/20 text-[#FCE79C] border border-[#E6CA65]/40">
-                          {evt.eventId}
-                        </span>
-                        <span className="text-[10px] font-medium text-slate-400">
-                          {evt.category}
-                        </span>
+                    <div>
+                      {/* Top Badges */}
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className="px-2 py-0.5 text-[10px] font-black bg-[#FFC928] text-black border border-black"
+                            style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                          >
+                            {evt.eventId}
+                          </span>
+                          <span
+                            className="text-[10px] font-black text-slate-400 uppercase tracking-wider"
+                            style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                          >
+                            {evt.category}
+                          </span>
+                        </div>
+
+                        {/* Checkbox Stamp */}
+                        <div
+                          className={`w-6 h-6 border-2 flex items-center justify-center transition-all ${
+                            isSelected
+                              ? 'bg-[#E2231A] border-white text-white shadow-[2px_2px_0px_0px_#000]'
+                              : 'bg-[#12141D] border-slate-600'
+                          }`}
+                        >
+                          {isSelected && <Check className="w-4 h-4 stroke-[3]" />}
+                        </div>
                       </div>
-                      <div
-                        className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
-                          isSelected
-                            ? 'bg-[#E6CA65] border-[#E6CA65] text-[#040814]'
-                            : 'border-slate-700 bg-[#0A1128]'
-                        }`}
+
+                      {/* Title */}
+                      <h3
+                        className="text-lg uppercase font-black text-white mb-1.5 leading-snug"
+                        style={{ fontFamily: "'Anton', sans-serif" }}
                       >
-                        {isSelected && <CheckCircle2 className="w-3.5 h-3.5 stroke-[3]" />}
-                      </div>
+                        {evt.title}
+                      </h3>
+
+                      {/* Tagline / Short description */}
+                      <p className="text-xs text-slate-300 line-clamp-2 mb-4 font-normal leading-relaxed">
+                        {evt.shortDescription}
+                      </p>
                     </div>
 
-                    <h3 className="font-voyage font-bold text-sm text-white mb-1 relative z-10">{evt.title}</h3>
-                    <p className="text-xs text-slate-300 line-clamp-2 mb-3 relative z-10 font-sans">{evt.shortDescription}</p>
-
-                    <div className="flex items-center justify-between text-[11px] text-slate-300 pt-2 border-t border-[#E6CA65]/15 font-mono relative z-10">
-                      <span className="flex items-center gap-1">
-                        <Users className="w-3 h-3 text-[#00F2FE]" />
+                    {/* Card Footer Info */}
+                    <div
+                      className="flex items-center justify-between text-[11px] text-slate-300 font-bold pt-3 border-t border-slate-800"
+                      style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                    >
+                      <span className="flex items-center gap-1 text-[#38BDF8]">
+                        <Users className="w-3.5 h-3.5" />
                         {evt.teamSize.description}
                       </span>
-                      <span className="text-[#FCE79C]">{evt.schedule.timeSlot.split(' - ')[0]}</span>
+                      <span className="text-[#FFC928]">
+                        {evt.schedule.timeSlot.split(' - ')[0]}
+                      </span>
                     </div>
                   </div>
                 );
               })}
             </div>
 
-            {/* Selected Count Indicator */}
-            <div className="mt-6 p-3 rounded-xl bg-[#040814]/80 border border-[#E6CA65]/20 flex items-center justify-between">
-              <span className="text-xs text-slate-300">
-                Selected Challenges: <strong className="text-[#FCE79C] font-mono font-bold text-sm">{selectedEventIds.length}</strong> / 16
+            {/* Selected Count Indicator Footer */}
+            <div className="mt-6 p-4 bg-[#090A0F] border border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-2 shadow-inner">
+              <span
+                className="text-xs font-bold text-slate-300"
+                style={{ fontFamily: "'JetBrains Mono', monospace" }}
+              >
+                Registered Challenges:{' '}
+                <strong className="text-[#FFC928] font-black text-sm">
+                  {selectedEventIds.length}
+                </strong>{' '}
+                / 16 Challenges
               </span>
-              <span className="text-xs font-mono text-emerald-400 font-semibold">Voyage Registration: Free (₹0)</span>
+              <span
+                className="text-xs font-black uppercase text-emerald-400 bg-emerald-950/50 px-3 py-1 border border-emerald-500/40"
+                style={{ fontFamily: "'JetBrains Mono', monospace" }}
+              >
+                ★ Free Entry Pass: ₹0 (No Fee) ★
+              </span>
             </div>
           </div>
 
-          {/* STEP 2: PARTICIPANT DETAILS */}
-          <div className="p-6 sm:p-8 rounded-2xl bg-[#0A1128]/90 border border-[#E6CA65]/30 shadow-2xl wanted-card-border backdrop-blur-md">
-            <div className="mb-6 pb-4 border-b border-[#E6CA65]/20">
-              <h2 className="text-xl font-voyage font-bold text-white flex items-center gap-2">
-                <span className="w-7 h-7 rounded-lg bg-[#E6CA65]/20 text-[#FCE79C] border border-[#E6CA65]/40 flex items-center justify-center text-sm font-mono font-black shadow-sm">
-                  2
+          {/* ============================================================ */}
+          {/* PANEL 02: CAPTAIN & CREW MANIFEST (第2コマ // DON!! ドン!!) */}
+          {/* ============================================================ */}
+          <div className="bg-[#12141D] border-3 border-slate-700 p-6 sm:p-8 shadow-[6px_6px_0px_0px_#000] relative">
+            {/* Panel Header */}
+            <div className="mb-6 pb-4 border-b-2 border-slate-700">
+              <div className="flex items-center gap-2 mb-1">
+                <span
+                  className="px-2.5 py-0.5 bg-[#FFC928] text-black text-xs font-black uppercase border border-black"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  PANEL 02 // 第2コマ
                 </span>
-                Captain / Participant Manifest Details
+                <span
+                  className="text-xs font-black text-[#E2231A]"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  [ DON!! ドン!! ]
+                </span>
+              </div>
+              <h2
+                className="text-2xl sm:text-3xl text-white uppercase leading-tight font-black"
+                style={{ fontFamily: "'Anton', sans-serif", letterSpacing: '0.03em' }}
+              >
+                CAPTAIN / PARTICIPANT MANIFEST DETAILS *
               </h2>
-              <p className="text-xs text-slate-300 mt-1 font-sans">
-                Enter your official contact and college details for Voyage Pass generation and certificate delivery.
+              <p
+                className="text-xs text-slate-400 font-bold mt-0.5"
+                style={{ fontFamily: "'JetBrains Mono', monospace" }}
+              >
+                Fill in your official identification credentials for HMAC QR Pass generation & certificate issuance.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {/* Full Name */}
               <div>
-                <label className="block text-xs font-semibold text-[#FCE79C] uppercase tracking-wider mb-2 font-mono">
+                <label
+                  className="block text-xs font-black text-[#FFC928] uppercase tracking-wider mb-1.5"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
                   Full Name (As on College ID) *
                 </label>
                 <input
@@ -410,15 +700,22 @@ export const RegisterPage: React.FC = () => {
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleInputChange}
-                  placeholder="e.g. Priya Raman"
-                  className="w-full px-4 py-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 text-white placeholder-slate-500 focus:outline-none focus:border-[#E6CA65] focus:ring-1 focus:ring-[#E6CA65] text-sm"
+                  placeholder="e.g. Monkey D. Luffy / Priya Raman"
+                  className="w-full px-4 py-3 bg-[#090A0F] border-2 border-slate-700 text-white placeholder-slate-600 font-bold focus:outline-none focus:border-[#FFC928] text-sm shadow-inner"
                 />
-                {errors.fullName && <p className="text-red-400 text-xs mt-1.5">{errors.fullName}</p>}
+                {errors.fullName && (
+                  <p className="error-text text-red-400 text-xs font-bold mt-1.5 flex items-center gap-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                    <AlertCircle className="w-3.5 h-3.5" /> {errors.fullName}
+                  </p>
+                )}
               </div>
 
               {/* Email Address */}
               <div>
-                <label className="block text-xs font-semibold text-[#FCE79C] uppercase tracking-wider mb-2 font-mono">
+                <label
+                  className="block text-xs font-black text-[#FFC928] uppercase tracking-wider mb-1.5"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
                   Email Address (For Voyage Pass) *
                 </label>
                 <input
@@ -427,32 +724,47 @@ export const RegisterPage: React.FC = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="e.g. priya.raman@gmail.com"
-                  className="w-full px-4 py-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 text-white placeholder-slate-500 focus:outline-none focus:border-[#E6CA65] focus:ring-1 focus:ring-[#E6CA65] text-sm"
+                  className="w-full px-4 py-3 bg-[#090A0F] border-2 border-slate-700 text-white placeholder-slate-600 font-bold focus:outline-none focus:border-[#FFC928] text-sm shadow-inner"
                 />
-                {errors.email && <p className="text-red-400 text-xs mt-1.5">{errors.email}</p>}
+                {errors.email && (
+                  <p className="error-text text-red-400 text-xs font-bold mt-1.5 flex items-center gap-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                    <AlertCircle className="w-3.5 h-3.5" /> {errors.email}
+                  </p>
+                )}
               </div>
 
               {/* Mobile Number */}
               <div>
-                <label className="block text-xs font-semibold text-[#FCE79C] uppercase tracking-wider mb-2 font-mono">
-                  WhatsApp / Mobile Number *
+                <label
+                  className="block text-xs font-black text-[#FFC928] uppercase tracking-wider mb-1.5"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  WhatsApp / Mobile Number (10 Digits) *
                 </label>
                 <input
                   type="tel"
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  placeholder="10-digit mobile number"
+                  placeholder="e.g. 9876543210"
                   maxLength={10}
-                  className="w-full px-4 py-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 text-white placeholder-slate-500 focus:outline-none focus:border-[#E6CA65] focus:ring-1 focus:ring-[#E6CA65] text-sm font-mono"
+                  className="w-full px-4 py-3 bg-[#090A0F] border-2 border-slate-700 text-white placeholder-slate-600 font-bold focus:outline-none focus:border-[#FFC928] text-sm shadow-inner"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
                 />
-                {errors.phone && <p className="text-red-400 text-xs mt-1.5">{errors.phone}</p>}
+                {errors.phone && (
+                  <p className="error-text text-red-400 text-xs font-bold mt-1.5 flex items-center gap-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                    <AlertCircle className="w-3.5 h-3.5" /> {errors.phone}
+                  </p>
+                )}
               </div>
 
               {/* College Name */}
               <div>
-                <label className="block text-xs font-semibold text-[#FCE79C] uppercase tracking-wider mb-2 font-mono">
-                  College / University Name *
+                <label
+                  className="block text-xs font-black text-[#FFC928] uppercase tracking-wider mb-1.5"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  College / Institution Name *
                 </label>
                 <input
                   type="text"
@@ -460,14 +772,21 @@ export const RegisterPage: React.FC = () => {
                   value={formData.collegeName}
                   onChange={handleInputChange}
                   placeholder="e.g. Sriram Engineering College"
-                  className="w-full px-4 py-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 text-white placeholder-slate-500 focus:outline-none focus:border-[#E6CA65] focus:ring-1 focus:ring-[#E6CA65] text-sm"
+                  className="w-full px-4 py-3 bg-[#090A0F] border-2 border-slate-700 text-white placeholder-slate-600 font-bold focus:outline-none focus:border-[#FFC928] text-sm shadow-inner"
                 />
-                {errors.collegeName && <p className="text-red-400 text-xs mt-1.5">{errors.collegeName}</p>}
+                {errors.collegeName && (
+                  <p className="error-text text-red-400 text-xs font-bold mt-1.5 flex items-center gap-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                    <AlertCircle className="w-3.5 h-3.5" /> {errors.collegeName}
+                  </p>
+                )}
               </div>
 
               {/* Department */}
               <div>
-                <label className="block text-xs font-semibold text-[#FCE79C] uppercase tracking-wider mb-2 font-mono">
+                <label
+                  className="block text-xs font-black text-[#FFC928] uppercase tracking-wider mb-1.5"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
                   Department / Branch *
                 </label>
                 <input
@@ -475,23 +794,30 @@ export const RegisterPage: React.FC = () => {
                   name="department"
                   value={formData.department}
                   onChange={handleInputChange}
-                  placeholder="e.g. Computer Science & Business Systems"
-                  className="w-full px-4 py-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 text-white placeholder-slate-500 focus:outline-none focus:border-[#E6CA65] focus:ring-1 focus:ring-[#E6CA65] text-sm"
+                  placeholder="e.g. Computer Science & Business Systems (CSBS)"
+                  className="w-full px-4 py-3 bg-[#090A0F] border-2 border-slate-700 text-white placeholder-slate-600 font-bold focus:outline-none focus:border-[#FFC928] text-sm shadow-inner"
                 />
-                {errors.department && <p className="text-red-400 text-xs mt-1.5">{errors.department}</p>}
+                {errors.department && (
+                  <p className="error-text text-red-400 text-xs font-bold mt-1.5 flex items-center gap-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                    <AlertCircle className="w-3.5 h-3.5" /> {errors.department}
+                  </p>
+                )}
               </div>
 
               {/* Year & Gender */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-[#FCE79C] uppercase tracking-wider mb-2 font-mono">
+                  <label
+                    className="block text-xs font-black text-[#FFC928] uppercase tracking-wider mb-1.5"
+                    style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                  >
                     Year of Study
                   </label>
                   <select
                     name="yearOfStudy"
                     value={formData.yearOfStudy}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 text-white focus:outline-none focus:border-[#E6CA65] text-sm"
+                    className="w-full px-4 py-3 bg-[#090A0F] border-2 border-slate-700 text-white font-bold focus:outline-none focus:border-[#FFC928] text-sm shadow-inner"
                   >
                     <option value="1st Year">1st Year</option>
                     <option value="2nd Year">2nd Year</option>
@@ -500,14 +826,17 @@ export const RegisterPage: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#FCE79C] uppercase tracking-wider mb-2 font-mono">
+                  <label
+                    className="block text-xs font-black text-[#FFC928] uppercase tracking-wider mb-1.5"
+                    style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                  >
                     Gender
                   </label>
                   <select
                     name="gender"
                     value={formData.gender}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 text-white focus:outline-none focus:border-[#E6CA65] text-sm"
+                    className="w-full px-4 py-3 bg-[#090A0F] border-2 border-slate-700 text-white font-bold focus:outline-none focus:border-[#FFC928] text-sm shadow-inner"
                   >
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
@@ -519,27 +848,37 @@ export const RegisterPage: React.FC = () => {
 
             {/* TEAM SECTION (Shown if any selected event is team-based) */}
             {formData.isTeam && (
-              <div className="mt-8 pt-6 border-t border-[#E6CA65]/20">
-                <div className="flex items-center justify-between mb-4">
+              <div className="mt-8 pt-6 border-t-2 border-slate-700">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                   <div>
-                    <h3 className="font-voyage font-bold text-sm text-[#FCE79C] flex items-center gap-2">
-                      <Users className="w-4 h-4 text-[#E6CA65]" /> Crew Manifest & Roster
+                    <h3
+                      className="text-xl text-white font-black uppercase flex items-center gap-2"
+                      style={{ fontFamily: "'Anton', sans-serif" }}
+                    >
+                      <Users className="w-5 h-5 text-[#E2231A]" /> CREW MANIFEST & ROSTER (海賊団)
                     </h3>
-                    <p className="text-xs text-slate-400 mt-0.5 font-sans">
-                      You selected team challenges. Specify your crew / team name and co-members.
+                    <p
+                      className="text-xs text-slate-400 font-bold mt-0.5"
+                      style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                    >
+                      You selected team challenges! Specify your crew name and add your co-members.
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={handleAddTeamMember}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#E6CA65]/15 border border-[#E6CA65]/35 text-[#FCE79C] text-xs font-semibold hover:bg-[#E6CA65]/25 transition-colors shadow-sm"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#FFC928] text-black text-xs font-black hover:bg-white transition-all border border-black shadow-[2px_2px_0px_0px_#000] self-start cursor-pointer"
+                    style={{ fontFamily: "'JetBrains Mono', monospace" }}
                   >
-                    <Plus className="w-3.5 h-3.5" /> Add Crew Member
+                    <Plus className="w-4 h-4 stroke-[3]" /> Add Crew Member
                   </button>
                 </div>
 
-                <div className="mb-4">
-                  <label className="block text-xs font-semibold text-[#FCE79C] uppercase tracking-wider mb-2 font-mono">
+                <div className="mb-5">
+                  <label
+                    className="block text-xs font-black text-[#FFC928] uppercase tracking-wider mb-1.5"
+                    style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                  >
                     Crew / Team Name *
                   </label>
                   <input
@@ -547,10 +886,14 @@ export const RegisterPage: React.FC = () => {
                     name="teamName"
                     value={formData.teamName}
                     onChange={handleInputChange}
-                    placeholder="e.g. Grand Line Voyagers"
-                    className="w-full px-4 py-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 text-white focus:outline-none focus:border-[#E6CA65] text-sm"
+                    placeholder="e.g. Strawhat Voyagers / Cyber Pirates"
+                    className="w-full px-4 py-3 bg-[#090A0F] border-2 border-slate-700 text-white placeholder-slate-600 font-bold focus:outline-none focus:border-[#FFC928] text-sm shadow-inner"
                   />
-                  {errors.teamName && <p className="text-red-400 text-xs mt-1.5">{errors.teamName}</p>}
+                  {errors.teamName && (
+                    <p className="error-text text-red-400 text-xs font-bold mt-1.5 flex items-center gap-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                      <AlertCircle className="w-3.5 h-3.5" /> {errors.teamName}
+                    </p>
+                  )}
                 </div>
 
                 {/* Team Members List */}
@@ -558,83 +901,109 @@ export const RegisterPage: React.FC = () => {
                   {(formData.teamMembers || []).map((member, idx) => (
                     <div
                       key={idx}
-                      className="p-4 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/25 space-y-3 wanted-card-border"
+                      className="p-5 bg-[#090A0F] border-2 border-slate-700 space-y-3 shadow-md"
                     >
-                      <div className="flex items-center justify-between border-b border-[#E6CA65]/15 pb-2 relative z-10">
-                        <span className="text-xs font-mono font-bold text-[#FCE79C]">
-                          Crew Member #{idx + 2} (TEAM_MEMBER)
+                      <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                        <span
+                          className="text-xs font-black text-white flex items-center gap-1.5"
+                          style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                        >
+                          <span className="bg-[#FFC928] text-black px-2 py-0.5 border border-black">
+                            ★ CREW MEMBER #{idx + 2}
+                          </span>
+                          <span className="text-slate-400 font-normal">
+                            ({member.name || 'Unassigned'})
+                          </span>
                         </span>
                         <button
                           type="button"
                           onClick={() => handleRemoveTeamMember(idx)}
-                          className="inline-flex items-center gap-1 text-xs text-red-400 hover:text-red-300 px-2 py-1 rounded bg-red-500/10 hover:bg-red-500/20 transition-colors"
+                          className="inline-flex items-center gap-1 text-xs text-red-300 px-2.5 py-1 bg-red-950/80 hover:bg-red-900 border border-red-500/50 transition-colors font-bold shadow-[2px_2px_0px_0px_#000] cursor-pointer"
+                          style={{ fontFamily: "'JetBrains Mono', monospace" }}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           <span>Remove</span>
                         </button>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 relative z-10">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
-                          <label className="block text-[11px] font-mono text-slate-400 mb-1">Full Name *</label>
+                          <label className="block text-[11px] font-black text-slate-300 mb-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                            Full Name *
+                          </label>
                           <input
                             type="text"
                             placeholder="Full Name"
                             value={member.name}
                             onChange={(e) => handleTeamMemberChange(idx, 'name', e.target.value)}
-                            className="w-full px-3 py-2 rounded-lg bg-[#0E1736] border border-[#E6CA65]/20 text-xs text-white focus:border-[#E6CA65] focus:outline-none"
+                            className="w-full px-3 py-2 bg-[#12141D] border border-slate-700 text-xs text-white font-bold focus:border-[#FFC928] focus:outline-none"
                           />
                         </div>
                         <div>
-                          <label className="block text-[11px] font-mono text-slate-400 mb-1">Email Address *</label>
+                          <label className="block text-[11px] font-black text-slate-300 mb-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                            Email Address *
+                          </label>
                           <input
                             type="email"
                             placeholder="Email"
                             value={member.email}
                             onChange={(e) => handleTeamMemberChange(idx, 'email', e.target.value)}
-                            className="w-full px-3 py-2 rounded-lg bg-[#0E1736] border border-[#E6CA65]/20 text-xs text-white focus:border-[#E6CA65] focus:outline-none"
+                            className="w-full px-3 py-2 bg-[#12141D] border border-slate-700 text-xs text-white font-bold focus:border-[#FFC928] focus:outline-none"
                           />
                         </div>
                         <div>
-                          <label className="block text-[11px] font-mono text-slate-400 mb-1">Mobile Number *</label>
+                          <label className="block text-[11px] font-black text-slate-300 mb-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                            Mobile Number *
+                          </label>
                           <input
                             type="tel"
                             placeholder="10-digit mobile"
                             maxLength={10}
                             value={member.phone}
                             onChange={(e) => handleTeamMemberChange(idx, 'phone', e.target.value)}
-                            className="w-full px-3 py-2 rounded-lg bg-[#0E1736] border border-[#E6CA65]/20 text-xs text-white focus:border-[#E6CA65] focus:outline-none font-mono"
+                            className="w-full px-3 py-2 bg-[#12141D] border border-slate-700 text-xs text-white font-bold focus:border-[#FFC928] focus:outline-none"
+                            style={{ fontFamily: "'JetBrains Mono', monospace" }}
                           />
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 relative z-10">
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                         <div className="sm:col-span-2">
-                          <label className="block text-[11px] font-mono text-slate-400 mb-1">College / Institution</label>
+                          <label className="block text-[11px] font-black text-slate-300 mb-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                            College / Institution
+                          </label>
                           <input
                             type="text"
-                            placeholder={formData.collegeName || "College Name"}
+                            placeholder={formData.collegeName || 'College Name'}
                             value={member.college || ''}
-                            onChange={(e) => handleTeamMemberChange(idx, 'college', e.target.value)}
-                            className="w-full px-3 py-2 rounded-lg bg-[#0E1736] border border-[#E6CA65]/20 text-xs text-white focus:border-[#E6CA65] focus:outline-none"
+                            onChange={(e) =>
+                              handleTeamMemberChange(idx, 'college', e.target.value)
+                            }
+                            className="w-full px-3 py-2 bg-[#12141D] border border-slate-700 text-xs text-white font-bold focus:border-[#FFC928] focus:outline-none"
                           />
                         </div>
                         <div>
-                          <label className="block text-[11px] font-mono text-slate-400 mb-1">Department</label>
+                          <label className="block text-[11px] font-black text-slate-300 mb-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                            Department
+                          </label>
                           <input
                             type="text"
-                            placeholder={formData.department || "Department"}
+                            placeholder={formData.department || 'Department'}
                             value={member.department}
-                            onChange={(e) => handleTeamMemberChange(idx, 'department', e.target.value)}
-                            className="w-full px-3 py-2 rounded-lg bg-[#0E1736] border border-[#E6CA65]/20 text-xs text-white focus:border-[#E6CA65] focus:outline-none"
+                            onChange={(e) =>
+                              handleTeamMemberChange(idx, 'department', e.target.value)
+                            }
+                            className="w-full px-3 py-2 bg-[#12141D] border border-slate-700 text-xs text-white font-bold focus:border-[#FFC928] focus:outline-none"
                           />
                         </div>
                         <div>
-                          <label className="block text-[11px] font-mono text-slate-400 mb-1">Year of Study</label>
+                          <label className="block text-[11px] font-black text-slate-300 mb-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                            Year of Study
+                          </label>
                           <select
                             value={member.year || formData.yearOfStudy || '3rd Year'}
                             onChange={(e) => handleTeamMemberChange(idx, 'year', e.target.value)}
-                            className="w-full px-3 py-2 rounded-lg bg-[#0E1736] border border-[#E6CA65]/20 text-xs text-white focus:border-[#E6CA65] focus:outline-none"
+                            className="w-full px-3 py-2 bg-[#12141D] border border-slate-700 text-xs text-white font-bold focus:border-[#FFC928] focus:outline-none"
                           >
                             <option value="1st Year">1st Year</option>
                             <option value="2nd Year">2nd Year</option>
@@ -650,30 +1019,52 @@ export const RegisterPage: React.FC = () => {
             )}
           </div>
 
-          {/* STEP 3: HOW DID YOU KNOW ABOUT THIS EVENT? */}
-          <div className="p-6 sm:p-8 rounded-2xl bg-[#0A1128]/90 border border-[#E6CA65]/30 shadow-2xl wanted-card-border backdrop-blur-md">
-            <div className="mb-6 pb-4 border-b border-[#E6CA65]/20">
-              <h2 className="text-xl font-voyage font-bold text-white flex items-center gap-2">
-                <span className="w-7 h-7 rounded-lg bg-[#E6CA65]/20 text-[#FCE79C] border border-[#E6CA65]/40 flex items-center justify-center text-sm font-mono font-black shadow-sm">
-                  3
+          {/* ============================================================ */}
+          {/* PANEL 03: DISCOVERY INTEL (第3コマ // GOGOGO... ゴゴゴ)     */}
+          {/* ============================================================ */}
+          <div className="bg-[#12141D] border-3 border-slate-700 p-6 sm:p-8 shadow-[6px_6px_0px_0px_#000] relative">
+            <div className="mb-6 pb-4 border-b-2 border-slate-700">
+              <div className="flex items-center gap-2 mb-1">
+                <span
+                  className="px-2.5 py-0.5 bg-[#FFC928] text-black text-xs font-black uppercase border border-black"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  PANEL 03 // 第3コマ
                 </span>
-                How Did You Discover the Grand Voyage? *
+                <span
+                  className="text-xs font-black text-[#E2231A]"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  [ GOGOGO... ゴゴゴ ]
+                </span>
+              </div>
+              <h2
+                className="text-2xl sm:text-3xl text-white uppercase leading-tight font-black"
+                style={{ fontFamily: "'Anton', sans-serif", letterSpacing: '0.03em' }}
+              >
+                HOW DID YOU DISCOVER THE GRAND VOYAGE? *
               </h2>
-              <p className="text-xs text-slate-300 mt-1 font-sans">
-                Help us understand how you heard about EvoXis'26 symposium.
+              <p
+                className="text-xs text-slate-400 font-bold mt-0.5"
+                style={{ fontFamily: "'JetBrains Mono', monospace" }}
+              >
+                Tell us where you caught wind of the EvoXis '26 symposium.
               </p>
             </div>
 
             <div className="space-y-4 max-w-xl">
               <div>
-                <label className="block text-xs font-semibold text-[#FCE79C] uppercase tracking-wider mb-2 font-mono">
-                  Referral Source *
+                <label
+                  className="block text-xs font-black text-[#FFC928] uppercase tracking-wider mb-1.5"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  Referral Channel *
                 </label>
                 <select
                   name="referralSource"
                   value={formData.referralSource || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 text-white focus:outline-none focus:border-[#E6CA65] focus:ring-1 focus:ring-[#E6CA65] text-sm"
+                  className="w-full px-4 py-3 bg-[#090A0F] border-2 border-slate-700 text-white font-bold focus:outline-none focus:border-[#FFC928] text-sm shadow-inner"
                 >
                   <option value="">Select an option ▼</option>
                   <option value="School Friend">School Friend</option>
@@ -685,7 +1076,7 @@ export const RegisterPage: React.FC = () => {
                   <option value="Other">Other</option>
                 </select>
                 {errors.referralSource && (
-                  <p className="error-message text-red-400 text-xs mt-1.5 flex items-center gap-1">
+                  <p className="error-message error-text text-red-400 text-xs font-bold mt-1.5 flex items-center gap-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                     <AlertCircle className="w-3.5 h-3.5" /> {errors.referralSource}
                   </p>
                 )}
@@ -697,7 +1088,10 @@ export const RegisterPage: React.FC = () => {
                   animate={{ opacity: 1, height: 'auto' }}
                   className="pt-2"
                 >
-                  <label className="block text-xs font-semibold text-[#FCE79C] uppercase tracking-wider mb-2 font-mono">
+                  <label
+                    className="block text-xs font-black text-[#FFC928] uppercase tracking-wider mb-1.5"
+                    style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                  >
                     Please Specify *
                   </label>
                   <input
@@ -705,11 +1099,11 @@ export const RegisterPage: React.FC = () => {
                     name="referralSourceOther"
                     value={formData.referralSourceOther || ''}
                     onChange={handleInputChange}
-                    placeholder="e.g. YouTube / WhatsApp Group / Friend referral"
-                    className="w-full px-4 py-3 rounded-xl bg-[#040814]/90 border border-[#E6CA65]/30 text-white placeholder-slate-500 focus:outline-none focus:border-[#E6CA65] focus:ring-1 focus:ring-[#E6CA65] text-sm"
+                    placeholder="e.g. YouTube / WhatsApp Group / Posters"
+                    className="w-full px-4 py-3 bg-[#090A0F] border-2 border-slate-700 text-white placeholder-slate-600 font-bold focus:outline-none focus:border-[#FFC928] text-sm shadow-inner"
                   />
                   {errors.referralSourceOther && (
-                    <p className="error-message text-red-400 text-xs mt-1.5 flex items-center gap-1">
+                    <p className="error-message error-text text-red-400 text-xs font-bold mt-1.5 flex items-center gap-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                       <AlertCircle className="w-3.5 h-3.5" /> {errors.referralSourceOther}
                     </p>
                   )}
@@ -718,36 +1112,62 @@ export const RegisterPage: React.FC = () => {
             </div>
           </div>
 
-          {/* STEP 4: CODE OF CONDUCT & SUBMIT */}
-          <div className="p-6 rounded-2xl bg-[#0A1128]/95 border border-[#E6CA65]/30 flex flex-col sm:flex-row items-center justify-between gap-6 wanted-card-border shadow-2xl">
-            <label className="flex items-start gap-3 cursor-pointer select-none relative z-10">
-              <input
-                type="checkbox"
-                name="agreedToRules"
-                checked={formData.agreedToRules}
-                onChange={handleInputChange}
-                className="mt-1 rounded bg-[#040814] border-[#E6CA65]/40 text-[#E6CA65] focus:ring-[#E6CA65]"
-              />
-              <span className="text-xs text-slate-300 leading-relaxed font-sans">
-                I agree to the <strong className="text-[#FCE79C]">EvoXis'26 Grand Voyage</strong> code of conduct, affirm that my details are accurate, and promise to bring my college ID card for reception desk verification.
-              </span>
-            </label>
+          {/* ============================================================ */}
+          {/* FINAL PANEL: AWAKEN & CONFIRM (第4コマ // 決着!! FINISH THIS)*/}
+          {/* ============================================================ */}
+          <div className="p-6 sm:p-8 bg-gradient-to-r from-[#18090C] via-[#12141D] to-[#0A0B10] border-3 border-[#E2231A] flex flex-col lg:flex-row items-center justify-between gap-6 shadow-[6px_6px_0px_0px_#FFC928] relative overflow-hidden text-white">
+            {/* Action Label */}
+            <div className="space-y-2 max-w-xl">
+              <div className="flex items-center gap-2">
+                <span
+                  className="bg-[#E2231A] text-white px-2.5 py-0.5 text-xs font-black uppercase border border-white shadow-[2px_2px_0px_0px_#000]"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  FINAL CLASH // 決着
+                </span>
+                <span
+                  className="text-xs font-black text-[#FFC928] uppercase"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  &quot;NOW, LET'S FINISH THIS!!&quot;
+                </span>
+              </div>
+              <label className="flex items-start gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  name="agreedToRules"
+                  checked={formData.agreedToRules}
+                  onChange={handleInputChange}
+                  className="mt-1 w-5 h-5 rounded-none bg-[#090A0F] border-2 border-slate-600 text-[#E2231A] focus:ring-0 cursor-pointer"
+                />
+                <span className="text-xs sm:text-sm text-slate-200 font-bold leading-relaxed">
+                  I pledge adherence to the <strong className="text-[#FFC928] underline">EvoXis '26 Pirate Code & Conduct</strong>, affirm my credentials are accurate, and promise to bring my college ID card on event day.
+                </span>
+              </label>
+              {errors.agreedToRules && (
+                <p className="error-text text-red-400 text-xs font-black flex items-center gap-1 bg-black/40 p-2 border border-red-500/40" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                  <AlertCircle className="w-3.5 h-3.5" /> {errors.agreedToRules}
+                </p>
+              )}
+            </div>
 
+            {/* Shonen Manga Action CTA Button */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className="cyber-button w-full sm:w-auto flex-shrink-0 inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-voyage font-black text-[#040814] bg-gradient-to-r from-[#E6CA65] via-[#FCE79C] to-[#00F2FE] hover:from-[#FFF5C0] hover:to-[#38BDF8] shadow-glow-gold transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed border border-[#FFF5C0]/60 relative z-10"
+              className="w-full lg:w-auto flex-shrink-0 inline-flex items-center justify-center gap-3 px-8 py-5 font-black text-base sm:text-lg text-black bg-[#FFC928] hover:bg-white hover:text-black active:translate-y-1 transition-all shadow-[4px_4px_0px_0px_#E2231A] border-3 border-black disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer"
+              style={{ fontFamily: "'Anton', sans-serif", letterSpacing: '0.04em' }}
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin text-[#040814]" />
-                  <span>Generating Official Voyage Pass...</span>
+                  <Loader2 className="w-6 h-6 animate-spin text-black" />
+                  <span>AWAKENING GEAR 5 VOYAGE PASS...</span>
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-5 h-5 text-[#040814]" />
-                  <span>Confirm Registration & Get QR</span>
-                  <ArrowRight className="w-4 h-4 text-[#040814]" />
+                  <Zap className="w-5 h-5 text-black fill-black" />
+                  <span>⚡ AWAKEN & CONFIRM REGISTRATION (ドン!!)</span>
+                  <ArrowRight className="w-5 h-5 text-black group-hover:translate-x-1 transition-transform" />
                 </>
               )}
             </button>

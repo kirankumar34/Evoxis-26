@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import { MobileDrawer } from './MobileDrawer';
 import { sound } from '@/utils/audio';
+import { REGISTRATION_FORM_URL } from '@/constants';
 
 /* ─── colour tokens ──────────────────────────────────────────────────────── */
 const C = {
@@ -19,6 +20,15 @@ const C = {
   seafoam:   '#7ED9D6',
 };
 
+interface NavItem {
+  name: string;
+  href: string;
+  isRoute?: boolean;
+  isExternal?: boolean;
+  badge?: string;
+  icon?: string;
+}
+
 export const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -34,14 +44,14 @@ export const Navbar: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
+  const navLinks: NavItem[] = [
     { name: 'Home', href: isHomePage ? '#home' : '/', isRoute: !isHomePage, icon: '🏠' },
     { name: 'Departments', href: isHomePage ? '#departments' : '/#departments', icon: '🛡️' },
     { name: 'Events', href: isHomePage ? '#events' : '/events', isRoute: !isHomePage, badge: '15', icon: '🏆' },
-    { name: 'Register', href: '/register', isRoute: true, icon: '⚔️' },
+    { name: 'Register', href: REGISTRATION_FORM_URL, isExternal: true, icon: '⚔️' },
     { name: 'Schedule', href: isHomePage ? '#schedule' : '/#schedule', icon: '⏳' },
     { name: 'Venue', href: isHomePage ? '#venue' : '/#venue', icon: '📍' },
-    { name: 'Pass', href: '/my-registration', isRoute: true, icon: '🎫' },
+    // { name: 'Pass', href: '/my-registration', isRoute: true, icon: '🎫' },
   ];
 
   return (
@@ -96,6 +106,39 @@ export const Navbar: React.FC = () => {
             {navLinks.map((lnk) => {
               const isCurrent = (lnk.name === 'Home' && location.pathname === '/') || location.pathname === lnk.href;
               
+              if (lnk.isExternal) {
+                return (
+                  <a
+                    key={lnk.name}
+                    href={lnk.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => sound.playCannon?.()}
+                    className="px-4 py-1.5 rounded-full text-sm transition-all duration-200 flex items-center gap-1.5"
+                    style={{
+                      fontFamily: "'Inter', sans-serif",
+                      fontWeight: 500,
+                      color: C.bone,
+                      background: 'transparent',
+                      letterSpacing: '0.01em',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = C.gold;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = C.bone;
+                    }}
+                  >
+                    <span>{lnk.name}</span>
+                    {lnk.badge && (
+                      <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold bg-[#E2231A]/30 text-[#FFF3D6] border border-[#E2231A]/50">
+                        {lnk.badge}
+                      </span>
+                    )}
+                  </a>
+                );
+              }
+
               if (lnk.isRoute) {
                 return (
                   <Link
@@ -161,7 +204,7 @@ export const Navbar: React.FC = () => {
           {/* Right Header Action Buttons */}
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             {/* Voyage Pass Shortcut (visible on tablet / desktop) */}
-            <Link
+            {/* <Link
               to="/my-registration"
               onClick={() => sound.playTick?.()}
               style={{
@@ -184,11 +227,13 @@ export const Navbar: React.FC = () => {
             >
               <span>🎫</span>
               <span>Pass</span>
-            </Link>
+            </Link> */}
 
             {/* Set Sail Register CTA */}
-            <Link
-              to="/register"
+            <a
+              href={REGISTRATION_FORM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               onClick={() => sound.playCannon?.()}
               style={{
                 fontFamily: "'Bebas Neue', sans-serif",
@@ -217,7 +262,7 @@ export const Navbar: React.FC = () => {
               }}
             >
               Set Sail
-            </Link>
+            </a>
 
             {/* Mobile & Tablet Only: Side Opening Menu Trigger */}
             <button
