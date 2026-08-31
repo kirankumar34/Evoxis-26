@@ -1,6 +1,6 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { HeroSection } from '@/components/hero/HeroSection';
+import { REGISTRATION_FORM_URL } from '@/constants';
 
 import { DepartmentShowcaseSection } from '@/components/departments/DepartmentShowcaseSection';
 import { EventsSection } from '@/components/events/EventsSection';
@@ -14,15 +14,18 @@ import {FlowingMenu} from '@/components/ui/FlowingMenu';
 import { DepartmentsSection } from '@/components/departments/DepartmentsSection';
 
 export const HomePage: React.FC = () => {
-  const navigate = useNavigate();
   const eventDate = import.meta.env.VITE_EVENT_DATE || '2026-09-26T09:00:00+05:30';
+
+  const handleOpenGoogleForm = () => {
+    window.open(REGISTRATION_FORM_URL, '_blank', 'noopener,noreferrer');
+  };
 
   return (
     <div>
       {/* 1. Hero Section & Countdown */}
       <HeroSection
         eventDate={eventDate}
-        onOpenRegister={() => navigate('/register')}
+        onOpenRegister={handleOpenGoogleForm}
       />
 
 
@@ -46,7 +49,7 @@ export const HomePage: React.FC = () => {
 
       {/* 3. Filterable 16 Events Catalog */}
       <EventsSection
-        onOpenRegisterForEvent={(event) => navigate(`/register?event=${event.eventId}`)}
+        onOpenRegisterForEvent={() => handleOpenGoogleForm()}
       />
             {/* 2. Co-Hosting Departments Showcase */}
       <DepartmentsSection />

@@ -18,6 +18,7 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import { EVENTS } from '@/data/events';
+import { REGISTRATION_FORM_URL } from '@/constants';
 
 export const EventDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -149,7 +150,7 @@ export const EventDetailPage: React.FC = () => {
               </div>
 
               <button
-                onClick={() => navigate(`/register?event=${event.eventId}`)}
+                onClick={() => window.open(REGISTRATION_FORM_URL, '_blank', 'noopener,noreferrer')}
                 className="cyber-button w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-voyage font-bold text-sm text-[#040814] bg-gradient-to-r from-[#E6CA65] via-[#FCE79C] to-[#00F2FE] shadow-glow-gold transition-all hover:scale-105 relative z-10"
               >
                 <Sparkles className="w-4 h-4 text-[#040814]" />

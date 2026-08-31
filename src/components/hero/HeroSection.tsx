@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import BgImg from '../../assets/HeroSection_Background.png';
 import BgImg2 from '../../assets/HeroSection_Background1.png';
 import { sound } from '../../utils/audio';
+import { REGISTRATION_FORM_URL } from '@/constants';
 
 /* ─── colour tokens ──────────────────────────────────────────────────────── */
 const C = {
@@ -525,8 +525,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
         {/* CTA */}
         <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 mb-3 sm:mb-4">
-          <Link
-            to="/register"
+          <a
+            href={REGISTRATION_FORM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={() => {
               sound.playCannon?.();
               onOpenRegister();
@@ -570,7 +572,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             >
               →
             </span>
-          </Link>
+          </a>
 
           {/* Countdown */}
           <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-black/70 border border-white/15 text-[11px] font-mono">

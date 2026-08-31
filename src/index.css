@@ -172,3 +172,85 @@
 .animate-marquee-loop:hover {
   animation-play-state: paused;
 }
+
+/* Manga & Shonen Comic Theme Utilities */
+.manga-screentone {
+  background-image: radial-gradient(rgba(230, 202, 101, 0.15) 1px, transparent 1px);
+  background-size: 8px 8px;
+}
+
+.manga-screentone-dark {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1.2px, transparent 1.2px);
+  background-size: 6px 6px;
+}
+
+.manga-panel-border {
+  border: 2px solid #E6CA65;
+  box-shadow: 4px 4px 0px 0px rgba(230, 202, 101, 0.35), 0 0 20px rgba(0, 242, 254, 0.15);
+  position: relative;
+}
+
+.manga-card {
+  border: 2px solid rgba(230, 202, 101, 0.3);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 3px 3px 0px 0px rgba(230, 202, 101, 0.18);
+}
+
+.manga-card:hover {
+  border-color: #E6CA65;
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px 0px rgba(230, 202, 101, 0.4), 0 0 15px rgba(230, 202, 101, 0.2);
+}
+
+.manga-card-active {
+  border-color: #00F2FE;
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.12) 0%, rgba(230, 202, 101, 0.15) 100%);
+  box-shadow: 5px 5px 0px 0px #00F2FE, 0 0 20px rgba(0, 242, 254, 0.3);
+  transform: translate(-2px, -2px);
+}
+
+.manga-speech-bubble {
+  position: relative;
+  background: #0A1128;
+  border: 2px solid #E6CA65;
+  border-radius: 14px;
+}
+
+.manga-speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 28px;
+  border-width: 10px 10px 0;
+  border-style: solid;
+  border-color: #0A1128 transparent;
+  display: block;
+  width: 0;
+}
+
+.manga-speech-bubble::before {
+  content: '';
+  position: absolute;
+  bottom: -13px;
+  left: 26px;
+  border-width: 12px 12px 0;
+  border-style: solid;
+  border-color: #E6CA65 transparent;
+  display: block;
+  width: 0;
+}
+
+.manga-sfx-text {
+  font-family: 'Cinzel', 'Impact', sans-serif;
+  text-shadow: 2px 2px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000, 0 0 12px rgba(230, 202, 101, 0.8);
+  letter-spacing: 0.05em;
+}
+
+.manga-speedline-overlay {
+  background: repeating-conic-gradient(
+    from 0deg at 50% 50%,
+    rgba(255, 255, 255, 0.02) 0deg 4deg,
+    transparent 4deg 12deg
+  );
+}
+

@@ -7,7 +7,6 @@ import { api } from '@/services/api';
 import { generateQRCodeDataUrl, downloadQRCodePNG } from '@/lib/qr';
 import {
   X,
-  Sparkles,
   Users,
   CheckCircle2,
   Plus,
@@ -359,326 +358,356 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
 
   if (!isOpen) return null;
 
+  // ── Manga theme inline style helpers ──────────────────────────────────────
+  const MANGA_PANEL: React.CSSProperties = {
+    border: '3px solid #0a0a0a',
+    boxShadow: '4px 4px 0 #0a0a0a',
+  };
+
+  const MANGA_INPUT: React.CSSProperties = {
+    border: '2px solid #0a0a0a',
+    boxShadow: '2px 2px 0 #0a0a0a',
+    background: '#fff',
+    color: '#0a0a0a',
+    fontWeight: 700,
+  };
+
+  const MANGA_INPUT_ERR: React.CSSProperties = {
+    border: '2px solid #E2231A',
+    boxShadow: '2px 2px 0 #E2231A',
+    background: '#fff',
+    color: '#0a0a0a',
+    fontWeight: 700,
+  };
+
+  const COMIC_FONT: React.CSSProperties = {
+    fontFamily: "'Anton', 'Impact', 'Arial Black', sans-serif",
+    letterSpacing: '0.08em',
+  };
+
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-        {/* Backdrop */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+        {/* Backdrop — ink splash */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-black/85 backdrop-blur-md"
+          className="fixed inset-0"
+          style={{ background: 'rgba(0,0,0,0.88)' }}
         />
 
-        {/* Modal Dialog */}
+        {/* Modal — Manga panel */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          initial={{ opacity: 0, scale: 0.88, y: 30 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-2xl max-h-[92vh] bg-[#0A0F1D] border border-cyan-500/30 rounded-3xl shadow-2xl z-10 flex flex-col overflow-hidden text-slate-100"
+          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          transition={{ type: 'spring', damping: 22, stiffness: 280 }}
+          className="relative w-full max-w-2xl max-h-[95vh] z-10 flex flex-col overflow-hidden"
+          style={{
+            background: '#FFFEF0',
+            border: '4px solid #0a0a0a',
+            boxShadow: '8px 8px 0 #0a0a0a, 14px 14px 0 #E2231A',
+          }}
         >
-          {/* Header */}
-          <div className="p-6 sm:p-8 bg-gradient-to-r from-[#0F172A] via-[#111827] to-[#0A0E1A] border-b border-slate-800 relative">
+          {/* Speed-line BG overlay */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backgroundImage: `repeating-linear-gradient(
+                88deg,
+                transparent,
+                transparent 18px,
+                rgba(0,0,0,0.025) 18px,
+                rgba(0,0,0,0.025) 19px
+              )`,
+            }}
+          />
+
+          {/* ── HEADER PANEL ─────────────────────────────────────────── */}
+          <div
+            className="relative p-4 sm:p-6 border-b-4 border-black flex-shrink-0"
+            style={{
+              background: '#0a0a0a',
+              backgroundImage: `radial-gradient(circle at 10% 50%, rgba(226,35,26,0.18) 0%, transparent 60%)`,
+            }}
+          >
+            {/* Close */}
             <button
               onClick={onClose}
-              className="absolute top-5 right-5 p-2 rounded-xl bg-slate-800/80 text-slate-400 hover:text-white transition-colors border border-slate-700"
+              style={{ ...COMIC_FONT }}
+              className="absolute top-3 right-3 w-9 h-9 flex items-center justify-center font-black text-xl text-white border-2 border-white hover:border-red-500 hover:text-red-500 transition-colors"
             >
-              <X className="w-5 h-5" />
+              ✕
             </button>
 
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono font-bold uppercase mb-2">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Official Registration Desk</span>
+            {/* Chapter badge */}
+            <div
+              className="inline-block px-3 py-0.5 text-black text-[10px] uppercase mb-2"
+              style={{ background: '#FFC928', border: '2px solid #0a0a0a', ...COMIC_FONT }}
+            >
+              ★ CHAPTER: ENTRY ARC ★
             </div>
 
-            <h2 className="font-display font-black text-2xl sm:text-3xl text-white">
-              Register for <span className="text-cyan-400">EvoXis'26</span>
+            <h2
+              className="text-3xl sm:text-4xl text-white uppercase leading-tight"
+              style={{
+                ...COMIC_FONT,
+                WebkitTextStroke: '2px #E2231A',
+              }}
+            >
+              REGISTER FOR{' '}
+              <span style={{ color: '#FFC928', WebkitTextStroke: '2px #0a0a0a' }}>
+                EVOXIS'26
+              </span>
             </h2>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1">
-              Join 1,500+ participants across 16 competitions at Sriram Engineering College.
+
+            <p className="text-gray-400 text-[11px] mt-1.5 uppercase tracking-widest font-bold">
+              ◆ 1,500+ PARTICIPANTS · 16 COMPETITIONS · SEPT 26, 2026 ◆
             </p>
           </div>
 
-          {/* Form Content / Success Screen */}
-          <div className="p-6 sm:p-8 overflow-y-auto max-h-[calc(92vh-140px)]">
+          {/* ── SCROLLABLE BODY ───────────────────────────────────────── */}
+          <div
+            className="flex-1 overflow-y-auto p-4 sm:p-6"
+            style={{ background: '#FFFEF0' }}
+          >
             {isSuccess ? (
-              /* Success Confirmation Card */
-              <div className="text-center py-4">
-                <div className="w-16 h-16 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 flex items-center justify-center mx-auto mb-4 shadow-glow-cyan">
-                  <CheckCircle2 className="w-10 h-10 text-cyan-400" />
+              /* ═══════════════════ SUCCESS SCREEN ═══════════════════ */
+              <div className="text-center">
+                {/* "CONFIRMED!!" headline */}
+                <div className="mb-4">
+                  <p
+                    className="text-5xl uppercase leading-none"
+                    style={{
+                      ...COMIC_FONT,
+                      color: '#E2231A',
+                      WebkitTextStroke: '3px #0a0a0a',
+                      textShadow: '5px 5px 0 #0a0a0a',
+                    }}
+                  >
+                    !!CONFIRMED!!
+                  </p>
+                  <CheckCircle2 className="w-8 h-8 text-green-600 mx-auto mt-2" />
                 </div>
 
-                <h3 className="font-display font-black text-2xl sm:text-3xl text-white">
-                  Registration Confirmed!
-                </h3>
-                <p className="text-sm text-slate-300 mt-2 max-w-md mx-auto">
-                  Your entry for <span className="text-cyan-400 font-bold">{confirmedEvents.length} event(s)</span> has been successfully locked in.
-                </p>
+                <span
+                  className="inline-block px-4 py-1.5 text-black text-xs uppercase mb-5"
+                  style={{ background: '#FFC928', border: '2px solid #0a0a0a', ...COMIC_FONT, boxShadow: '3px 3px 0 #0a0a0a' }}
+                >
+                  {confirmedEvents.length} EVENT(S) LOCKED IN!!
+                </span>
 
-                {/* Digital Ticket Pass */}
-                <div className="mt-6 p-6 rounded-2xl bg-slate-900 border border-cyan-500/30 text-left relative overflow-hidden">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-                    <div>
-                      <span className="text-[10px] font-mono text-cyan-400 uppercase">Registration ID</span>
-                      <p className="font-mono font-black text-xl text-white tracking-wider">
-                        {registrationId}
-                      </p>
-                    </div>
-                    <span className="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                      CONFIRMED
-                    </span>
+                {/* Registration Pass */}
+                <div className="text-left mb-4" style={MANGA_PANEL}>
+                  {/* Pass header */}
+                  <div className="px-4 py-2 border-b-3 border-black" style={{ background: '#E2231A', borderBottom: '3px solid #0a0a0a' }}>
+                    <span className="text-white text-xs uppercase" style={COMIC_FONT}>★ REGISTRATION PASS ★</span>
                   </div>
+                  <div className="p-4" style={{ background: '#FFFEF0' }}>
+                    {/* Reg ID row */}
+                    <div className="flex items-start justify-between border-b-2 border-black pb-3 mb-3">
+                      <div>
+                        <span className="text-[10px] text-gray-500 uppercase block" style={COMIC_FONT}>REGISTRATION ID</span>
+                        <p className="text-xl font-black text-black mt-0.5" style={COMIC_FONT}>{registrationId}</p>
+                      </div>
+                      <span className="px-2 py-1 text-xs text-white border-2 border-black" style={{ background: '#22c55e', ...COMIC_FONT }}>CONFIRMED</span>
+                    </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs mb-4">
-                    <div>
-                      <span className="text-slate-400">Participant</span>
-                      <p className="font-bold text-white mt-0.5">{formData.fullName}</p>
-                    </div>
-                    <div>
-                      <span className="text-slate-400">Institution</span>
-                      <p className="font-bold text-white mt-0.5 truncate">{formData.collegeName}</p>
-                    </div>
-                    <div>
-                      <span className="text-slate-400">Department</span>
-                      <p className="font-bold text-white mt-0.5">{formData.department}</p>
-                    </div>
-                    <div>
-                      <span className="text-slate-400">Venue & Date</span>
-                      <p className="font-bold text-white mt-0.5">Sept 26 • Sriram Engg</p>
-                    </div>
-                  </div>
-
-                  {registeredData?.teamName && (
-                    <div className="p-2.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-xs mb-4 flex items-center justify-between">
-                      <span className="text-slate-300">Team: <strong className="text-white">{registeredData.teamName}</strong></span>
-                      <span className="text-[11px] font-mono text-cyan-400 font-bold">
-                        {registeredData.participants?.length || (1 + (registeredData.teamMembers?.length || 0))} Members
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="border-t border-slate-800/80 pt-3">
-                    <span className="text-[11px] font-mono text-cyan-400 uppercase tracking-wider block mb-2 font-bold">
-                      Registered Events ({confirmedEvents.length}):
-                    </span>
-                    <div className="space-y-1.5">
-                      {confirmedEvents.map((eid) => {
-                        const found = EVENTS.find((e) => e.eventId === eid);
-                        return (
-                          <div key={eid} className="flex items-center gap-2 text-xs text-slate-200">
-                            <Check className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
-                            <span className="font-mono font-bold text-cyan-300">{eid}</span>
-                            <span>— {found ? found.title : eid}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* OFFICIAL CHECK-IN QR PASS SECTION */}
-                <div className="mt-6 p-6 rounded-2xl bg-gradient-to-b from-slate-900 to-[#0B132B] border border-cyan-500/30 text-center">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="text-left">
-                      <span className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-widest block">
-                        {registeredData?.teamName ? 'TEAM QR PASSES' : 'YOUR OFFICIAL CHECK-IN QR PASS'}
-                      </span>
-                      <p className="text-[11px] text-slate-400">
-                        {registeredData?.teamName
-                          ? 'Each team member has a unique check-in QR code.'
-                          : 'Show this QR pass at the reception desk on event day.'}
-                      </p>
+                    {/* Detail grid */}
+                    <div className="grid grid-cols-2 gap-3 text-xs mb-3">
+                      {[
+                        { label: 'PARTICIPANT', val: formData.fullName },
+                        { label: 'INSTITUTION', val: formData.collegeName },
+                        { label: 'DEPARTMENT', val: formData.department },
+                        { label: 'VENUE & DATE', val: 'Sept 26 • Sriram Engg' },
+                      ].map(({ label, val }) => (
+                        <div key={label} className="border-l-4 border-black pl-2">
+                          <span className="text-[9px] text-gray-500 block uppercase" style={COMIC_FONT}>{label}</span>
+                          <p className="font-black text-black truncate">{val}</p>
+                        </div>
+                      ))}
                     </div>
 
                     {registeredData?.teamName && (
-                      <button
-                        type="button"
-                        onClick={handleDownloadAllQRs}
-                        disabled={isDownloadingAll || isGeneratingQR}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold font-display bg-purple-500/20 text-purple-300 border border-purple-500/40 hover:bg-purple-500/30 transition-colors"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                        <span>{isDownloadingAll ? 'Downloading All...' : 'DOWNLOAD ALL MEMBER QRs'}</span>
-                      </button>
-                    )}
-                  </div>
-
-                  {isGeneratingQR ? (
-                    <div className="w-full py-12 flex flex-col items-center justify-center gap-3">
-                      <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
-                      <span className="text-xs font-mono text-slate-400">Generating HD Check-In QR Pass...</span>
-                    </div>
-                  ) : qrError ? (
-                    <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs space-y-2">
-                      <div className="flex items-center justify-center gap-2">
-                        <AlertCircle className="w-4 h-4 text-red-400" />
-                        <span>{qrError}</span>
+                      <div className="px-3 py-2 mb-3 border-2 border-black text-xs" style={{ background: '#FFC928', ...COMIC_FONT }}>
+                        TEAM: {registeredData.teamName} ·{' '}
+                        {registeredData.participants?.length || (1 + (registeredData.teamMembers?.length || 0))} MEMBERS
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => registeredData && generateAllQRs(registeredData)}
-                        className="px-4 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-200 text-xs font-bold"
-                      >
-                        RETRY QR
-                      </button>
-                    </div>
-                  ) : registeredData?.teamName ? (
-                    /* Team Roster with individual QRs */
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {(registeredData.participants || [
-                          {
-                            name: registeredData.participantName,
-                            role: 'TEAM_HEAD' as const,
-                            registrationId: registeredData.registrationId,
-                            qrToken: registeredData.qrToken,
-                            email: registeredData.email,
-                            phone: registeredData.mobileNumber,
-                            college: registeredData.college,
-                            department: registeredData.department,
-                            year: '3rd Year',
-                            gender: 'Not Specified',
-                          },
-                        ]).map((member, idx) => {
-                          const memRegId = member.registrationId || (idx === 0 ? registrationId : `${registrationId}-M${idx}`);
-                          const memQrToken = member.qrToken || (idx === 0 ? registeredData.qrToken : `${registeredData.qrToken}-M${idx}`);
-                          const memUrl = qrDataUrls[memRegId];
+                    )}
 
+                    {/* Events list */}
+                    <div className="border-t-2 border-black pt-3">
+                      <span className="text-[10px] block mb-2 uppercase" style={{ color: '#E2231A', ...COMIC_FONT }}>
+                        ◆ REGISTERED EVENTS ({confirmedEvents.length}) ◆
+                      </span>
+                      <div className="space-y-1">
+                        {confirmedEvents.map((eid) => {
+                          const found = EVENTS.find((e) => e.eventId === eid);
                           return (
-                            <div
-                              key={memRegId}
-                              className="p-4 rounded-xl bg-slate-900/90 border border-cyan-500/20 text-center flex flex-col items-center justify-between"
-                            >
-                              <div className="w-full flex items-center justify-between mb-2">
-                                <span className="font-bold text-white text-xs truncate max-w-[120px]">
-                                  {idx + 1}. {member.name}
-                                </span>
-                                <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                                  idx === 0
-                                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
-                                    : 'bg-purple-500/20 text-purple-300 border border-purple-500/40'
-                                }`}>
-                                  {idx === 0 ? 'TEAM_HEAD' : 'MEMBER'}
-                                </span>
-                              </div>
-
-                              <div className="p-2.5 bg-white rounded-xl shadow-lg my-2">
-                                {memUrl ? (
-                                  <img
-                                    src={memUrl}
-                                    alt={`QR for ${member.name}`}
-                                    className="w-32 h-32 mx-auto"
-                                  />
-                                ) : (
-                                  <div className="w-32 h-32 bg-slate-100 flex items-center justify-center">
-                                    <QrCode className="w-8 h-8 text-slate-400 animate-pulse" />
-                                  </div>
-                                )}
-                              </div>
-
-                              <span className="text-[10px] font-mono font-bold text-cyan-400 mb-3">
-                                {memRegId}
-                              </span>
-
-                              <button
-                                type="button"
-                                onClick={() => handleDownloadSingleQR(memQrToken, memRegId, `${member.name} (${memRegId})`)}
-                                className="w-full py-2 px-3 rounded-lg text-xs font-bold font-display bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center justify-center gap-1.5 transition-colors"
-                              >
-                                <Download className="w-3.5 h-3.5 text-cyan-400" />
-                                <span>DOWNLOAD QR</span>
-                              </button>
+                            <div key={eid} className="flex items-center gap-2 text-xs text-black">
+                              <span className="w-2 h-2 bg-black flex-shrink-0 inline-block" />
+                              <span className="font-black" style={{ color: '#E2231A' }}>{eid}</span>
+                              <span className="font-bold">— {found ? found.title : eid}</span>
                             </div>
                           );
                         })}
                       </div>
                     </div>
-                  ) : (
-                    /* Individual Participant QR */
-                    <div className="space-y-4">
-                      <div className="p-4 bg-white rounded-2xl inline-block shadow-2xl mx-auto border border-cyan-500/20">
-                        {qrDataUrls[registrationId] ? (
-                          <img
-                            src={qrDataUrls[registrationId]}
-                            alt={`QR Code for ${registrationId}`}
-                            className="w-48 h-48 sm:w-56 sm:h-56 mx-auto"
-                          />
-                        ) : (
-                          <div className="w-48 h-48 sm:w-56 sm:h-56 flex items-center justify-center bg-slate-100 rounded-lg">
-                            <QrCode className="w-12 h-12 text-slate-400 animate-pulse" />
-                          </div>
-                        )}
-                        <p className="text-xs font-mono font-black text-slate-900 mt-2">
-                          {registrationId}
-                        </p>
-                      </div>
+                  </div>
+                </div>
 
-                      <div className="flex flex-wrap items-center justify-center gap-3">
+                {/* QR Section */}
+                <div className="mb-4" style={MANGA_PANEL}>
+                  <div className="px-4 py-2 border-b-3 border-black flex items-center justify-between" style={{ background: '#0a0a0a', borderBottom: '3px solid #0a0a0a' }}>
+                    <span className="text-white text-xs uppercase" style={COMIC_FONT}>
+                      ◆ {registeredData?.teamName ? 'TEAM QR PASSES' : 'CHECK-IN QR PASS'} ◆
+                    </span>
+                    {registeredData?.teamName && (
+                      <button
+                        type="button"
+                        onClick={handleDownloadAllQRs}
+                        disabled={isDownloadingAll || isGeneratingQR}
+                        className="text-[10px] border-2 border-white text-white px-2 py-1 hover:bg-white hover:text-black transition-colors"
+                        style={COMIC_FONT}
+                      >
+                        {isDownloadingAll ? 'DOWNLOADING…' : '↓ ALL QRs'}
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="p-4" style={{ background: '#FFFEF0' }}>
+                    {isGeneratingQR ? (
+                      <div className="py-10 flex flex-col items-center gap-3">
+                        <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#E2231A' }} />
+                        <span className="text-xs uppercase font-black" style={{ ...COMIC_FONT, color: '#0a0a0a' }}>GENERATING QR…</span>
+                      </div>
+                    ) : qrError ? (
+                      <div className="p-4 border-2 text-center" style={{ borderColor: '#E2231A' }}>
+                        <p className="text-xs font-black mb-2" style={{ color: '#E2231A' }}>{qrError}</p>
                         <button
-                          type="button"
-                          onClick={() => handleDownloadSingleQR(registeredData?.qrToken || registrationId, registrationId, `${formData.fullName} (${registrationId})`)}
-                          className="px-5 py-2.5 rounded-xl text-xs font-bold font-display bg-gradient-to-r from-cyan-400 to-sky-400 text-black shadow-glow-cyan flex items-center gap-2 transition-transform hover:scale-105 active:scale-[0.98]"
+                          onClick={() => registeredData && generateAllQRs(registeredData)}
+                          className="px-4 py-2 text-xs text-white border-2 border-black"
+                          style={{ background: '#E2231A', ...COMIC_FONT }}
                         >
-                          <Download className="w-4 h-4" />
-                          <span>DOWNLOAD QR</span>
+                          RETRY QR
                         </button>
                       </div>
-                    </div>
-                  )}
+                    ) : registeredData?.teamName ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {(registeredData.participants || [{
+                          name: registeredData.participantName, role: 'TEAM_HEAD' as const,
+                          registrationId: registeredData.registrationId, qrToken: registeredData.qrToken,
+                          email: registeredData.email, phone: registeredData.mobileNumber,
+                          college: registeredData.college, department: registeredData.department,
+                          year: '3rd Year', gender: 'Not Specified',
+                        }]).map((member, idx) => {
+                          const memRegId = member.registrationId || (idx === 0 ? registrationId : `${registrationId}-M${idx}`);
+                          const memQrToken = member.qrToken || (idx === 0 ? registeredData.qrToken : `${registeredData.qrToken}-M${idx}`);
+                          const memUrl = qrDataUrls[memRegId];
+                          return (
+                            <div key={memRegId} className="p-3 border-2 border-black text-center" style={{ boxShadow: '3px 3px 0 #E2231A' }}>
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="font-black text-xs text-black truncate max-w-[100px]">{idx + 1}. {member.name}</span>
+                                <span className="px-1.5 py-0.5 text-[9px] text-white border border-black" style={{ background: idx === 0 ? '#E2231A' : '#0a0a0a', ...COMIC_FONT }}>
+                                  {idx === 0 ? 'LEADER' : 'MEMBER'}
+                                </span>
+                              </div>
+                              <div className="p-2 bg-white border-2 border-black inline-block my-2">
+                                {memUrl ? (
+                                  <img src={memUrl} alt={`QR for ${member.name}`} className="w-28 h-28" />
+                                ) : (
+                                  <div className="w-28 h-28 bg-gray-100 flex items-center justify-center">
+                                    <QrCode className="w-8 h-8 text-gray-400 animate-pulse" />
+                                  </div>
+                                )}
+                              </div>
+                              <p className="text-[10px] font-black mb-2" style={{ color: '#E2231A', ...COMIC_FONT }}>{memRegId}</p>
+                              <button
+                                type="button"
+                                onClick={() => handleDownloadSingleQR(memQrToken, memRegId, `${member.name} (${memRegId})`)}
+                                className="w-full py-1.5 text-xs text-white border-2 border-black flex items-center justify-center gap-1.5"
+                                style={{ background: '#0a0a0a', ...COMIC_FONT }}
+                              >
+                                <Download className="w-3.5 h-3.5" /> DOWNLOAD QR
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="space-y-4 text-center">
+                        <div className="p-3 bg-white border-2 border-black inline-block" style={{ boxShadow: '4px 4px 0 #0a0a0a' }}>
+                          {qrDataUrls[registrationId] ? (
+                            <img src={qrDataUrls[registrationId]} alt={`QR for ${registrationId}`} className="w-48 h-48 sm:w-52 sm:h-52" />
+                          ) : (
+                            <div className="w-48 h-48 sm:w-52 sm:h-52 flex items-center justify-center bg-gray-100">
+                              <QrCode className="w-12 h-12 text-gray-400 animate-pulse" />
+                            </div>
+                          )}
+                          <p className="text-xs font-black text-black mt-2" style={COMIC_FONT}>{registrationId}</p>
+                        </div>
+                        <div>
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadSingleQR(registeredData?.qrToken || registrationId, registrationId, `${formData.fullName} (${registrationId})`)}
+                            className="px-6 py-2.5 text-sm text-white border-2 border-black flex items-center gap-2 mx-auto"
+                            style={{ background: '#E2231A', ...COMIC_FONT, boxShadow: '3px 3px 0 #0a0a0a' }}
+                          >
+                            <Download className="w-4 h-4" /> DOWNLOAD QR PASS
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Actions */}
-                <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                <div className="flex flex-wrap items-center justify-center gap-3">
                   <button
                     onClick={copyRegistrationPass}
-                    className="px-5 py-2.5 rounded-xl text-xs font-bold font-display bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-2 transition-colors"
+                    className="px-5 py-2.5 text-xs text-black border-2 border-black flex items-center gap-2"
+                    style={{ background: '#FFC928', ...COMIC_FONT, boxShadow: '3px 3px 0 #0a0a0a' }}
                   >
-                    <Copy className="w-4 h-4 text-cyan-400" />
-                    <span>{copied ? 'Copied to Clipboard!' : 'Copy Pass Details'}</span>
+                    <Copy className="w-4 h-4" />
+                    {copied ? 'COPIED!!' : 'COPY PASS DETAILS'}
                   </button>
 
                   <Link
                     to={`/my-registration?id=${registrationId}&token=${encodeURIComponent(registeredData?.qrToken || '')}`}
                     onClick={onClose}
-                    className="px-6 py-2.5 rounded-xl text-xs font-bold font-display bg-gradient-to-r from-cyan-400 to-purple-400 text-black shadow-glow-cyan transition-transform hover:scale-105 inline-flex items-center gap-1.5"
+                    className="px-6 py-2.5 text-xs text-white border-2 border-black flex items-center gap-1.5"
+                    style={{ background: '#E2231A', ...COMIC_FONT, boxShadow: '3px 3px 0 #0a0a0a' }}
                   >
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>View QR Pass</span>
-                    <ExternalLink className="w-3.5 h-3.5 ml-0.5" />
+                    <Eye className="w-3.5 h-3.5" /> VIEW QR PASS <ExternalLink className="w-3.5 h-3.5" />
                   </Link>
                 </div>
               </div>
             ) : (
-              /* Input Form */
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Multi-Event Selector Dropdown */}
-                <div ref={dropdownRef} className="relative">
-                  <label className="block text-xs font-mono font-bold text-slate-300 uppercase mb-2 flex items-center justify-between">
-                    <span>Select Events (16 Competitions) *</span>
-                    <span className="text-[11px] text-cyan-400 font-mono font-bold">
-                      {formData.selectedEventIds.length === 0
-                        ? '(0 Selected)'
-                        : `(${formData.selectedEventIds.length} Selected)`}
-                    </span>
-                  </label>
+              /* ═══════════════════ INPUT FORM ════════════════════════ */
+              <form onSubmit={handleSubmit} className="space-y-5">
 
-                  {/* Trigger Box */}
+                {/* EVENT SELECTION */}
+                <div ref={dropdownRef} className="relative">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-3.5 h-3.5 bg-black flex-shrink-0 inline-block" />
+                    <label className="text-[11px] uppercase text-black" style={COMIC_FONT}>
+                      SELECT EVENTS (16 COMPETITIONS) *
+                    </label>
+                    <span className="ml-auto text-[11px]" style={{ color: '#E2231A', ...COMIC_FONT }}>
+                      {formData.selectedEventIds.length > 0 ? `${formData.selectedEventIds.length} CHOSEN` : '0 CHOSEN'}
+                    </span>
+                  </div>
+
+                  {/* Trigger */}
                   <div
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className={`cursor-pointer w-full min-h-[48px] px-3.5 py-2 rounded-xl bg-slate-900 border ${
-                      errors.selectedEvents
-                        ? 'border-red-500'
-                        : isDropdownOpen
-                        ? 'border-cyan-400 ring-1 ring-cyan-400/50'
-                        : 'border-slate-700 hover:border-slate-600'
-                    } flex items-center justify-between gap-2 transition-colors`}
+                    className="cursor-pointer w-full min-h-[48px] px-3 py-2 bg-white flex items-center justify-between gap-2 transition-all"
+                    style={errors.selectedEvents ? MANGA_INPUT_ERR : { ...MANGA_INPUT, border: isDropdownOpen ? '2px solid #E2231A' : '2px solid #0a0a0a', boxShadow: isDropdownOpen ? '3px 3px 0 #E2231A' : '3px 3px 0 #0a0a0a' }}
                   >
                     {formData.selectedEventIds.length === 0 ? (
-                      <span className="text-slate-400 text-xs sm:text-sm font-sans">
-                        Select one or more competitions...
-                      </span>
+                      <span className="text-gray-400 text-xs font-bold">Click to select competitions…</span>
                     ) : (
                       <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto py-0.5">
                         {formData.selectedEventIds.map((eid) => {
@@ -686,381 +715,194 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
                           return (
                             <span
                               key={eid}
-                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleEventSelection(eid);
-                              }}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 text-xs text-white border border-black"
+                              style={{ background: '#E2231A', ...COMIC_FONT }}
+                              onClick={(e) => { e.stopPropagation(); toggleEventSelection(eid); }}
                             >
-                              <span>{eid}</span>
-                              <span className="text-slate-400 font-normal text-[11px] hidden sm:inline">
-                                — {evt?.title.split(' ')[0]}
-                              </span>
-                              <X className="w-3 h-3 text-cyan-400/80 hover:text-cyan-200 ml-0.5" />
+                              {eid}
+                              <span className="text-white/70 font-normal hidden sm:inline">— {evt?.title.split(' ')[0]}</span>
+                              <X className="w-3 h-3 ml-0.5" />
                             </span>
                           );
                         })}
                       </div>
                     )}
-                    <ChevronDown
-                      className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform ${
-                        isDropdownOpen ? 'rotate-180 text-cyan-400' : ''
-                      }`}
-                    />
+                    <ChevronDown className={`w-4 h-4 text-black flex-shrink-0 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
                   </div>
 
-                  {errors.selectedEvents && (
-                    <p className="text-[11px] text-red-400 mt-1">{errors.selectedEvents}</p>
-                  )}
+                  {errors.selectedEvents && <p className="text-[11px] font-black mt-1" style={{ color: '#E2231A' }}>{errors.selectedEvents}</p>}
 
-                  {/* Dropdown Panel with Checkboxes */}
+                  {/* Dropdown */}
                   {isDropdownOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-2 p-3 rounded-2xl bg-[#0F172A] border border-cyan-500/40 shadow-2xl z-30 max-h-72 overflow-y-auto space-y-4">
-                      {/* TECHNICAL EVENTS */}
-                      <div>
-                        <div className="text-[11px] font-mono font-bold text-cyan-400 uppercase tracking-wider mb-2 px-1 flex items-center justify-between">
-                          <span>⚡ Technical Events (6)</span>
-                          <span className="text-[10px] text-slate-500">Track 1</span>
-                        </div>
-                        <div className="space-y-1">
-                          {EVENTS.filter((e) => e.category === 'Technical').map((e) => {
-                            const isChecked = formData.selectedEventIds.includes(e.eventId);
-                            return (
-                              <div
-                                key={e.eventId}
-                                onClick={() => toggleEventSelection(e.eventId)}
-                                className={`flex items-center justify-between p-2 rounded-xl cursor-pointer text-xs transition-colors ${
-                                  isChecked
-                                    ? 'bg-cyan-500/15 text-white border border-cyan-500/40'
-                                    : 'hover:bg-slate-800 text-slate-300 border border-transparent'
-                                }`}
-                              >
-                                <div className="flex items-center gap-2.5">
-                                  <div
-                                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                                      isChecked
-                                        ? 'bg-cyan-500 border-cyan-400 text-black'
-                                        : 'border-slate-600 bg-slate-800'
-                                    }`}
-                                  >
-                                    {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
+                    <div
+                      className="absolute top-full left-0 right-0 mt-1 p-3 bg-white border-2 border-black z-30 max-h-72 overflow-y-auto space-y-4"
+                      style={{ boxShadow: '4px 4px 0 #0a0a0a' }}
+                    >
+                      {[
+                        { cat: 'Technical', color: '#E2231A', icon: '⚡', label: 'TECHNICAL EVENTS' },
+                        { cat: 'Non-Technical', color: '#0a0a0a', icon: '🎭', label: 'NON-TECHNICAL EVENTS' },
+                        { cat: 'Special Event', color: '#b45309', icon: '🏆', label: 'SPECIAL EVENTS' },
+                      ].map(({ cat, color, icon, label }) => (
+                        <div key={cat}>
+                          <div className="text-[10px] uppercase mb-1.5 px-1 flex items-center gap-2" style={{ color, ...COMIC_FONT }}>
+                            <span className="h-0.5 w-4 inline-block" style={{ background: color }} />
+                            {icon} {label}
+                          </div>
+                          <div className="space-y-0.5">
+                            {EVENTS.filter((e) => e.category === cat).map((e) => {
+                              const isChecked = formData.selectedEventIds.includes(e.eventId);
+                              return (
+                                <div
+                                  key={e.eventId}
+                                  onClick={() => toggleEventSelection(e.eventId)}
+                                  className="flex items-center justify-between px-2 py-1.5 cursor-pointer border text-xs transition-colors"
+                                  style={{ border: isChecked ? `2px solid ${color}` : '2px solid transparent', background: isChecked ? `${color}18` : 'transparent' }}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 border-2 border-black flex items-center justify-center" style={{ background: isChecked ? color : 'white' }}>
+                                      {isChecked && <Check className="w-2.5 h-2.5 text-white stroke-[3]" />}
+                                    </div>
+                                    <span className="font-black" style={{ color }}>{e.eventId}</span>
+                                    <span className="font-bold text-black">— {e.title}</span>
                                   </div>
-                                  <span className="font-mono font-bold text-cyan-400">{e.eventId}</span>
-                                  <span className="font-medium">— {e.title}</span>
+                                  <span className="text-[10px] font-bold text-gray-500">{e.teamSize.description}</span>
                                 </div>
-                                <span className="text-[10px] font-mono text-slate-400">
-                                  {e.teamSize.description}
-                                </span>
-                              </div>
-                            );
-                          })}
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-
-                      {/* NON-TECHNICAL EVENTS */}
-                      <div>
-                        <div className="text-[11px] font-mono font-bold text-purple-400 uppercase tracking-wider mb-2 px-1 flex items-center justify-between">
-                          <span>🎭 Non-Technical Events (6)</span>
-                          <span className="text-[10px] text-slate-500">Track 2</span>
-                        </div>
-                        <div className="space-y-1">
-                          {EVENTS.filter((e) => e.category === 'Non-Technical').map((e) => {
-                            const isChecked = formData.selectedEventIds.includes(e.eventId);
-                            return (
-                              <div
-                                key={e.eventId}
-                                onClick={() => toggleEventSelection(e.eventId)}
-                                className={`flex items-center justify-between p-2 rounded-xl cursor-pointer text-xs transition-colors ${
-                                  isChecked
-                                    ? 'bg-purple-500/15 text-white border border-purple-500/40'
-                                    : 'hover:bg-slate-800 text-slate-300 border border-transparent'
-                                }`}
-                              >
-                                <div className="flex items-center gap-2.5">
-                                  <div
-                                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                                      isChecked
-                                        ? 'bg-purple-500 border-purple-400 text-black'
-                                        : 'border-slate-600 bg-slate-800'
-                                    }`}
-                                  >
-                                    {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
-                                  </div>
-                                  <span className="font-mono font-bold text-purple-400">{e.eventId}</span>
-                                  <span className="font-medium">— {e.title}</span>
-                                </div>
-                                <span className="text-[10px] font-mono text-slate-400">
-                                  {e.teamSize.description}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* SPECIAL EVENTS */}
-                      <div>
-                        <div className="text-[11px] font-mono font-bold text-amber-400 uppercase tracking-wider mb-2 px-1 flex items-center justify-between">
-                          <span>🏆 Special Events ({EVENTS.filter((e) => e.category === 'Special Event').length})</span>
-                          <span className="text-[10px] text-slate-500">Track 3</span>
-                        </div>
-                        <div className="space-y-1">
-                          {EVENTS.filter((e) => e.category === 'Special Event').map((e) => {
-                            const isChecked = formData.selectedEventIds.includes(e.eventId);
-                            return (
-                              <div
-                                key={e.eventId}
-                                onClick={() => toggleEventSelection(e.eventId)}
-                                className={`flex items-center justify-between p-2 rounded-xl cursor-pointer text-xs transition-colors ${
-                                  isChecked
-                                    ? 'bg-amber-500/15 text-white border border-amber-500/40'
-                                    : 'hover:bg-slate-800 text-slate-300 border border-transparent'
-                                }`}
-                              >
-                                <div className="flex items-center gap-2.5">
-                                  <div
-                                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                                      isChecked
-                                        ? 'bg-amber-500 border-amber-400 text-black'
-                                        : 'border-slate-600 bg-slate-800'
-                                    }`}
-                                  >
-                                    {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
-                                  </div>
-                                  <span className="font-mono font-bold text-amber-400">{e.eventId}</span>
-                                  <span className="font-medium">— {e.title}</span>
-                                </div>
-                                <span className="text-[10px] font-mono text-slate-400">
-                                  {e.teamSize.description}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Done Button */}
-                      <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
-                        <span className="text-[11px] font-mono text-slate-400">
-                          {formData.selectedEventIds.length} of {EVENTS.length} selected
+                      ))}
+                      <div className="pt-2 border-t-2 border-black flex items-center justify-between">
+                        <span className="text-[10px] text-gray-500" style={COMIC_FONT}>
+                          {formData.selectedEventIds.length}/{EVENTS.length} SELECTED
                         </span>
                         <button
                           type="button"
                           onClick={() => setIsDropdownOpen(false)}
-                          className="px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold bg-cyan-500 text-black hover:bg-cyan-400 transition-colors shadow-glow-sm"
+                          className="px-4 py-1.5 text-xs text-white border-2 border-black"
+                          style={{ background: '#0a0a0a', ...COMIC_FONT }}
                         >
-                          Done Selecting
+                          ✓ DONE
                         </button>
                       </div>
                     </div>
                   )}
                 </div>
 
-                {/* Participant Personal Details */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-mono text-slate-300 mb-1.5">
-                      Full Name (Leader) *
-                    </label>
-                    <input
-                      type="text"
-                      name="fullName"
-                      placeholder="e.g. Rahul Sharma"
-                      value={formData.fullName}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-2.5 rounded-xl bg-slate-900 border ${
-                        errors.fullName ? 'border-red-500' : 'border-slate-700'
-                      } text-white text-sm focus:border-cyan-400 focus:outline-none`}
-                    />
-                    {errors.fullName && (
-                      <p className="text-[11px] text-red-400 mt-1">{errors.fullName}</p>
-                    )}
+                {/* PARTICIPANT INTEL section */}
+                <div>
+                  <div className="py-1 px-3 mb-3 border-l-4 border-black" style={{ background: '#FFC928' }}>
+                    <span className="text-[11px] uppercase text-black" style={COMIC_FONT}>◆ PARTICIPANT INTEL ◆</span>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-mono text-slate-300 mb-1.5">
-                      Email Address *
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      placeholder="e.g. rahul@gmail.com"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-2.5 rounded-xl bg-slate-900 border ${
-                        errors.email ? 'border-red-500' : 'border-slate-700'
-                      } text-white text-sm focus:border-cyan-400 focus:outline-none`}
-                    />
-                    {errors.email && (
-                      <p className="text-[11px] text-red-400 mt-1">{errors.email}</p>
-                    )}
-                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Full Name */}
+                    <div>
+                      <label className="block text-[10px] uppercase text-black mb-1" style={COMIC_FONT}>FULL NAME (LEADER) *</label>
+                      <input type="text" name="fullName" placeholder="e.g. Rahul Sharma"
+                        value={formData.fullName} onChange={handleInputChange}
+                        className="w-full px-3 py-2.5 text-sm focus:outline-none"
+                        style={errors.fullName ? MANGA_INPUT_ERR : MANGA_INPUT} />
+                      {errors.fullName && <p className="text-[11px] font-black mt-1" style={{ color: '#E2231A' }}>{errors.fullName}</p>}
+                    </div>
 
-                  <div>
-                    <label className="block text-xs font-mono text-slate-300 mb-1.5">
-                      10-Digit Mobile Number *
-                    </label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      placeholder="e.g. 9840123456"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-2.5 rounded-xl bg-slate-900 border ${
-                        errors.phone ? 'border-red-500' : 'border-slate-700'
-                      } text-white text-sm focus:border-cyan-400 focus:outline-none`}
-                    />
-                    {errors.phone && (
-                      <p className="text-[11px] text-red-400 mt-1">{errors.phone}</p>
-                    )}
-                  </div>
+                    {/* Email */}
+                    <div>
+                      <label className="block text-[10px] uppercase text-black mb-1" style={COMIC_FONT}>EMAIL ADDRESS *</label>
+                      <input type="email" name="email" placeholder="e.g. rahul@gmail.com"
+                        value={formData.email} onChange={handleInputChange}
+                        className="w-full px-3 py-2.5 text-sm focus:outline-none"
+                        style={errors.email ? MANGA_INPUT_ERR : MANGA_INPUT} />
+                      {errors.email && <p className="text-[11px] font-black mt-1" style={{ color: '#E2231A' }}>{errors.email}</p>}
+                    </div>
 
-                  <div>
-                    <label className="block text-xs font-mono text-slate-300 mb-1.5">
-                      Year of Study *
-                    </label>
-                    <select
-                      name="yearOfStudy"
-                      value={formData.yearOfStudy}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:border-cyan-400 focus:outline-none"
-                    >
-                      <option value="1st Year">1st Year (UG)</option>
-                      <option value="2nd Year">2nd Year (UG)</option>
-                      <option value="3rd Year">3rd Year (UG)</option>
-                      <option value="4th Year">4th Year (UG)</option>
-                      <option value="PG">Postgraduate (PG)</option>
-                    </select>
+                    {/* Phone */}
+                    <div>
+                      <label className="block text-[10px] uppercase text-black mb-1" style={COMIC_FONT}>MOBILE NUMBER *</label>
+                      <input type="tel" name="phone" placeholder="e.g. 9840123456"
+                        value={formData.phone} onChange={handleInputChange}
+                        className="w-full px-3 py-2.5 text-sm focus:outline-none"
+                        style={errors.phone ? MANGA_INPUT_ERR : MANGA_INPUT} />
+                      {errors.phone && <p className="text-[11px] font-black mt-1" style={{ color: '#E2231A' }}>{errors.phone}</p>}
+                    </div>
+
+                    {/* Year */}
+                    <div>
+                      <label className="block text-[10px] uppercase text-black mb-1" style={COMIC_FONT}>YEAR OF STUDY *</label>
+                      <select name="yearOfStudy" value={formData.yearOfStudy} onChange={handleInputChange}
+                        className="w-full px-3 py-2.5 text-sm focus:outline-none appearance-none cursor-pointer"
+                        style={MANGA_INPUT}>
+                        {['1st Year', '2nd Year', '3rd Year', '4th Year', 'PG'].map((y) => (
+                          <option key={y} value={y}>{y} {y !== 'PG' ? '(UG)' : '(Postgraduate)'}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* College */}
+                    <div>
+                      <label className="block text-[10px] uppercase text-black mb-1" style={COMIC_FONT}>COLLEGE / INSTITUTION *</label>
+                      <input type="text" name="collegeName" placeholder="e.g. Sriram Engineering College"
+                        value={formData.collegeName} onChange={handleInputChange}
+                        className="w-full px-3 py-2.5 text-sm focus:outline-none"
+                        style={errors.collegeName ? MANGA_INPUT_ERR : MANGA_INPUT} />
+                      {errors.collegeName && <p className="text-[11px] font-black mt-1" style={{ color: '#E2231A' }}>{errors.collegeName}</p>}
+                    </div>
+
+                    {/* Department */}
+                    <div>
+                      <label className="block text-[10px] uppercase text-black mb-1" style={COMIC_FONT}>BRANCH / DEPARTMENT *</label>
+                      <input type="text" name="department" placeholder="e.g. B.Tech AI & Data Science"
+                        value={formData.department} onChange={handleInputChange}
+                        className="w-full px-3 py-2.5 text-sm focus:outline-none"
+                        style={errors.department ? MANGA_INPUT_ERR : MANGA_INPUT} />
+                      {errors.department && <p className="text-[11px] font-black mt-1" style={{ color: '#E2231A' }}>{errors.department}</p>}
+                    </div>
                   </div>
                 </div>
 
-                {/* College & Department */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-mono text-slate-300 mb-1.5">
-                      College / Institution Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="collegeName"
-                      placeholder="e.g. Sriram Engineering College"
-                      value={formData.collegeName}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-2.5 rounded-xl bg-slate-900 border ${
-                        errors.collegeName ? 'border-red-500' : 'border-slate-700'
-                      } text-white text-sm focus:border-cyan-400 focus:outline-none`}
-                    />
-                    {errors.collegeName && (
-                      <p className="text-[11px] text-red-400 mt-1">{errors.collegeName}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-mono text-slate-300 mb-1.5">
-                      Branch / Department *
-                    </label>
-                    <input
-                      type="text"
-                      name="department"
-                      placeholder="e.g. B.Tech AI & Data Science"
-                      value={formData.department}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-2.5 rounded-xl bg-slate-900 border ${
-                        errors.department ? 'border-red-500' : 'border-slate-700'
-                      } text-white text-sm focus:border-cyan-400 focus:outline-none`}
-                    />
-                    {errors.department && (
-                      <p className="text-[11px] text-red-400 mt-1">{errors.department}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Team Members Section (if any selected event allows teams) */}
+                {/* TEAM SECTION */}
                 {allowsTeams && (
-                  <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <h4 className="font-display font-bold text-sm text-white flex items-center gap-2">
-                          <Users className="w-4 h-4 text-cyan-400" />
-                          <span>Team Registration (Up to {maxTeamSize} Members)</span>
+                  <div style={MANGA_PANEL}>
+                    <div className="px-4 py-2 border-b-2 border-black flex items-center justify-between" style={{ background: '#0a0a0a', borderBottom: '3px solid #0a0a0a' }}>
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-white" />
+                        <h4 className="text-white text-xs uppercase" style={COMIC_FONT}>
+                          TEAM REGISTRATION (UP TO {maxTeamSize} MEMBERS)
                         </h4>
-                        <p className="text-xs text-slate-400 mt-0.5">
-                          Registering as a team? Add your teammates below.
-                        </p>
                       </div>
-
                       <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          name="isTeam"
-                          checked={formData.isTeam}
-                          onChange={handleInputChange}
-                          className="sr-only peer"
-                        />
-                        <div className="w-10 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500" />
+                        <input type="checkbox" name="isTeam" checked={formData.isTeam} onChange={handleInputChange} className="sr-only peer" />
+                        <div className="w-10 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-600" />
                       </label>
                     </div>
 
                     {formData.isTeam && (
-                      <div className="mt-4 space-y-4">
+                      <div className="p-4 space-y-3" style={{ background: '#FFFEF0' }}>
                         <div>
-                          <label className="block text-xs font-mono text-slate-300 mb-1">
-                            Team Name *
-                          </label>
-                          <input
-                            type="text"
-                            name="teamName"
-                            placeholder="e.g. Cyber Knights"
-                            value={formData.teamName}
-                            onChange={handleInputChange}
-                            className={`w-full px-4 py-2 rounded-xl bg-slate-800 border ${
-                              errors.teamName ? 'border-red-500' : 'border-slate-700'
-                            } text-white text-xs sm:text-sm focus:border-cyan-400 focus:outline-none`}
-                          />
-                          {errors.teamName && (
-                            <p className="text-[11px] text-red-400 mt-1">{errors.teamName}</p>
-                          )}
+                          <label className="block text-[10px] uppercase text-black mb-1" style={COMIC_FONT}>TEAM NAME *</label>
+                          <input type="text" name="teamName" placeholder="e.g. Cyber Knights"
+                            value={formData.teamName} onChange={handleInputChange}
+                            className="w-full px-3 py-2 text-xs focus:outline-none"
+                            style={errors.teamName ? MANGA_INPUT_ERR : MANGA_INPUT} />
+                          {errors.teamName && <p className="text-[11px] font-black mt-1" style={{ color: '#E2231A' }}>{errors.teamName}</p>}
                         </div>
 
-                        {/* Teammates List */}
                         {(formData.teamMembers || []).map((member, idx) => (
-                          <div
-                            key={idx}
-                            className="p-3 rounded-xl bg-slate-800/80 border border-slate-700 grid grid-cols-1 sm:grid-cols-3 gap-2 relative"
-                          >
-                            <input
-                              type="text"
-                              placeholder={`Member ${idx + 2} Name`}
-                              value={member.name}
-                              onChange={(e) =>
-                                handleTeamMemberChange(idx, 'name', e.target.value)
-                              }
-                              className="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs border border-slate-700"
-                            />
-                            <input
-                              type="email"
-                              placeholder="Email"
-                              value={member.email}
-                              onChange={(e) =>
-                                handleTeamMemberChange(idx, 'email', e.target.value)
-                              }
-                              className="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs border border-slate-700"
-                            />
+                          <div key={idx} className="p-2 border-2 border-black grid grid-cols-1 sm:grid-cols-3 gap-2 relative" style={{ background: '#fff' }}>
+                            <span className="absolute -top-2 -left-2 w-5 h-5 text-white text-[9px] flex items-center justify-center border border-black" style={{ background: '#E2231A', ...COMIC_FONT }}>{idx + 2}</span>
+                            <input type="text" placeholder={`Member ${idx + 2} Name`} value={member.name}
+                              onChange={(e) => handleTeamMemberChange(idx, 'name', e.target.value)}
+                              className="px-2 py-1.5 text-black text-xs font-bold focus:outline-none border border-black bg-white" />
+                            <input type="email" placeholder="Email" value={member.email}
+                              onChange={(e) => handleTeamMemberChange(idx, 'email', e.target.value)}
+                              className="px-2 py-1.5 text-black text-xs font-bold focus:outline-none border border-black bg-white" />
                             <div className="flex items-center gap-2">
-                              <input
-                                type="tel"
-                                placeholder="Phone"
-                                value={member.phone}
-                                onChange={(e) =>
-                                  handleTeamMemberChange(idx, 'phone', e.target.value)
-                                }
-                                className="w-full px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs border border-slate-700"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveTeamMember(idx)}
-                                className="p-1.5 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30"
-                              >
+                              <input type="tel" placeholder="Phone" value={member.phone}
+                                onChange={(e) => handleTeamMemberChange(idx, 'phone', e.target.value)}
+                                className="w-full px-2 py-1.5 text-black text-xs font-bold focus:outline-none border border-black bg-white" />
+                              <button type="button" onClick={() => handleRemoveTeamMember(idx)}
+                                className="p-1.5 border-2 text-red-600 hover:bg-red-600 hover:text-white transition-colors flex-shrink-0"
+                                style={{ borderColor: '#E2231A' }}>
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
@@ -1068,13 +910,11 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
                         ))}
 
                         {(formData.teamMembers || []).length < maxTeamSize - 1 && (
-                          <button
-                            type="button"
-                            onClick={handleAddTeamMember}
-                            className="w-full py-2 rounded-xl text-xs font-mono font-bold text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center gap-1.5 transition-colors"
-                          >
+                          <button type="button" onClick={handleAddTeamMember}
+                            className="w-full py-2 text-xs text-black border-2 border-dashed border-black flex items-center justify-center gap-1.5 hover:bg-black hover:text-white transition-colors"
+                            style={COMIC_FONT}>
                             <Plus className="w-3.5 h-3.5" />
-                            <span>Add Teammate ({(formData.teamMembers || []).length + 1}/{maxTeamSize})</span>
+                            ADD TEAMMATE ({(formData.teamMembers || []).length + 1}/{maxTeamSize})
                           </button>
                         )}
                       </div>
@@ -1082,92 +922,68 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
                   </div>
                 )}
 
-                {/* Referral Source */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* REFERRAL SOURCE */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-mono text-slate-300 mb-1.5">
-                      How Did You Know About This Event? *
-                    </label>
-                    <select
-                      name="referralSource"
-                      value={formData.referralSource}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-2.5 rounded-xl bg-slate-900 border ${
-                        errors.referralSource ? 'border-red-500' : 'border-slate-700'
-                      } text-white text-sm focus:border-cyan-400 focus:outline-none`}
-                    >
+                    <label className="block text-[10px] uppercase text-black mb-1" style={COMIC_FONT}>HOW'D YOU HEAR ABOUT THIS? *</label>
+                    <select name="referralSource" value={formData.referralSource} onChange={handleInputChange}
+                      className="w-full px-3 py-2.5 text-sm focus:outline-none appearance-none cursor-pointer"
+                      style={errors.referralSource ? MANGA_INPUT_ERR : MANGA_INPUT}>
                       {REFERRAL_SOURCES.map((source) => (
-                        <option key={source} value={source}>
-                          {source}
-                        </option>
+                        <option key={source} value={source}>{source}</option>
                       ))}
                     </select>
-                    {errors.referralSource && (
-                      <p className="text-[11px] text-red-400 mt-1">{errors.referralSource}</p>
-                    )}
                   </div>
 
                   {formData.referralSource === 'Other' && (
                     <div>
-                      <label className="block text-xs font-mono text-slate-300 mb-1.5">
-                        Please Specify *
-                      </label>
-                      <input
-                        type="text"
-                        name="referralSourceOther"
-                        placeholder="e.g. WhatsApp Group, LinkedIn"
-                        value={formData.referralSourceOther}
-                        onChange={handleInputChange}
-                        className={`w-full px-4 py-2.5 rounded-xl bg-slate-900 border ${
-                          errors.referralSourceOther ? 'border-red-500' : 'border-slate-700'
-                        } text-white text-sm focus:border-cyan-400 focus:outline-none`}
-                      />
-                      {errors.referralSourceOther && (
-                        <p className="text-[11px] text-red-400 mt-1">{errors.referralSourceOther}</p>
-                      )}
+                      <label className="block text-[10px] uppercase text-black mb-1" style={COMIC_FONT}>PLEASE SPECIFY *</label>
+                      <input type="text" name="referralSourceOther" placeholder="e.g. WhatsApp Group"
+                        value={formData.referralSourceOther} onChange={handleInputChange}
+                        className="w-full px-3 py-2.5 text-sm focus:outline-none"
+                        style={errors.referralSourceOther ? MANGA_INPUT_ERR : MANGA_INPUT} />
                     </div>
                   )}
                 </div>
 
-                {/* Rules Agreement */}
-                <div className="flex items-start gap-2.5 pt-2">
-                  <input
-                    type="checkbox"
-                    name="agreedToRules"
-                    id="agreedToRules"
-                    checked={formData.agreedToRules}
-                    onChange={handleInputChange}
-                    className="mt-1 w-4 h-4 rounded bg-slate-900 border-slate-700 text-cyan-400 focus:ring-0"
-                  />
-                  <label htmlFor="agreedToRules" className="text-xs text-slate-400 leading-normal">
-                    I agree to bring my official College ID card and adhere to the discipline guidelines of Sriram Engineering College.
+                {/* RULES AGREEMENT */}
+                <div className="flex items-start gap-2.5 p-3 border-2 border-black" style={{ background: '#FFC928' }}>
+                  <input type="checkbox" name="agreedToRules" id="agreedToRules"
+                    checked={formData.agreedToRules} onChange={handleInputChange}
+                    className="mt-0.5 w-4 h-4 border-2 border-black accent-black" />
+                  <label htmlFor="agreedToRules" className="text-xs text-black leading-normal" style={COMIC_FONT}>
+                    I AGREE TO BRING MY OFFICIAL COLLEGE ID CARD AND FOLLOW ALL DISCIPLINE GUIDELINES OF SRIRAM ENGINEERING COLLEGE!
                   </label>
                 </div>
 
-                {/* Submit Action */}
-                <div className="pt-4 border-t border-slate-800 flex items-center justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white bg-slate-900 border border-slate-700"
-                  >
-                    Cancel
+                {/* Server error */}
+                {errors.form && (
+                  <div className="p-3 border-2 border-red-600 flex items-center gap-2" style={{ background: '#fff0f0' }}>
+                    <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
+                    <span className="text-xs font-black text-red-600">{errors.form}</span>
+                  </div>
+                )}
+
+                {/* SUBMIT */}
+                <div className="pt-4 border-t-4 border-black flex items-center justify-end gap-3">
+                  <button type="button" onClick={onClose}
+                    className="px-5 py-2.5 text-xs text-black border-2 border-black hover:bg-black hover:text-white transition-colors"
+                    style={COMIC_FONT}>
+                    CANCEL
                   </button>
 
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="cyber-button px-8 py-3 rounded-xl font-display font-bold text-sm text-black bg-gradient-to-r from-cyan-400 via-sky-400 to-purple-400 hover:from-cyan-300 hover:to-purple-300 shadow-glow-cyan flex items-center gap-2 disabled:opacity-50"
-                  >
+                  <button type="submit" disabled={isSubmitting}
+                    className="px-6 py-3 text-sm text-white border-2 border-black flex items-center gap-2 disabled:opacity-50"
+                    style={{ background: '#E2231A', ...COMIC_FONT, boxShadow: '4px 4px 0 #0a0a0a' }}>
                     {isSubmitting ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Confirming Registration...</span>
+                        CONFIRMING…
                       </>
                     ) : (
                       <>
                         <Send className="w-4 h-4" />
-                        <span>CONFIRM REGISTRATION ({formData.selectedEventIds.length} EVENTS)</span>
+                        CONFIRM REGISTRATION ({formData.selectedEventIds.length} EVENTS)!!
                       </>
                     )}
                   </button>
@@ -1180,4 +996,3 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
     </AnimatePresence>
   );
 };
-
