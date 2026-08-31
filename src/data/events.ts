@@ -932,7 +932,7 @@ export const EVENTS: EventItem[] = [
     fullDescription: 'A premier runway showcase of elegance, confidence, and styling! Teams or individuals present a themed corporate/fashion ramp walk, assessed on posture, attitude, music coordination, and overall stage presence.',
     teamSize: {
       min: 2,
-      max: 8,
+      max: 5,
       description: '2 - 5 Members per Team / Group',
     },
     rounds: [
