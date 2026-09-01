@@ -40,29 +40,38 @@ export const EVENTS: EventItem[] = [
       'Q&A Response',
     ],
     prizes: {
-      first: '₹5,000 Cash Prize + Certificate of Excellence',
-      second: '₹3,000 Cash Prize + Certificate of Excellence',
-      third: '₹1,500 Cash Prize + Certificate of Merit',
-      allParticipants: 'Certificate of National Participation',
+      first: '600 Cash Prize + Certificate',
+      second: '400 Cash Prize + Certificate',
+      third: '200 Cash Prize + Certificate',
+      allParticipants: 'Certificate',
     },
     coordinators: [
       {
-        name: 'Tippueswar S',
-        role: 'Coordinator',
+        name: 'Mohamad Areef A',
+        role: 'Organizer',
         department: 'IV AIML',
-        phone: '+91 93605 31687',
-        whatsapp: '919360531687',
+        phone: '+91 98401 00001',
+        whatsapp: '+91 98401 00001',
+      },
+
+      {
+        name: 'V Janani Sri',
+        role: 'Coordinator',
+        department: 'IV AI&DS',
+        phone: '+91 90032 52409',
+        whatsapp: '+91 90032 52409',
       },
       {
         name: 'Mohamad Areef A',
         role: 'Organizer',
         department: 'IV AIML',
         phone: '+91 98401 00001',
-      }
+        whatsapp: '+91 98401 00001',
+      },
     ],
     schedule: {
       date: 'September 26, 2026',
-      timeSlot: '10:00 AM - 01:00 PM',
+      timeSlot: '10:00 AM Onwards',
       venue: 'Main Seminar Hall 1',
     },
     featuredTag: 'Flagship Tech',
