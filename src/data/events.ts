@@ -983,8 +983,8 @@ export const EVENTS: EventItem[] = [
     ],
     schedule: {
       date: 'September 26, 2026',
-      timeSlot: '01:30 PM - 03:30 PM',
-      venue: 'Main Auditorium Runway Stage',
+      timeSlot: '10:00 AM Onwards',
+      venue: 'Stage',
     },
     featuredTag: 'Fashion Runway',
     iconName: 'Crown',
