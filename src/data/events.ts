@@ -62,11 +62,11 @@ export const EVENTS: EventItem[] = [
         whatsapp: '+91 90032 52409',
       },
       {
-        name: 'Mohamad Areef A',
-        role: 'Organizer',
+        name: 'Tippueswar S',
+        role: 'Coordinator',
         department: 'IV AIML',
-        phone: '+91 98401 00001',
-        whatsapp: '+91 98401 00001',
+        phone: '+91 93605 31687',
+        whatsapp: '+91 93605 31687',
       },
     ],
     schedule: {
@@ -307,7 +307,7 @@ export const EVENTS: EventItem[] = [
         role: 'Coordinator',
         department: 'IV CYS',
         phone: '+91 95001 69239',
-        whatsapp: '9500169239',
+        whatsapp: '9500169239'
       },
 
     ],
