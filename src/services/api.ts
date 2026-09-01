@@ -142,6 +142,41 @@ export const api = {
   },
 
   /**
+   * Upload a payment screenshot to Supabase Storage.
+   * Returns the public URL of the uploaded file, or null on failure.
+   * Bucket: 'payment-screenshots' (must exist in Supabase Storage with public/private policy)
+   */
+  async uploadPaymentScreenshot(
+    file: File,
+    registrationId: string
+  ): Promise<string | null> {
+    if (!isSupabaseConfigured()) return null;
+
+    try {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const path = `${registrationId}_${Date.now()}.${ext}`;
+
+      const { error: uploadErr } = await supabase.storage
+        .from('payment-screenshots')
+        .upload(path, file, { upsert: true, contentType: file.type });
+
+      if (uploadErr) {
+        console.error('[EvoXis26] Storage upload error:', uploadErr.message);
+        return null;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('payment-screenshots')
+        .getPublicUrl(path);
+
+      return urlData?.publicUrl || null;
+    } catch (err) {
+      console.error('[EvoXis26] uploadPaymentScreenshot failed:', err);
+      return null;
+    }
+  },
+
+  /**
    * Register a participant for 1 or more events (Individual or Team)
    * Implements dual-persistence architecture: Writes to Supabase & Google Apps Script (Sheets)
    */
@@ -391,7 +426,7 @@ export const api = {
             selected_events: payload.selectedEventIds.join(', '),
             total_events: payload.selectedEventIds.length,
             total_amount: 0,
-            payment_status: 'Free',
+            payment_status: payload.upiTransactionId ? 'Paid' : 'Free',
             qr_token: p.qrToken,
             qr_status: 'Active',
             email_status: 'Sent',
@@ -401,6 +436,8 @@ export const api = {
             registration_status: 'Confirmed',
             team_name: safeTeamName || null,
             team_members: participantsWithTokens,
+            upi_transaction_id: payload.upiTransactionId?.trim() || null,
+            payment_screenshot_url: payload.paymentScreenshotUrl || null,
           };
         });
 

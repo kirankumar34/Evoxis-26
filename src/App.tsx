@@ -8,9 +8,9 @@ import { RegistrationModalProvider } from '@/context/RegistrationModalContext';
 import { HomePage } from '@/pages/HomePage';
 import { EventsPage } from '@/pages/EventsPage';
 import { EventDetailPage } from '@/pages/EventDetailPage';
-// import { RegisterPage } from '@/pages/RegisterPage';
-// import { RegistrationSuccessPage } from '@/pages/RegistrationSuccessPage';
-// import { MyRegistrationPage } from '@/pages/MyRegistrationPage';
+import { RegisterPage } from '@/pages/RegisterPage';
+import { RegistrationSuccessPage } from '@/pages/RegistrationSuccessPage';
+import { MyRegistrationPage } from '@/pages/MyRegistrationPage';
 
 export const App: React.FC = () => {
   return (
@@ -23,14 +23,14 @@ export const App: React.FC = () => {
           {/* Dynamic Route Viewport */}
           <main className="flex-grow">
             <Routes>
-              {/* Participant-Only Routes */}
+              {/* Participant Routes */}
               <Route path="/" element={<HomePage />} />
               <Route path="/events" element={<EventsPage />} />
               <Route path="/events/:id" element={<EventDetailPage />} />
-              {/* <Route path="/register" element={<RegisterPage />} />
+              <Route path="/register" element={<RegisterPage />} />
               <Route path="/registration-success" element={<RegistrationSuccessPage />} />
               <Route path="/my-registration" element={<MyRegistrationPage />} />
-              <Route path="/qr" element={<MyRegistrationPage />} /> */}
+              <Route path="/qr" element={<MyRegistrationPage />} />
 
               {/* Fallback to Home */}
               <Route path="*" element={<Navigate to="/" replace />} />

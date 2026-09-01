@@ -1,6 +1,6 @@
 import React from 'react';
 import { HeroSection } from '@/components/hero/HeroSection';
-import { REGISTRATION_FORM_URL } from '@/constants';
+import { EventItem } from '@/types';
 
 import { DepartmentShowcaseSection } from '@/components/departments/DepartmentShowcaseSection';
 import { EventsSection } from '@/components/events/EventsSection';
@@ -11,12 +11,13 @@ import { VenueSection } from '@/components/venue/VenueSection';
 import { FAQSection } from '@/components/faqs/FAQSection';
 import {FlowingMenu} from '@/components/ui/FlowingMenu';
 // import Lanyard from '@/components/ui/Lanyard';
+import { REGISTRATION_FORM_URL } from '@/constants';
 import { DepartmentsSection } from '@/components/departments/DepartmentsSection';
 
 export const HomePage: React.FC = () => {
   const eventDate = import.meta.env.VITE_EVENT_DATE || '2026-09-26T09:00:00+05:30';
 
-  const handleOpenGoogleForm = () => {
+  const handleOpenRegister = (_event?: EventItem | null) => {
     window.open(REGISTRATION_FORM_URL, '_blank', 'noopener,noreferrer');
   };
 
@@ -25,7 +26,7 @@ export const HomePage: React.FC = () => {
       {/* 1. Hero Section & Countdown */}
       <HeroSection
         eventDate={eventDate}
-        onOpenRegister={handleOpenGoogleForm}
+        onOpenRegister={() => handleOpenRegister()}
       />
 
 
@@ -49,7 +50,7 @@ export const HomePage: React.FC = () => {
 
       {/* 3. Filterable 16 Events Catalog */}
       <EventsSection
-        onOpenRegisterForEvent={() => handleOpenGoogleForm()}
+        onOpenRegisterForEvent={(event) => handleOpenRegister(event)}
       />
             {/* 2. Co-Hosting Departments Showcase */}
       <DepartmentsSection />

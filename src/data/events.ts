@@ -46,6 +46,20 @@ export const EVENTS: EventItem[] = [
       allParticipants: 'Certificate of National Participation',
     },
     coordinators: [
+
+      {
+        name: 'Mohamad Areef A',
+        role: 'Organizer',
+        department: 'IV AIML',
+        phone: '+91 98401 00001',
+      },
+      {
+        name: 'Janani V',
+        role: 'Coordinator',
+        department: 'IV AI&DS',
+        phone: '+91 90032 52409',
+        whatsapp: '919003252409',
+      },
       {
         name: 'Tippueswar S',
         role: 'Coordinator',
@@ -53,12 +67,6 @@ export const EVENTS: EventItem[] = [
         phone: '+91 93605 31687',
         whatsapp: '919360531687',
       },
-      {
-        name: 'Mohamad Areef A',
-        role: 'Organizer',
-        department: 'IV AIML',
-        phone: '+91 98401 00001',
-      }
     ],
     schedule: {
       date: 'September 26, 2026',
@@ -188,7 +196,7 @@ export const EVENTS: EventItem[] = [
       'Presentation & Pitch',
     ],
     prizes: {
-      first: '₹5,000 Cash Prize + Certificate of Excellence',
+      first: '₹600 Cash Prize + Certificate of Excellence',
       second: '₹3,000 Cash Prize + Certificate of Excellence',
       third: '₹1,500 Cash Prize + Certificate of Merit',
       allParticipants: 'Certificate of National Participation',

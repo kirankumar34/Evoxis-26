@@ -4,7 +4,6 @@ import { motion, AnimatePresence, Variants } from 'framer-motion';
 import BgImg from '../../assets/HeroSection_Background.png';
 import BgImg2 from '../../assets/HeroSection_Background1.png';
 import { sound } from '../../utils/audio';
-import { REGISTRATION_FORM_URL } from '@/constants';
 
 /* ─── colour tokens ──────────────────────────────────────────────────────── */
 const C = {
@@ -525,15 +524,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
         {/* CTA */}
         <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 mb-3 sm:mb-4">
-          <a
-            href={REGISTRATION_FORM_URL}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
             onClick={() => {
               sound.playCannon?.();
               onOpenRegister();
             }}
-            className="group flex items-center gap-2.5 transition-all duration-200"
+            className="group flex items-center gap-2.5 transition-all duration-200 cursor-pointer"
             style={{
               fontFamily: "'Bebas Neue', sans-serif",
               fontSize: '0.95rem',
@@ -543,9 +540,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               border: '1px solid rgba(255,255,255,0.2)',
               borderRadius: '4px',
               padding: '9px 20px',
-              cursor: 'pointer',
               boxShadow: '0 4px 14px rgba(226,35,26,0.4)',
-              textDecoration: 'none',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = '#b81c15';
@@ -572,7 +567,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             >
               →
             </span>
-          </a>
+          </button>
 
           {/* Countdown */}
           <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-black/70 border border-white/15 text-[11px] font-mono">

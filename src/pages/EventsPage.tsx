@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Sparkles,
@@ -12,12 +11,12 @@ import {
   Compass,
 } from 'lucide-react';
 import { EVENTS } from '@/data/events';
+import { REGISTRATION_FORM_URL } from '@/constants';
 import { EventItem } from '@/types';
 import { EventCard } from '@/components/events/EventCard';
 import { EventModal } from '@/components/events/EventModal';
 
 export const EventsPage: React.FC = () => {
-  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeModalEvent, setActiveModalEvent] = useState<EventItem | null>(null);
@@ -47,8 +46,8 @@ export const EventsPage: React.FC = () => {
     return matchesCategory && matchesSearch;
   });
 
-  const handleRegisterEvent = (event: EventItem) => {
-    navigate(`/register?event=${event.eventId}`);
+  const handleRegisterEvent = (_event?: EventItem) => {
+    window.open(REGISTRATION_FORM_URL, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -173,14 +172,16 @@ export const EventsPage: React.FC = () => {
             <p className="text-sm text-slate-300 font-sans">
               Select multiple challenges across Grand Voyage, Crew, and Grand Arena categories in a single form.
             </p>
-            <Link
-              to="/register"
-              className="cyber-button inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-voyage font-bold text-sm text-[#040814] bg-gradient-to-r from-[#E6CA65] via-[#FCE79C] to-[#00F2FE] shadow-glow-gold transition-all hover:scale-105"
+            <a
+              href={REGISTRATION_FORM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cyber-button inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-voyage font-bold text-sm text-[#040814] bg-gradient-to-r from-[#E6CA65] via-[#FCE79C] to-[#00F2FE] shadow-glow-gold transition-all hover:scale-105 no-underline cursor-pointer"
             >
               <Sparkles className="w-4 h-4 text-[#040814]" />
-              <span>Go to Registration Manifest</span>
+              <span>Go to Registration Form</span>
               <ArrowRight className="w-4 h-4 text-[#040814]" />
-            </Link>
+            </a>
           </div>
         </div>
       </div>

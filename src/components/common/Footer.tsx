@@ -122,7 +122,7 @@ export const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-2 text-xs text-white/55">
               {[
-                { href: REGISTRATION_FORM_URL, label: '⚔️ Multi-Challenge Registration (Google Form)', accent: true, external: true },
+                { href: REGISTRATION_FORM_URL, label: '⚔️ Multi-Challenge Registration Form', accent: true, external: true },
                 { href: '/events', label: '🏆 16 Grand Challenges', accent: true },
                 { href: '/my-registration', label: '🎫 Voyage Pass & Check-In QR', accent: false },
                 { href: '/#schedule', label: '📅 Voyage Itinerary', accent: false },
