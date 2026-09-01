@@ -968,8 +968,8 @@ export const EVENTS: EventItem[] = [
       'Overall Stage Presentation (20 Marks) — Total 100 Marks',
     ],
     prizes: {
-      first: 'Rs 6000 Cash Prize + Elite Walk Trophy',
-      second: 'Rs 400 Cash Prize + Runner-up Trophy',
+      first: 'Rs 600 Cash Prize +  Trophy',
+      second: 'Rs 400 Cash Prize +  Trophy',
       allParticipants: 'ECertificate',
     },
     coordinators: [
