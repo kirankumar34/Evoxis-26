@@ -3,7 +3,6 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import { MobileDrawer } from './MobileDrawer';
 import { sound } from '@/utils/audio';
-import { REGISTRATION_FORM_URL } from '@/constants';
 
 /* ─── colour tokens ──────────────────────────────────────────────────────── */
 const C = {
@@ -20,6 +19,8 @@ const C = {
   seafoam:   '#7ED9D6',
 };
 
+import { REGISTRATION_FORM_URL } from '@/constants';
+
 interface NavItem {
   name: string;
   href: string;
@@ -27,6 +28,7 @@ interface NavItem {
   isExternal?: boolean;
   badge?: string;
   icon?: string;
+  onClick?: () => void;
 }
 
 export const Navbar: React.FC = () => {
@@ -203,66 +205,6 @@ export const Navbar: React.FC = () => {
 
           {/* Right Header Action Buttons */}
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-            {/* Voyage Pass Shortcut (visible on tablet / desktop) */}
-            {/* <Link
-              to="/my-registration"
-              onClick={() => sound.playTick?.()}
-              style={{
-                fontFamily: "'Bebas Neue', sans-serif",
-                letterSpacing: '0.08em',
-                fontSize: '0.9rem',
-                color: C.bone,
-                background: 'rgba(11,11,11,0.65)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '9999px',
-                padding: '6px 16px',
-                cursor: 'pointer',
-                backdropFilter: 'blur(8px)',
-                transition: 'all 0.2s',
-                textDecoration: 'none',
-              }}
-              className="hidden sm:inline-flex lg:hidden xl:inline-flex items-center gap-1.5"
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.14)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(11,11,11,0.65)'; }}
-            >
-              <span>🎫</span>
-              <span>Pass</span>
-            </Link> */}
-
-            {/* Set Sail Register CTA */}
-            <a
-              href={REGISTRATION_FORM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => sound.playCannon?.()}
-              style={{
-                fontFamily: "'Bebas Neue', sans-serif",
-                letterSpacing: '0.08em',
-                fontSize: '0.95rem',
-                color: C.ink,
-                background: `linear-gradient(135deg, ${C.gold}, ${C.deepGold})`,
-                border: 'none',
-                borderRadius: '9999px',
-                padding: '7px 20px',
-                cursor: 'pointer',
-                boxShadow: '0 0 18px rgba(255,201,40,0.45)',
-                transition: 'all 0.2s',
-                textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-              onMouseEnter={(e) => { 
-                e.currentTarget.style.boxShadow = '0 0 30px rgba(255,201,40,0.7)'; 
-                e.currentTarget.style.transform = 'translateY(-1px)'; 
-              }}
-              onMouseLeave={(e) => { 
-                e.currentTarget.style.boxShadow = '0 0 18px rgba(255,201,40,0.45)'; 
-                e.currentTarget.style.transform = ''; 
-              }}
-            >
-              Set Sail
-            </a>
 
             {/* Mobile & Tablet Only: Side Opening Menu Trigger */}
             <button

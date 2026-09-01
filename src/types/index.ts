@@ -142,7 +142,10 @@ export interface RegistrationFormData {
   teamMembers?: TeamMember[];
   referralSource?: string;
   referralSourceOther?: string;
-  transactionId?: string;
+  /** UPI transaction/reference ID entered by participant after payment */
+  upiTransactionId?: string;
+  /** Public URL of the screenshot uploaded to Supabase Storage */
+  paymentScreenshotUrl?: string;
   agreedToRules: boolean;
 }
 
@@ -177,6 +180,10 @@ export interface OverallRegistrationRecord {
   registrationStatus: 'Confirmed' | 'Cancelled';
   teamName?: string;
   teamMembers?: TeamMember[];
+  /** UPI transaction/reference ID provided by participant */
+  upiTransactionId?: string;
+  /** Supabase Storage public URL of the payment screenshot */
+  paymentScreenshotUrl?: string;
 }
 
 export interface CategoryRegistrationRecord {

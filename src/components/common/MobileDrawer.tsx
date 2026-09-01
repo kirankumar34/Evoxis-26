@@ -181,14 +181,6 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
                   >
                     <span>🏆 16 CHALLENGES</span>
                   </Link>
-                  <Link
-                    to="/my-registration"
-                    onClick={() => { sound.playTick?.(); onClose(); }}
-                    className="p-2.5 rounded-xl bg-[#FFC928]/10 border border-[#FFC928]/30 text-xs font-medium text-[#FFC928] text-center hover:bg-[#FFC928]/20 transition-colors flex flex-col items-center justify-center gap-1"
-                    style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: '0.08em', fontSize: '0.95rem' }}
-                  >
-                    <span>🎫 VOYAGE PASS</span>
-                  </Link>
                 </div>
               </div>
             </div>
@@ -203,14 +195,14 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
                   sound.playCannon?.();
                   onClose();
                 }}
-                className="w-full min-h-[48px] py-3 px-4 rounded-xl text-[#0B0B0B] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-xl font-black cursor-pointer text-decoration-none"
+                className="w-full min-h-[48px] py-3 px-4 rounded-xl text-[#0B0B0B] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-xl font-black cursor-pointer text-center no-underline"
                 style={{
                   fontFamily: "'Bebas Neue', sans-serif",
                   fontSize: '1.15rem',
                   letterSpacing: '0.1em',
                   background: 'linear-gradient(135deg, #FFC928, #B56A12)',
                   boxShadow: '0 0 24px rgba(255,201,40,0.45)',
-                  textDecoration: 'none',
+                  border: 'none',
                 }}
               >
                 <Sparkles className="w-4 h-4 text-[#0B0B0B]" />

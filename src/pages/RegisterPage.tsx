@@ -16,6 +16,7 @@ import {
   Check,
 } from 'lucide-react';
 import { EVENTS } from '@/data/events';
+import { REGISTRATION_FORM_URL } from '@/constants';
 import { EventId, EventCategory, RegistrationFormData, TeamMember } from '@/types';
 import { api } from '@/services/api';
 import mangaPanelImg from '@/assets/MangaPanel.jpg';
@@ -24,6 +25,11 @@ export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const preselectedEvent = searchParams.get('event');
+
+  // Automatically forward users to the official Google Form
+  useEffect(() => {
+    window.location.href = REGISTRATION_FORM_URL;
+  }, []);
 
   const [selectedCategory, setSelectedCategory] = useState<EventCategory | 'All'>('All');
   const [selectedEventIds, setSelectedEventIds] = useState<EventId[]>([]);

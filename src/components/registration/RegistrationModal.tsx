@@ -21,8 +21,16 @@ import {
   Download,
   Eye,
   AlertCircle,
+  ImagePlus,
+  UploadCloud,
+  Smartphone,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+// ── Payment Config ─────────────────────────────────────────────────────────
+const UPI_ID = 'evoxis26@ibl'; // Replace with actual UPI ID
+const UPI_NAME = "EvoXis'26 Symposium";
+const UPI_AMOUNT = ''; // leave empty so participant sets own amount
 
 interface RegistrationModalProps {
   isOpen: boolean;
@@ -49,9 +57,17 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
     isTeam: false,
     teamName: '',
     teamMembers: [] as TeamMember[],
-    transactionId: '',
+    upiTransactionId: '',
     agreedToRules: true,
   });
+
+  // ── Payment screenshot states ───────────────────────────────────────────
+  const screenshotInputRef = useRef<HTMLInputElement>(null);
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+  const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -144,6 +160,46 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
 
     if (errors.selectedEvents) {
       setErrors((prev) => ({ ...prev, selectedEvents: '' }));
+    }
+  };
+
+  // Handle screenshot file selection and immediate upload to Supabase Storage
+  const handleScreenshotSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate type & size (max 5 MB)
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Only image files are accepted (JPG, PNG, WEBP).');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('Screenshot must be under 5 MB.');
+      return;
+    }
+
+    setUploadError(null);
+    setScreenshotFile(file);
+    setUploadedUrl(null);
+
+    // Generate local preview immediately
+    const reader = new FileReader();
+    reader.onload = (ev) => setScreenshotPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+
+    // Upload to Supabase Storage (use a temp ID pre-registration)
+    setIsUploading(true);
+    const tempId = `TEMP-${Date.now()}`;
+    try {
+      const url = await api.uploadPaymentScreenshot(file, tempId);
+      if (url) {
+        setUploadedUrl(url);
+      } else {
+        // Supabase not configured or bucket missing — still allow offline continue
+        setUploadError('Screenshot saved locally. Will sync after registration.');
+      }
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -304,6 +360,13 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
     setErrors({});
 
     try {
+      // If screenshot was selected but not yet uploaded, try uploading now
+      let finalScreenshotUrl = uploadedUrl;
+      if (screenshotFile && !uploadedUrl) {
+        const tempId = `TEMP-${Date.now()}`;
+        finalScreenshotUrl = await api.uploadPaymentScreenshot(screenshotFile, tempId);
+      }
+
       const result = await api.registerParticipant({
         fullName: formData.fullName,
         email: formData.email,
@@ -318,6 +381,8 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
         isTeam: formData.isTeam,
         teamName: formData.teamName,
         teamMembers: formData.teamMembers,
+        upiTransactionId: formData.upiTransactionId.trim() || undefined,
+        paymentScreenshotUrl: finalScreenshotUrl || undefined,
         agreedToRules: true,
       });
 
@@ -944,6 +1009,117 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
                         style={errors.referralSourceOther ? MANGA_INPUT_ERR : MANGA_INPUT} />
                     </div>
                   )}
+                </div>
+
+                {/* ══ PAYMENT SECTION ══════════════════════════════════════ */}
+                <div style={MANGA_PANEL}>
+                  <div className="px-4 py-2 border-b-3 border-black" style={{ background: '#0a0a0a', borderBottom: '3px solid #0a0a0a' }}>
+                    <span className="text-white text-xs uppercase" style={COMIC_FONT}>💳 UPI PAYMENT (OPTIONAL)</span>
+                  </div>
+                  <div className="p-4 space-y-4" style={{ background: '#FFFEF0' }}>
+
+                    {/* Info Banner */}
+                    <div className="p-2.5 border-2 border-black text-xs flex items-start gap-2" style={{ background: '#FFC928' }}>
+                      <Smartphone className="w-4 h-4 flex-shrink-0 mt-0.5 text-black" />
+                      <span style={COMIC_FONT} className="text-black leading-relaxed">
+                        REGISTRATION IS FREE! For paid events or merch, scan the QR below, then enter your UTR / transaction ID and upload the screenshot.
+                      </span>
+                    </div>
+
+                    {/* UPI QR Code */}
+                    <div className="flex flex-col sm:flex-row gap-4 items-center">
+                      <div className="flex-shrink-0 flex flex-col items-center gap-2">
+                        <div className="p-2 bg-white border-2 border-black inline-block" style={{ boxShadow: '3px 3px 0 #0a0a0a' }}>
+                          {/* UPI QR: encoded as a standard UPI deep-link */}
+                          <img
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(`upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(UPI_NAME)}&am=${UPI_AMOUNT}&cu=INR`)}`}
+                            alt="UPI Payment QR Code"
+                            className="w-36 h-36 sm:w-40 sm:h-40"
+                            onError={(e) => { (e.target as HTMLImageElement).src = `https://chart.googleapis.com/chart?chs=160x160&cht=qr&chl=${encodeURIComponent(`upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(UPI_NAME)}&cu=INR`)}`; }}
+                          />
+                        </div>
+                        <div className="text-center">
+                          <p className="text-[10px] font-black text-black" style={COMIC_FONT}>UPI ID</p>
+                          <p className="text-xs font-bold text-red-700 select-all" style={{ fontFamily: 'monospace' }}>{UPI_ID}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex-1 space-y-3 w-full">
+                        {/* Transaction ID */}
+                        <div>
+                          <label className="block text-[10px] uppercase text-black mb-1" style={COMIC_FONT}>
+                            UTR / TRANSACTION ID (After payment)
+                          </label>
+                          <input
+                            type="text"
+                            name="upiTransactionId"
+                            placeholder="e.g. 426891234567"
+                            value={formData.upiTransactionId}
+                            onChange={handleInputChange}
+                            className="w-full px-3 py-2.5 text-sm focus:outline-none"
+                            style={MANGA_INPUT}
+                          />
+                          <p className="text-[10px] text-gray-500 mt-0.5" style={COMIC_FONT}>
+                            12-digit reference from your UPI app
+                          </p>
+                        </div>
+
+                        {/* Screenshot Upload */}
+                        <div>
+                          <label className="block text-[10px] uppercase text-black mb-1" style={COMIC_FONT}>
+                            PAYMENT SCREENSHOT
+                          </label>
+                          <input
+                            ref={screenshotInputRef}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleScreenshotSelect}
+                          />
+
+                          {screenshotPreview ? (
+                            <div className="relative border-2 border-black" style={{ boxShadow: '2px 2px 0 #0a0a0a' }}>
+                              <img src={screenshotPreview} alt="Payment screenshot" className="w-full h-28 object-cover" />
+                              {isUploading && (
+                                <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center gap-2">
+                                  <Loader2 className="w-6 h-6 animate-spin" style={{ color: '#E2231A' }} />
+                                  <span className="text-[10px] font-black" style={COMIC_FONT}>UPLOADING…</span>
+                                </div>
+                              )}
+                              {uploadedUrl && !isUploading && (
+                                <div className="absolute top-1 right-1 bg-green-600 text-white p-1 rounded">
+                                  <Check className="w-3.5 h-3.5" />
+                                </div>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => screenshotInputRef.current?.click()}
+                                className="w-full py-1.5 text-[10px] text-white border-t-2 border-black flex items-center justify-center gap-1"
+                                style={{ background: '#0a0a0a', ...COMIC_FONT }}
+                              >
+                                <ImagePlus className="w-3 h-3" /> CHANGE SCREENSHOT
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => screenshotInputRef.current?.click()}
+                              className="w-full h-20 border-2 border-dashed border-black flex flex-col items-center justify-center gap-1.5 hover:bg-black/5 transition-colors"
+                              style={{ background: '#fff', ...COMIC_FONT }}
+                            >
+                              <UploadCloud className="w-6 h-6 text-black" />
+                              <span className="text-[10px] font-black text-black">CLICK TO UPLOAD SCREENSHOT</span>
+                              <span className="text-[9px] text-gray-500">JPG / PNG / WEBP · Max 5 MB</span>
+                            </button>
+                          )}
+
+                          {uploadError && (
+                            <p className="text-[10px] font-black mt-1" style={{ color: '#E2231A' }}>{uploadError}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* RULES AGREEMENT */}
