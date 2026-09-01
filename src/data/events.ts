@@ -306,7 +306,8 @@ export const EVENTS: EventItem[] = [
         name: 'Magisha N',
         role: 'Coordinator',
         department: 'IV CYS',
-        phone: '+91 98401 00011',
+        phone: '+91 95001 69239',
+        whatsapp: '9500169239',
       },
 
     ],
