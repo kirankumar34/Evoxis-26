@@ -53,7 +53,6 @@ export const EVENTS: EventItem[] = [
         phone: '+91 98401 00001',
         whatsapp: '+91 98401 00001',
       },
-
       {
         name: 'V Janani Sri',
         role: 'Coordinator',
