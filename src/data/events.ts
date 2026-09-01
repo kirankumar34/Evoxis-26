@@ -476,7 +476,7 @@ export const EVENTS: EventItem[] = [
         roundNumber: 1,
         title: 'Tri-Game Speed Relay (10 Minutes Total)',
         description: '1. Treasure Trail: Reach the treasure using props without touching the floor; unlock & answer min 8 anime/cinema questions. 2. Reflection: One player acts out clues for teammate to guess (target: 3 clues). 3. Beat & Balance: Sort coloured paper balls with chopsticks while continuing song lyrics without pause (target: 3 songs).',
-        duration: '10 Mins Total',
+        duration: '06 Mins Total (2 mins per game)',
       },
     ],
     rules: [
