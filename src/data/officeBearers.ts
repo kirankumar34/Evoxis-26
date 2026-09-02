@@ -81,7 +81,7 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
   },
   {
     id: 'cse-treas',
-    name: 'Aditya Narayanan',
+    name: 'Saran',
     deptId: 'cse',
     deptName: 'Computer Science and Engineering',
     deptShort: 'CSE',
@@ -89,9 +89,7 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
     badge: 'Bounty Treasurer',
     accentColor: '#38BDF8',
     avatarPool: [
-      'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=600&h=600&fit=crop&auto=format',
+      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,x_35,y_70/CseTreasurer.jpg',
     ],
   },
   {
@@ -464,7 +462,7 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
   },
   {
     id: 'csbs-vp',
-    name: 'Pavithra Lakshmi',
+    name: 'Niranjan',
     deptId: 'csbs',
     deptName: 'Computer Science and Business Systems',
     deptShort: 'CSBS',
@@ -472,9 +470,8 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
     badge: 'Executive Strategist',
     accentColor: '#00F2FE',
     avatarPool: [
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=600&h=600&fit=crop&auto=format',
+      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,x_35,y_70/CsbsVicePresident.jpg',
+
     ],
   },
   {
