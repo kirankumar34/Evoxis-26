@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { DEPARTMENTS } from '@/data/departments';
-import { Anchor } from 'lucide-react';
 
 export const DepartmentsSection: React.FC = () => {
   return (
