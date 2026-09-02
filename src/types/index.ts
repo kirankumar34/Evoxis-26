@@ -70,11 +70,12 @@ export interface DepartmentInfo {
   id: string;
   shortCode: string;
   fullName: string;
-  hodName: string;
-  tagline: string;
-  description: string;
-  icon: string;
+  logoUrl: string;
   accentColor: string;
+  hodName?: string;
+  tagline?: string;
+  description?: string;
+  icon?: string;
   stats?: { label: string; value: string }[];
 }
 
