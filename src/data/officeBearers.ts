@@ -126,7 +126,7 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
   // ── AI&DS (Artificial Intelligence & Data Science) ────────────────
   {
     id: 'aids-pres',
-    name: 'Siddharth V',
+    name: 'Shri Hari Kumaran',
     deptId: 'aids',
     deptName: 'Artificial Intelligence & Data Science',
     deptShort: 'AI&DS',
@@ -134,14 +134,12 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
     badge: 'Neural Architect',
     accentColor: '#A855F7',
     avatarPool: [
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&h=600&fit=crop&auto=format',
+      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_699,w_699,x_83,y_481/AidsPresident.jpg',
     ],
   },
   {
     id: 'aids-vp',
-    name: 'Ananya Ramesh',
+    name: 'Shree Durga ',
     deptId: 'aids',
     deptName: 'Artificial Intelligence & Data Science',
     deptShort: 'AI&DS',
@@ -149,14 +147,12 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
     badge: 'Data Strategist',
     accentColor: '#A855F7',
     avatarPool: [
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=600&h=600&fit=crop&auto=format',
+      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_auto/AidsVicePresident.jpg',
     ],
   },
   {
     id: 'aids-sec',
-    name: 'Manoj Kumar T',
+    name: 'Panga HariPriya',
     deptId: 'aids',
     deptName: 'Artificial Intelligence & Data Science',
     deptShort: 'AI&DS',
@@ -164,14 +160,14 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
     badge: 'Pipeline Marshall',
     accentColor: '#A855F7',
     avatarPool: [
-      'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?q=80&w=600&h=600&fit=crop&auto=format',
+      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_auto/AidsSeceratory.jpg',
+
+
     ],
   },
   {
     id: 'aids-jsec',
-    name: 'Keerthana Priya',
+    name: 'Gowtham Babu',
     deptId: 'aids',
     deptName: 'Artificial Intelligence & Data Science',
     deptShort: 'AI&DS',
@@ -186,7 +182,7 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
   },
   {
     id: 'aids-treas',
-    name: 'Deepak Raj G',
+    name: 'Abinaya V',
     deptId: 'aids',
     deptName: 'Artificial Intelligence & Data Science',
     deptShort: 'AI&DS',
@@ -194,14 +190,12 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
     badge: 'Resource Auditor',
     accentColor: '#A855F7',
     avatarPool: [
-      'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&h=600&fit=crop&auto=format',
+        'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop/AidsTreasurer.jpg',
     ],
   },
   {
     id: 'aids-tech',
-    name: 'Gowtham Krishnan',
+    name: 'Yasir Ahamed',
     deptId: 'aids',
     deptName: 'Artificial Intelligence & Data Science',
     deptShort: 'AI&DS',
@@ -209,14 +203,13 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
     badge: 'Model Engineer',
     accentColor: '#A855F7',
     avatarPool: [
-      'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1463453091185-61582044d556?q=80&w=600&h=600&fit=crop&auto=format',
+      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_auto,g_north_west/AidsTechHead.jpg',
+      
     ],
   },
   {
     id: 'aids-nontech',
-    name: 'Nivetha Sri S',
+    name: 'Pradeep Kumar V',
     deptId: 'aids',
     deptName: 'Artificial Intelligence & Data Science',
     deptShort: 'AI&DS',
@@ -224,9 +217,7 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
     badge: 'Experience Host',
     accentColor: '#A855F7',
     avatarPool: [
-      'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=600&h=600&fit=crop&auto=format',
+      'https://res.cloudinary.com/zqpxemhd/image/upload/f_auto/q_auto/AidsNonTechHead.jpg',
     ],
   },
 
@@ -306,37 +297,6 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
       'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&h=600&fit=crop&auto=format',
     ],
   },
-  {
-    id: 'aiml-tech',
-    name: 'Aravind Swamy V',
-    deptId: 'aiml',
-    deptName: 'Artificial Intelligence & Machine Learning',
-    deptShort: 'AIML',
-    position: 'Technical Head',
-    badge: 'GenAI Lead',
-    accentColor: '#EC4899',
-    avatarPool: [
-      'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1463453091185-61582044d556?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?q=80&w=600&h=600&fit=crop&auto=format',
-    ],
-  },
-  {
-    id: 'aiml-nontech',
-    name: 'Kavya Senthil',
-    deptId: 'aiml',
-    deptName: 'Artificial Intelligence & Machine Learning',
-    deptShort: 'AIML',
-    position: 'Non-Technical Head',
-    badge: 'Culture Officer',
-    accentColor: '#EC4899',
-    avatarPool: [
-      'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=600&h=600&fit=crop&auto=format',
-    ],
-  },
-
   // ── CYBER SECURITY (Department of Cyber Security) ─────────────────
   {
     id: 'cyber-pres',
@@ -413,36 +373,6 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
       'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=600&h=600&fit=crop&auto=format',
     ],
   },
-  {
-    id: 'cyber-tech',
-    name: 'Rahul Sundar P',
-    deptId: 'cyber',
-    deptName: 'Department of Cyber Security',
-    deptShort: 'Cyber Security',
-    position: 'Technical Head',
-    badge: 'CTF Commander',
-    accentColor: '#10B981',
-    avatarPool: [
-      'https://images.unsplash.com/photo-1463453091185-61582044d556?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=600&h=600&fit=crop&auto=format',
-    ],
-  },
-  {
-    id: 'cyber-nontech',
-    name: 'Swathi Rajendran',
-    deptId: 'cyber',
-    deptName: 'Department of Cyber Security',
-    deptShort: 'Cyber Security',
-    position: 'Non-Technical Head',
-    badge: 'Ambassador',
-    accentColor: '#10B981',
-    avatarPool: [
-      'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=600&h=600&fit=crop&auto=format',
-    ],
-  },
 
   // ── CSBS (Computer Science & Business Systems) ────────────────────
   {
@@ -517,36 +447,6 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
       'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=600&h=600&fit=crop&auto=format',
       'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=600&h=600&fit=crop&auto=format',
       'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&h=600&fit=crop&auto=format',
-    ],
-  },
-  {
-    id: 'csbs-tech',
-    name: 'Yogeshwaran S',
-    deptId: 'csbs',
-    deptName: 'Computer Science and Business Systems',
-    deptShort: 'CSBS',
-    position: 'Technical Head',
-    badge: 'FinTech Architect',
-    accentColor: '#00F2FE',
-    avatarPool: [
-      'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1463453091185-61582044d556?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=600&h=600&fit=crop&auto=format',
-    ],
-  },
-  {
-    id: 'csbs-nontech',
-    name: 'Janani Priya K',
-    deptId: 'csbs',
-    deptName: 'Computer Science and Business Systems',
-    deptShort: 'CSBS',
-    position: 'Non-Technical Head',
-    badge: 'Public Relations Head',
-    accentColor: '#00F2FE',
-    avatarPool: [
-      'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=600&h=600&fit=crop&auto=format',
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&h=600&fit=crop&auto=format',
     ],
   },
 ];

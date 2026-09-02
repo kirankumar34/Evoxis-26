@@ -181,7 +181,7 @@ export const DepartmentShowcaseSection: React.FC = () => {
                         {activeBearer.position}
                       </div>
                       <h3
-                        className="text-xl sm:text-2xl text-black font-black uppercase leading-tight tracking-tight truncate"
+                        className="text-xl sm:text-2xl text-black  uppercase tracking-wider truncate"
                         style={{ fontFamily: "'Anton', sans-serif" }}
                       >
                         {activeBearer.name}
