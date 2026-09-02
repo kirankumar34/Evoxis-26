@@ -17,7 +17,7 @@ export const DepartmentShowcaseSection: React.FC = () => {
 
   // Controls which avatar pool slot is shown for each bearer
   const [randomSeed, setRandomSeed] = useState<number>(0);
-  const [isAutoShuffle] = useState<boolean>(true);
+  const [isAutoShuffle] = useState<boolean>(false);
   const autoShuffleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // ── Auto-shuffle timer: every 4.5 s rotate through avatar pool ──────────
