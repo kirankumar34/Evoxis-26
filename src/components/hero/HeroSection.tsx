@@ -86,44 +86,7 @@ const slideVariants: Variants = {
   }),
 };
 
-/* ─── Decorative Golden Ornaments ───────────────────────────────────────── */
-const OrnateFlourishLeft: React.FC<{ className?: string }> = ({ className = 'w-8 h-8' }) => (
-  <svg
-    className={`${className} text-[#FFC928] drop-shadow-[0_0_8px_rgba(255,201,40,0.7)]`}
-    viewBox="0 0 48 48"
-    fill="currentColor"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M44 24 C32 22 24 16 18 6 C20 16 16 22 4 24 C16 26 20 32 18 42 C24 32 32 26 44 24 Z"
-      opacity="0.95"
-    />
-    <circle cx="24" cy="24" r="2.5" fill="#FFF3D6" />
-    <path
-      d="M38 18 C30 18 26 12 24 6 C26 14 22 18 14 18 C22 20 24 24 24 30 C26 24 30 20 38 18 Z"
-      opacity="0.45"
-    />
-  </svg>
-);
 
-const OrnateFlourishRight: React.FC<{ className?: string }> = ({ className = 'w-8 h-8' }) => (
-  <svg
-    className={`${className} text-[#FFC928] drop-shadow-[0_0_8px_rgba(255,201,40,0.7)] transform scale-x-[-1]`}
-    viewBox="0 0 48 48"
-    fill="currentColor"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M44 24 C32 22 24 16 18 6 C20 16 16 22 4 24 C16 26 20 32 18 42 C24 32 32 26 44 24 Z"
-      opacity="0.95"
-    />
-    <circle cx="24" cy="24" r="2.5" fill="#FFF3D6" />
-    <path
-      d="M38 18 C30 18 26 12 24 6 C26 14 22 18 14 18 C22 20 24 24 24 30 C26 24 30 20 38 18 Z"
-      opacity="0.45"
-    />
-  </svg>
-);
 
 export interface HeroSectionProps {
   onOpenRegister?: () => void;
