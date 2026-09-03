@@ -521,29 +521,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           <div className="flex-1 h-[1px] bg-gradient-to-l from-transparent via-[#FFC928]/60 to-[#FFC928]" />
         </div>
 
-        {/* ── CENTERPIECE: SYMPOSIUM LOGO ORNATE BADGE ─────────────── */}
-        <div className="relative flex items-center justify-center gap-2 sm:gap-4 my-2 sm:my-3">
-          {/* Left Filigree Flourish */}
-          <OrnateFlourishLeft className="w-8 h-8 sm:w-12 sm:h-12 md:w-14 md:h-14" />
-
-          {/* Ornate Circular Emblem */}
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-            whileHover={{ scale: 1.05 }}
-            className="relative"
-          >
-            <img
-              src="https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_1079,w_1079/f_auto/q_auto/SympoLogo.png" 
-              alt="EVOXIS '26 Symposium Emblem"
-              className="w-36 h-36 sm:w-48 sm:h-48 md:w-56 md:h-56 object-contain filter drop-shadow-[0_0_25px_rgba(255,201,40,0.4)]"
-            />
-          </motion.div>
-
-          {/* Right Filigree Flourish */}
-          <OrnateFlourishRight className="w-8 h-8 sm:w-12 sm:h-12 md:w-14 md:h-14" />
-        </div>
+        
       </div>
 
       {/* ── MAIN CONTENT (Bottom half) ────────────────────────────────── */}
