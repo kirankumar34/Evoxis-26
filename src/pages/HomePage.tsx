@@ -7,7 +7,7 @@ import { EventsSection } from '@/components/events/EventsSection';
 import { ScheduleSection } from '@/components/schedule/ScheduleSection';
 import { VenueSection } from '@/components/venue/VenueSection';
 // import { GallerySection } from '@/components/gallery/GallerySection';
-// import { SponsorsSection } from '@/components/sponsors/SponsorsSection';
+import { SponsorsSection } from '@/components/sponsors/SponsorsSection';
 import { FAQSection } from '@/components/faqs/FAQSection';
 import {FlowingMenu} from '@/components/ui/FlowingMenu';
 // import Lanyard from '@/components/ui/Lanyard';
@@ -70,7 +70,7 @@ export const HomePage: React.FC = () => {
       {/* <GallerySection /> */}
 
       {/* 7. Corporate & Tech Partners */}
-      {/* <SponsorsSection /> */}
+      <SponsorsSection />
 
       {/* 8. Frequently Asked Questions */}
       <FAQSection />

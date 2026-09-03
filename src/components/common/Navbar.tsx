@@ -52,6 +52,7 @@ export const Navbar: React.FC = () => {
     { name: 'Events', href: isHomePage ? '#events' : '/events', isRoute: !isHomePage, badge: '15', icon: '🏆' },
     { name: 'Register', href: REGISTRATION_FORM_URL, isExternal: true, icon: '⚔️' },
     { name: 'Schedule', href: isHomePage ? '#schedule' : '/#schedule', icon: '⏳' },
+    { name: 'Sponsors', href: isHomePage ? '#sponsors' : '/#sponsors', icon: '🤝' },
     { name: 'Venue', href: isHomePage ? '#venue' : '/#venue', icon: '📍' },
     // { name: 'Pass', href: '/my-registration', isRoute: true, icon: '🎫' },
   ];

@@ -15,38 +15,14 @@ export const DepartmentShowcaseSection: React.FC = () => {
   // The active item received directly from InfiniteMenu (always matches the front disc)
   const [activeItem, setActiveItem] = useState<MenuItem | null>(null);
 
-  // Controls which avatar pool slot is shown for each bearer
-  const [randomSeed, setRandomSeed] = useState<number>(0);
-  const [isAutoShuffle] = useState<boolean>(false);
-  const autoShuffleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // ── Auto-shuffle timer: every 4.5 s rotate through avatar pool ──────────
-  const triggerRandomChange = useCallback(() => {
-    setRandomSeed((prev) => prev + 1);
-  }, []);
-
-  useEffect(() => {
-    if (!isAutoShuffle) {
-      if (autoShuffleTimerRef.current) clearInterval(autoShuffleTimerRef.current);
-      return;
-    }
-    autoShuffleTimerRef.current = setInterval(() => {
-      triggerRandomChange();
-    }, 4500);
-    return () => {
-      if (autoShuffleTimerRef.current) clearInterval(autoShuffleTimerRef.current);
-    };
-  }, [isAutoShuffle, triggerRandomChange]);
 
   const allBearers: DisplayOfficeBearer[] = useMemo(() => {
-    return OFFICE_BEARERS.map((bearer, idx) => {
-      const poolIndex = (randomSeed + idx) % bearer.avatarPool.length;
-      return {
-        ...bearer,
-        currentImage: bearer.avatarPool[poolIndex] || '',
-      };
-    });
-  }, [randomSeed]);
+    return OFFICE_BEARERS.map((bearer) => ({
+      ...bearer,
+      currentImage: bearer.avatarPool[0] || '',
+    }));
+  }, []);
 
   // ── Items passed to InfiniteMenu — image changes with randomSeed ─────────
   const infiniteMenuItems: MenuItem[] = useMemo(() => {
@@ -139,7 +115,7 @@ export const DepartmentShowcaseSection: React.FC = () => {
             <AnimatePresence mode="wait">
               {activeBearer && (
                 <motion.div
-                  key={`${activeBearer.id}-${randomSeed}`}
+                  key={activeBearer.id}
                   initial={{ opacity: 0, y: 15, scale: 0.97 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -10, scale: 0.97 }}
