@@ -3,7 +3,6 @@ import { motion, AnimatePresence, Variants } from 'framer-motion';
 import BgImg from '../../assets/HeroSection_Background.png';
 import BgImg2 from '../../assets/HeroSection_Background1.png';
 import ClgLogo from '../../assets/ClgLogo.png';
-import SympoLogo from '../../assets/SympoLogo.png';
 import { sound } from '../../utils/audio';
 
 /* ─── colour tokens ──────────────────────────────────────────────────────── */
@@ -471,10 +470,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           {/* Sriram College Circular Crest */}
           <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 aspect-square overflow-hidden flex-shrink-0 relative flex items-center justify-start">
             <img
-              src={ClgLogo}
+              src="https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_760,w_760,x_1020,y_949/f_auto/q_auto/ClgLogo.png"
               alt="Sriram Engineering College Crest"
               className="h-full w-auto max-w-none object-left object-contain"
-              style={{ filter: 'drop-shadow(0 0 10px rgba(226,35,26,0.7))' }}
             />
           </div>
 
@@ -538,7 +536,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             className="relative"
           >
             <img
-              src={SympoLogo}
+              src="https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_1079,w_1079/f_auto/q_auto/SympoLogo.png" 
               alt="EVOXIS '26 Symposium Emblem"
               className="w-36 h-36 sm:w-48 sm:h-48 md:w-56 md:h-56 object-contain filter drop-shadow-[0_0_25px_rgba(255,201,40,0.4)]"
             />
