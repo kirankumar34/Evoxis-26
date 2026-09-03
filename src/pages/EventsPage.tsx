@@ -64,7 +64,7 @@ export const EventsPage: React.FC = () => {
             className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#E6CA65]/10 border border-[#E6CA65]/35 text-[#FCE79C] text-xs font-mono font-bold uppercase tracking-wider mb-4 shadow-sm"
           >
             <Compass className="w-3.5 h-3.5 text-[#E6CA65]" />
-            <span>National Level Symposium • 16 Grand Challenges</span>
+            <span>National Level Symposium • 15 Grand Challenges</span>
           </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 10 }}
@@ -79,7 +79,7 @@ export const EventsPage: React.FC = () => {
             transition={{ delay: 0.1 }}
             className="mt-4 text-slate-300 text-sm sm:text-base leading-relaxed font-sans"
           >
-            Choose from 16 exciting Grand Voyage, Crew, and Grand Arena challenges. Register for multiple events with a single pass!
+            Choose from 15 exciting Grand Voyage, Crew, and Grand Arena challenges. Register for multiple events with a single pass!
           </motion.p>
         </div>
 

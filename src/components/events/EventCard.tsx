@@ -20,7 +20,7 @@ export const EventCard: React.FC<EventCardProps> = ({
   };
 
   // Format Bounty / Award amount cleanly
-  const bountyMatch = event.prizes.first.match(/₹[\d,]+/);
+  const bountyMatch = event.prizes.Prize.match(/₹[\d,]+/);
   const isCash = Boolean(bountyMatch);
   const bountyText = isCash ? bountyMatch![0] : 'CERTIFICATE';
 
@@ -165,7 +165,7 @@ export const EventCard: React.FC<EventCardProps> = ({
           }}
           className="block uppercase font-bold mt-0.5"
         >
-          {isCash ? 'BOUNTY REWARD // 1ST PRIZE' : 'EXCELLENCE AWARD // CERTIFICATE ONLY'}
+          {isCash ? 'BOUNTY REWARD // PRIZE' : 'EXCELLENCE AWARD // CERTIFICATE ONLY'}
         </span>
       </div>
 
