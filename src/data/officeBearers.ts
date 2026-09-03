@@ -11,7 +11,9 @@ export interface OfficeBearer {
     | 'Joint Secretary'
     | 'Treasurer'
     | 'Technical Head'
-    | 'Non-Technical Head';
+    | 'Non-Technical Head'
+    | 'Editing Committee Head'
+    | 'Event Organiser';
   avatarPool: string[]; // Pool of images to randomly rotate between
   accentColor: string;
   badge: string;
@@ -29,7 +31,7 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
     badge: 'Flagship Captain',
     accentColor: '#38BDF8',
     avatarPool: [
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&h=600&fit=crop&auto=format',
+      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,x_76,y_182/f_auto/q_auto/CsePresident.jpg',
     ],
   },
   {
@@ -42,7 +44,7 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
     badge: 'First Mate',
     accentColor: '#38BDF8',
     avatarPool: [
-      'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=600&h=600&fit=crop&auto=format',
+      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_1024,w_948,x_26/f_auto/q_auto/CseJointSeceratory.jpg',
     ],
   },
   {
@@ -68,7 +70,7 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
     badge: 'Tactical Logkeeper',
     accentColor: '#38BDF8',
     avatarPool: [
-      'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=600&h=600&fit=crop&auto=format',
+      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_787,w_787,x_79,y_395/f_auto/q_auto/CseVicePresident.jpg',
     ],
   },
   {
@@ -86,15 +88,15 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
   },
   {
     id: 'cse-tech',
-    name: 'Karthikeyan M',
-    deptId: 'cse',
-    deptName: 'Computer Science and Engineering',
-    deptShort: 'CSE',
+    name: 'Kiran Kumar',
+    deptId: 'csbs',
+    deptName: 'Computer Science And Business Systems ',
+    deptShort: 'CSBS',
     position: 'Technical Head',
     badge: 'Code Helmsman',
     accentColor: '#38BDF8',
     avatarPool: [
-      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_auto,g_north_west/f_auto/q_auto/samples/canvas.jpg',
+      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_1933,w_1933,x_635,y_1409/f_auto/q_auto/imageUnknown.jpg',
     ],
   },
   {
@@ -149,21 +151,6 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
     accentColor: '#A855F7',
     avatarPool: [
       'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_auto/AidsSeceratory.jpg',
-
-
-    ],
-  },
-  {
-    id: 'aids-jsec',
-    name: 'GOWTHAM BABU S',
-    deptId: 'aids',
-    deptName: 'Artificial Intelligence & Data Science',
-    deptShort: 'AI&DS',
-    position: 'Joint Secretary',
-    badge: 'Insight Keeper',
-    accentColor: '#A855F7',
-    avatarPool: [
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&h=600&fit=crop&auto=format',
     ],
   },
   {
@@ -231,7 +218,7 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
     badge: 'Vision Strategist',
     accentColor: '#EC4899',
     avatarPool: [
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&h=600&fit=crop&auto=format',
+      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_1079,w_1079,y_686/f_auto/q_auto/AimlVicePresident.jpg',
 
     ],
   },
@@ -245,7 +232,7 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
     badge: 'Algorithm Master',
     accentColor: '#EC4899',
     avatarPool: [
-      'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?q=80&w=600&h=600&fit=crop&auto=format',
+      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_735,w_735,x_46/f_auto/q_auto/AimlSeceratory.jpg',
 
     ],
   },
@@ -259,7 +246,7 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
     badge: 'Neural Coordinator',
     accentColor: '#EC4899',
     avatarPool: [
-      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_877,w_877,x_76,y_10/f_auto/q_auto/samples/canvas.jpg',
+      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_575,w_575,y_108/f_auto/q_auto/CseTreasurer.jpg',
 
     ],
   },
@@ -273,7 +260,7 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
     badge: 'Compute Chancellor',
     accentColor: '#EC4899',
     avatarPool: [
-      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_877,w_877,x_76,y_10/f_auto/q_auto/samples/canvas.jpg',
+      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_950,w_950,x_37,y_96/f_auto/q_auto/AimlTreasurer.jpg',
 
     ],
   },
@@ -416,6 +403,32 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
     accentColor: '#00F2FE',
     avatarPool: [
       'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=600&h=600&fit=crop&auto=format',
+    ],
+  },
+  {
+    id: 'event-org',
+    name: 'Bhavana Shree J',
+    deptId: 'aids',
+    deptName: 'Artificial Intelligence & Data Science',
+    deptShort: 'AI&DS',
+    position: 'Event Organiser',
+    badge: 'Neural Architect',
+    accentColor: '#A855F7',
+    avatarPool: [
+      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_1933,w_1933,x_712,y_785/f_auto/q_auto/Event1.jpg',
+    ],
+  },
+  {
+    id: 'committe-head',
+    name: 'Gopinath M',
+    deptId: 'aids',
+    deptName: 'Artificial Intelligence & Data Science',
+    deptShort: 'AI&DS',
+    position: 'Editing Committee Head',
+    badge: 'Neural Architect',
+    accentColor: '#A855F7',
+    avatarPool: [
+      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_1120,w_1121,x_1,y_51/f_auto/q_auto/EditingTeamHead.png',
     ],
   },
 ];
