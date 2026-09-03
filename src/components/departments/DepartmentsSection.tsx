@@ -46,7 +46,7 @@ export const DepartmentsSection: React.FC = () => {
   return (
     <section
       id="departments"
-      className="relative  border-t-4 border-black"
+      className="relative py-10  border-t-4 border-black"
       style={{ background: '#F7ECD4', fontFamily: "'Inter', sans-serif" }}
     >
 
