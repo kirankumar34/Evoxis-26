@@ -6,7 +6,7 @@ import { LogoLoop, LogoItem } from '@/components/ui/LogoLoop';
 const DEPT_LOGOS: LogoItem[] = DEPARTMENTS.map((dept) => ({
   node: (
     <div
-      className="w-[260px] sm:w-[280px] bg-white border-2 border-black flex flex-col items-center overflow-hidden select-none transition-transform duration-200"
+      className="w-[260px] sm:w-[380px] h-[470px] bg-white border-2 border-black flex flex-col items-center overflow-hidden select-none transition-transform duration-200"
       style={{ boxShadow: '4px 4px 0px #000' }}
     >
       {/* Accent Top Strip */}
@@ -30,8 +30,8 @@ const DEPT_LOGOS: LogoItem[] = DEPARTMENTS.map((dept) => ({
         {/* Department Name at Bottom */}
         <div className="pt-4 pb-2 w-full flex items-center justify-center min-h-[56px]">
           <span
-            className="text-base sm:text-lg text-black uppercase tracking-wider text-center leading-tight font-bold"
-            style={{ fontFamily: "'Anton', sans-serif" }}
+            className="text-base sm:text-lg text-black uppercase  text-center leading-tight font-bold"
+            style={{ fontFamily: "'arial', sans-serif" }}
           >
             {dept.fullName}
           </span>
@@ -46,17 +46,9 @@ export const DepartmentsSection: React.FC = () => {
   return (
     <section
       id="departments"
-      className="relative py-16 sm:py-24 border-t-4 border-black"
+      className="relative  border-t-4 border-black"
       style={{ background: '#F7ECD4', fontFamily: "'Inter', sans-serif" }}
     >
-      {/* Parchment noise texture overlay */}
-      <div
-        className="absolute inset-0 opacity-[0.04] pointer-events-none"
-        style={{
-          backgroundImage:
-            'url("data:image/svg+xml,%3Csvg width=\'4\' height=\'4\' viewBox=\'0 0 4 4\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M1 3h1v1H1V3zm2-2h1v1H3V1z\' fill=\'%23000000\' fill-rule=\'evenodd\'/%3E%3C/svg%3E")',
-        }}
-      />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
         {/* ── Section Header ─────────────────────────────────────────── */}
@@ -78,12 +70,12 @@ export const DepartmentsSection: React.FC = () => {
       </div>
 
       {/* ── Infinite Scrolling Department Logos ─────────────────────── */}
-      <div className="relative z-10 py-2">
+      <div className="relative  z-10 py-2">
         <LogoLoop
           logos={DEPT_LOGOS}
           speed={55}
           direction="left"
-          logoHeight={370}
+
           gap={32}
           pauseOnHover={true}
           fadeOut={true}

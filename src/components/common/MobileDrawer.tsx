@@ -52,7 +52,14 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             {/* Drawer Top Header */}
             <div>
               <div className="flex items-center justify-between pb-4 border-b border-white/10">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full overflow-hidden border border-[#FFC928]/60 bg-black/60 flex items-center justify-center p-0.5 shadow-[0_0_12px_rgba(255,201,40,0.35)] shrink-0">
+                    <img
+                      src="https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_1079,w_1079/f_auto/q_auto/SympoLogo.png"
+                      alt="EVOXIS '26 Emblem"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
                   <span
                     style={{
                       fontFamily: "'Anton', sans-serif",
@@ -74,9 +81,6 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
                     }}
                   >
                     海賊
-                  </span>
-                  <span className="text-[10px] font-mono text-slate-400 pl-1 border-l border-white/20">
-                    Grand Voyage
                   </span>
                 </div>
 

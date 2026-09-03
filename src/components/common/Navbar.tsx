@@ -68,7 +68,14 @@ export const Navbar: React.FC = () => {
       >
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           {/* Brand / Manga Logo */}
-          <Link to="/" className="flex items-center gap-2 group flex-shrink-0">
+          <Link to="/" className="flex items-center gap-2.5 group flex-shrink-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border border-[#FFC928]/60 bg-black/60 flex items-center justify-center p-0.5 shadow-[0_0_12px_rgba(255,201,40,0.35)] group-hover:scale-105 transition-transform duration-200">
+              <img
+                src="https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_1079,w_1079/f_auto/q_auto/SympoLogo.png"
+                alt="EVOXIS '26 Emblem"
+                className="w-full h-full object-contain"
+              />
+            </div>
             <span
               style={{
                 fontFamily: "'Anton', sans-serif",
