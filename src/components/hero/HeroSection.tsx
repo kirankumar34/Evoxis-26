@@ -1,8 +1,9 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import BgImg from '../../assets/HeroSection_Background.png';
 import BgImg2 from '../../assets/HeroSection_Background1.png';
+import ClgLogo from '../../assets/ClgLogo.png';
+import SympoLogo from '../../assets/SympoLogo.png';
 import { sound } from '../../utils/audio';
 
 /* ─── colour tokens ──────────────────────────────────────────────────────── */
@@ -25,6 +26,8 @@ const BG_SLIDES = [
   {
     id: 1,
     img: BgImg,
+    line1: 'EVOXIS 2026 // SRIRAM ENGINEERING COLLEGE //',
+    line2: 'CHAPTER 1 OF 2',
     issue: 'EVOXIS 2026 // SRIRAM ENGINEERING COLLEGE // CHAPTER 1 OF 2',
     chapter: 'CHAPTER 1',
     pageIndex: '01 / 02',
@@ -38,11 +41,13 @@ const BG_SLIDES = [
   {
     id: 2,
     img: BgImg2,
+    line1: 'EVOXIS 2026 // FUTURE AWAITS //',
+    line2: 'CHAPTER 2 OF 2',
     issue: 'EVOXIS 2026 // FUTURE AWAITS // CHAPTER 2 OF 2',
     chapter: 'CHAPTER 2',
     pageIndex: '02 / 02',
     tag: 'TECH ERA',
-    bounty: '25+ EVENTS',
+    bounty: '15+ EVENTS',
     crew: 'STUDENT INNOVATORS',
     sea: 'ALL DEPARTMENTS',
     quote:
@@ -60,7 +65,7 @@ const slideVariants: Variants = {
   }),
   center: {
     x: 0,
-    scale: 1.05,
+    scale: 1.04,
     opacity: 1,
     filter: 'blur(0px)',
     transition: {
@@ -83,6 +88,45 @@ const slideVariants: Variants = {
   }),
 };
 
+/* ─── Decorative Golden Ornaments ───────────────────────────────────────── */
+const OrnateFlourishLeft: React.FC<{ className?: string }> = ({ className = 'w-8 h-8' }) => (
+  <svg
+    className={`${className} text-[#FFC928] drop-shadow-[0_0_8px_rgba(255,201,40,0.7)]`}
+    viewBox="0 0 48 48"
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M44 24 C32 22 24 16 18 6 C20 16 16 22 4 24 C16 26 20 32 18 42 C24 32 32 26 44 24 Z"
+      opacity="0.95"
+    />
+    <circle cx="24" cy="24" r="2.5" fill="#FFF3D6" />
+    <path
+      d="M38 18 C30 18 26 12 24 6 C26 14 22 18 14 18 C22 20 24 24 24 30 C26 24 30 20 38 18 Z"
+      opacity="0.45"
+    />
+  </svg>
+);
+
+const OrnateFlourishRight: React.FC<{ className?: string }> = ({ className = 'w-8 h-8' }) => (
+  <svg
+    className={`${className} text-[#FFC928] drop-shadow-[0_0_8px_rgba(255,201,40,0.7)] transform scale-x-[-1]`}
+    viewBox="0 0 48 48"
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M44 24 C32 22 24 16 18 6 C20 16 16 22 4 24 C16 26 20 32 18 42 C24 32 32 26 44 24 Z"
+      opacity="0.95"
+    />
+    <circle cx="24" cy="24" r="2.5" fill="#FFF3D6" />
+    <path
+      d="M38 18 C30 18 26 12 24 6 C26 14 22 18 14 18 C22 20 24 24 24 30 C26 24 30 20 38 18 Z"
+      opacity="0.45"
+    />
+  </svg>
+);
+
 export interface HeroSectionProps {
   onOpenRegister?: () => void;
   eventDate?: string;
@@ -102,7 +146,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   /* countdown calculation */
   const targetDate = eventDate
     ? new Date(eventDate).getTime()
-    : new Date('2026-08-27T09:00').getTime();
+    : new Date('2026-09-26T09:00:00+05:30').getTime();
 
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
@@ -192,10 +236,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsAutoPlay(false)}
       onMouseLeave={() => setIsAutoPlay(true)}
-      className="relative w-full max-w-full h-[100dvh] min-h-[640px] max-h-[1080px] overflow-hidden text-white select-none flex flex-col justify-between"
+      className="relative w-full max-w-full min-h-[100dvh] overflow-hidden text-white select-none flex flex-col justify-between"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
-
       {/* ── FRAMER MOTION SLIDING BACKGROUND WINDOW ──────────────────── */}
       <div
         className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none"
@@ -231,18 +274,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'linear-gradient(105deg, rgba(11,11,11,0.85) 0%, rgba(11,11,11,0.56) 48%, rgba(11,11,11,0.32) 100%)',
+            'linear-gradient(180deg, rgba(11,11,11,0.85) 0%, rgba(11,11,11,0.48) 35%, rgba(11,11,11,0.68) 75%, rgba(4,8,20,0.96) 100%)',
           zIndex: 1,
-        }}
-      />
-
-      {/* bottom gradient fade */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-36 pointer-events-none"
-        style={{
-          background:
-            'linear-gradient(to top, rgba(4,8,20,0.98) 0%, rgba(4,8,20,0.5) 60%, transparent 100%)',
-          zIndex: 2,
         }}
       />
 
@@ -256,9 +289,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         }}
       />
 
-      {/* ── LEFT VERTICAL LABEL ───────────────────────────────────────── */}
+      {/* ── LEFT VERTICAL LABEL (Desktop only) ─────────────────────────── */}
       <div
-        className="absolute left-0 top-1/2 -translate-y-1/2 hidden lg:flex flex-col items-center gap-3"
+        className="absolute left-0 top-1/2 -translate-y-1/2 hidden xl:flex flex-col items-center gap-3"
         style={{ zIndex: 20, padding: '0 10px' }}
       >
         <div
@@ -304,20 +337,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             writingMode: 'vertical-rl',
             transform: 'rotate(180deg)',
             fontFamily: "'JetBrains Mono', monospace",
-            fontSize: '0.55rem',
-            letterSpacing: '0.12em',
-            color: 'rgba(248,248,248,0.38)',
-            textTransform: 'uppercase',
-          }}
-        >
-          {activeSlide.tag}
-        </div>
-
-        <div
-          style={{
-            writingMode: 'vertical-rl',
-            transform: 'rotate(180deg)',
-            fontFamily: "'JetBrains Mono', monospace",
             fontSize: '0.57rem',
             letterSpacing: '0.18em',
             color: C.bone,
@@ -330,26 +349,26 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         </div>
       </div>
 
-      {/* ── TOP-RIGHT DATA CARD ───────────────────────────────────────── */}
+      {/* ── TOP-RIGHT DATA CARD (Desktop only) ───────────────────────── */}
       <div
-        className="absolute hidden lg:block"
+        className="absolute hidden 2xl:block"
         style={{
-          top: '72px',
+          top: '90px',
           right: '32px',
           zIndex: 40,
-          width: '245px',
-          background: 'rgba(248,248,248,0.97)',
+          width: '235px',
+          background: 'rgba(248,248,248,0.96)',
           border: `2px solid ${C.gold}`,
-          padding: '14px 16px',
+          padding: '12px 14px',
           color: C.ink,
           boxShadow: '0 12px 36px rgba(0,0,0,0.5)',
         }}
       >
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-2">
           <span
             style={{
               fontFamily: "'JetBrains Mono', monospace",
-              fontSize: '0.58rem',
+              fontSize: '0.55rem',
               letterSpacing: '0.15em',
               color: C.deepRed,
               textTransform: 'uppercase',
@@ -361,7 +380,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           <span
             style={{
               fontFamily: "'JetBrains Mono', monospace",
-              fontSize: '0.58rem',
+              fontSize: '0.55rem',
               letterSpacing: '0.1em',
               color: C.rope,
               textTransform: 'uppercase',
@@ -375,7 +394,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           <span
             style={{
               fontFamily: "'Anton', sans-serif",
-              fontSize: '2.8rem',
+              fontSize: '2.4rem',
               lineHeight: 1,
               color: C.red,
             }}
@@ -387,11 +406,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         <div
           style={{
             fontFamily: "'JetBrains Mono', monospace",
-            fontSize: '0.58rem',
+            fontSize: '0.55rem',
             letterSpacing: '0.18em',
             color: C.rope,
             textTransform: 'uppercase',
-            marginBottom: '12px',
+            marginBottom: '10px',
           }}
         >
           TECHNOLOGY SYMPOSIUM
@@ -401,24 +420,24 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           style={{
             height: '1px',
             background: 'rgba(11,11,11,0.12)',
-            marginBottom: '10px',
+            marginBottom: '8px',
           }}
         />
 
         {[
           { label: 'EDITION', value: '2026' },
-          { label: 'COLLEGE', value: 'SRIRAM ENGINEERING' },
+          { label: 'COLLEGE', value: 'SRIRAM ENG' },
           { label: 'DOMAIN', value: activeSlide.sea },
           { label: 'STATUS', value: '● OPEN', highlight: true },
         ].map(({ label, value, highlight }) => (
           <div
             key={label}
-            className="flex items-center justify-between mb-1.5"
+            className="flex items-center justify-between mb-1"
           >
             <span
               style={{
                 fontFamily: "'JetBrains Mono', monospace",
-                fontSize: '0.57rem',
+                fontSize: '0.55rem',
                 letterSpacing: '0.12em',
                 color: 'rgba(11,11,11,0.45)',
                 textTransform: 'uppercase',
@@ -430,7 +449,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             <span
               style={{
                 fontFamily: "'JetBrains Mono', monospace",
-                fontSize: '0.6rem',
+                fontSize: '0.58rem',
                 letterSpacing: '0.06em',
                 color: highlight ? C.red : C.ink,
                 fontWeight: 600,
@@ -442,35 +461,125 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         ))}
       </div>
 
-      {/* ── MAIN CONTENT ──────────────────────────────────────────────── */}
-      <main
-        className="relative flex flex-col justify-end pb-24 min-h-screen px-8 sm:px-12 lg:px-20 xl:px-28 pt-28"
-        style={{ zIndex: 10 }}
+      {/* ── TOP SECTION: COLLEGE HEADER & ORNATE DIVIDER ─────────────── */}
+      <div
+        className="relative w-full max-w-4xl mx-auto pt-20 sm:pt-24 px-4 sm:px-6 flex flex-col items-center text-center"
+        style={{ zIndex: 15 }}
       >
-        {/* ISSUE badge */}
-        <div
-          className="mb-4 mt-auto transition-all duration-300"
-          style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: '0.6rem',
-            letterSpacing: '0.2em',
-            color: C.gold,
-            textTransform: 'uppercase',
-          }}
-        >
-          {activeSlide.issue}
+        {/* College Seal & Information Row */}
+        <div className="flex items-center justify-center gap-3 sm:gap-4 mb-2">
+          {/* Sriram College Circular Crest */}
+          <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 aspect-square overflow-hidden flex-shrink-0 relative flex items-center justify-start">
+            <img
+              src={ClgLogo}
+              alt="Sriram Engineering College Crest"
+              className="h-full w-auto max-w-none object-left object-contain"
+              style={{ filter: 'drop-shadow(0 0 10px rgba(226,35,26,0.7))' }}
+            />
+          </div>
+
+          {/* College Name & Affiliation */}
+          <div className="text-left flex flex-col justify-center">
+            <h2
+              style={{
+                fontFamily: "'Anton', sans-serif",
+                letterSpacing: '0.04em',
+                lineHeight: 1.05,
+              }}
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-white font-normal uppercase tracking-wide drop-shadow-md"
+            >
+              SRIRAM ENGINEERING COLLEGE
+            </h2>
+
+            <p
+              style={{
+                fontFamily: "'Inter', sans-serif",
+              }}
+              className="text-[10px] sm:text-xs md:text-sm text-white/95 font-medium tracking-wide mt-0.5"
+            >
+              Approved by AICTE, New Delhi Affiliated to Anna University, Chennai
+            </p>
+
+            <p
+              style={{
+                fontFamily: "'Inter', sans-serif",
+              }}
+              className="text-[9px] sm:text-[11px] md:text-xs text-white/80 font-normal tracking-wide"
+            >
+              (A Unit of Sriram Educational Trust)
+            </p>
+          </div>
         </div>
 
-        {/* EOXIS SYMPOSIUM */}
+        {/* Ornate Golden Diamond Divider */}
+        <div className="w-full max-w-md sm:max-w-xl mx-auto flex items-center justify-center gap-2 sm:gap-3 my-1.5 sm:my-2">
+          <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#FFC928]/60 to-[#FFC928]" />
+          <div className="flex items-center gap-1.5 text-[#FFC928] text-[9px] sm:text-[11px]">
+            <span>◆</span>
+            <span className="text-[13px] sm:text-[15px] text-[#FFC928] drop-shadow-[0_0_8px_rgba(255,201,40,0.9)]">
+              ◆
+            </span>
+            <span>◆</span>
+          </div>
+          <div className="flex-1 h-[1px] bg-gradient-to-l from-transparent via-[#FFC928]/60 to-[#FFC928]" />
+        </div>
+
+        {/* ── CENTERPIECE: SYMPOSIUM LOGO ORNATE BADGE ─────────────── */}
+        <div className="relative flex items-center justify-center gap-2 sm:gap-4 my-2 sm:my-3">
+          {/* Left Filigree Flourish */}
+          <OrnateFlourishLeft className="w-8 h-8 sm:w-12 sm:h-12 md:w-14 md:h-14" />
+
+          {/* Ornate Circular Emblem */}
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+            whileHover={{ scale: 1.05 }}
+            className="relative"
+          >
+            <img
+              src={SympoLogo}
+              alt="EVOXIS '26 Symposium Emblem"
+              className="w-36 h-36 sm:w-48 sm:h-48 md:w-56 md:h-56 object-contain filter drop-shadow-[0_0_25px_rgba(255,201,40,0.4)]"
+            />
+          </motion.div>
+
+          {/* Right Filigree Flourish */}
+          <OrnateFlourishRight className="w-8 h-8 sm:w-12 sm:h-12 md:w-14 md:h-14" />
+        </div>
+      </div>
+
+      {/* ── MAIN CONTENT (Bottom half) ────────────────────────────────── */}
+      <main
+        className="relative flex flex-col justify-end px-5 sm:px-10 lg:px-20 xl:px-28 pb-14 sm:pb-16 pt-1"
+        style={{ zIndex: 10 }}
+      >
+        {/* Issue / Chapter Badge */}
+        <div
+          className="mb-1.5 sm:mb-2.5 transition-all duration-300"
+          style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '0.65rem',
+            letterSpacing: '0.18em',
+            color: C.gold,
+            textTransform: 'uppercase',
+            fontWeight: 600,
+          }}
+        >
+          <div>{activeSlide.line1}</div>
+          <div>{activeSlide.line2}</div>
+        </div>
+
+        {/* EVOXIS THE SYMPOSIUM Massive Headline */}
         <h1
-          className="max-w-[720px]"
+          className="max-w-[750px]"
           style={{
             fontFamily: "'Anton', sans-serif",
             fontSize: 'clamp(3.8rem, 10vw, 8.5rem)',
             letterSpacing: '-0.01em',
-            lineHeight: 0.92,
+            lineHeight: 0.88,
             textTransform: 'uppercase',
-            marginBottom: '0.5rem',
+            marginBottom: '0.4rem',
           }}
         >
           <span style={{ color: C.bone, display: 'block' }}>
@@ -485,21 +594,23 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             style={{
               display: 'block',
               color: 'transparent',
-              WebkitTextStroke: `3px ${C.red}`,
+              WebkitTextStroke: `2.5px ${C.red}`,
+              textShadow: '0 0 20px rgba(226,35,26,0.4)',
             }}
           >
             SYMPOSIUM
           </span>
         </h1>
 
-        {/* Symposium subtitle */}
+        {/* Symposium Tagline */}
         <div
-          className="flex items-center gap-3 mb-4"
+          className="flex items-center gap-2.5 sm:gap-3 mb-3 sm:mb-4"
           style={{
             fontFamily: "'Inter', sans-serif",
-            fontSize: '0.9rem',
-            letterSpacing: '0.06em',
+            fontSize: '0.95rem',
+            letterSpacing: '0.08em',
             color: C.gold,
+            fontWeight: 600,
           }}
         >
           <span>
@@ -513,8 +624,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           <span
             style={{
               fontFamily: "'JetBrains Mono', monospace",
-              fontSize: '0.6rem',
-              color: 'rgba(255,255,255,0.3)',
+              fontSize: '0.65rem',
+              color: 'rgba(255,255,255,0.45)',
               letterSpacing: '0.15em',
             }}
           >
@@ -522,7 +633,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </span>
         </div>
 
-        {/* CTA */}
+        {/* Action Row: REGISTER NOW + Live Countdown Timer */}
         <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 mb-3 sm:mb-4">
           <button
             type="button"
@@ -530,17 +641,17 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               sound.playCannon?.();
               onOpenRegister();
             }}
-            className="group flex items-center gap-2.5 transition-all duration-200 cursor-pointer"
+            className="group flex items-center gap-2.5 transition-all duration-200 cursor-pointer active:scale-95"
             style={{
               fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: '0.95rem',
+              fontSize: '1.1rem',
               letterSpacing: '0.12em',
               color: C.bone,
               background: C.red,
-              border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: '4px',
-              padding: '9px 20px',
-              boxShadow: '0 4px 14px rgba(226,35,26,0.4)',
+              border: '1px solid rgba(255,255,255,0.25)',
+              borderRadius: '6px',
+              padding: '8px 22px',
+              boxShadow: '0 4px 20px rgba(226,35,26,0.5)',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = '#b81c15';
@@ -556,47 +667,49 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: '18px',
-                height: '18px',
+                width: '20px',
+                height: '20px',
                 borderRadius: '50%',
                 background: C.bone,
                 color: C.ink,
-                fontSize: '0.75rem',
+                fontSize: '0.8rem',
                 fontWeight: 900,
               }}
+              className="transition-transform group-hover:translate-x-1"
             >
               →
             </span>
           </button>
 
-          {/* Countdown */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-black/70 border border-white/15 text-[11px] font-mono">
-            <span className="text-[#FFC928]">
+          {/* Countdown live badge */}
+          <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-black/75 backdrop-blur-md border border-white/20 text-[11px] sm:text-xs font-mono shadow-lg">
+            <span className="text-[#FFC928] font-semibold">
               ⏳ EVENT STARTS:
             </span>
 
-            <span className="text-white font-bold">
+            <span className="text-white font-bold tracking-wide">
               {timeLeft.days}d {timeLeft.hours}h {timeLeft.mins}m{' '}
               {timeLeft.secs}s
             </span>
           </div>
         </div>
 
-        {/* MANIFESTO */}
-        <div className="flex items-start gap-2 sm:gap-3 mb-2 sm:mb-4 max-w-[440px]">
+        {/* MANIFESTO Card */}
+        <div className="flex items-start gap-2.5 sm:gap-3 mb-2 max-w-[480px]">
           <span
             style={{
               fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: '0.62rem',
+              fontSize: '0.65rem',
               letterSpacing: '0.15em',
               color: C.ink,
               background: C.gold,
-              padding: '2px 7px',
-              borderRadius: '2px',
+              padding: '2px 8px',
+              borderRadius: '3px',
               whiteSpace: 'nowrap',
               flexShrink: 0,
               alignSelf: 'flex-start',
               marginTop: '2px',
+              fontWeight: 'bold',
             }}
           >
             MANIFESTO
@@ -605,8 +718,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           <p
             style={{
               fontFamily: "'Inter', sans-serif",
-              fontSize: '0.7rem',
-              color: 'rgba(248,248,248,0.5)',
+              fontSize: '0.72rem',
+              color: 'rgba(248,248,248,0.65)',
               lineHeight: 1.45,
               margin: 0,
             }}
@@ -618,18 +731,18 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         </div>
       </main>
 
-      {/* ── BOTTOM BAR ────────────────────────────────────────────────── */}
+      {/* ── BOTTOM BAR: SLIDE PAGINATION & CONTROLS ───────────────────── */}
       <div
-        className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-4 sm:px-12 lg:px-20 xl:px-28 py-3"
+        className="relative flex items-center justify-between px-5 sm:px-10 lg:px-20 xl:px-28 py-3 bg-gradient-to-t from-black/80 to-transparent"
         style={{ zIndex: 30 }}
       >
         {/* Page counter & Slide Switcher */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-2">
             <button
               onClick={prevSlide}
               title="Previous Background"
-              className="w-7 h-7 rounded-full flex items-center justify-center bg-black/70 hover:bg-amber-400 hover:text-black border border-white/20 transition-all text-xs cursor-pointer"
+              className="w-7 h-7 rounded-full flex items-center justify-center bg-black/75 hover:bg-[#FFC928] hover:text-black border border-white/20 transition-all text-xs cursor-pointer active:scale-95"
             >
               ←
             </button>
@@ -637,9 +750,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             <span
               style={{
                 fontFamily: "'JetBrains Mono', monospace",
-                fontSize: '0.68rem',
+                fontSize: '0.7rem',
                 letterSpacing: '0.15em',
-                color: 'rgba(248,248,248,0.7)',
+                color: 'rgba(248,248,248,0.75)',
               }}
             >
               {activeSlide.pageIndex}
@@ -648,7 +761,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             <button
               onClick={nextSlide}
               title="Next Background"
-              className="w-7 h-7 rounded-full flex items-center justify-center bg-black/70 hover:bg-amber-400 hover:text-black border border-white/20 transition-all text-xs cursor-pointer"
+              className="w-7 h-7 rounded-full flex items-center justify-center bg-black/75 hover:bg-[#FFC928] hover:text-black border border-white/20 transition-all text-xs cursor-pointer active:scale-95"
             >
               →
             </button>
@@ -670,7 +783,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   background:
                     slideIndex === idx
                       ? C.red
-                      : 'rgba(255,255,255,0.2)',
+                      : 'rgba(255,255,255,0.25)',
                   borderRadius: '2px',
                   transition: 'all 0.3s ease',
                 }}
@@ -678,7 +791,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             ))}
           </div>
         </div>
-
       </div>
 
       {/* ── FLOATING PARTICLES ────────────────────────────────────────── */}
@@ -707,7 +819,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         />
       ))}
 
-      {/* ── RIGHT VERTICAL LABEL ──────────────────────────────────────── */}
+      {/* ── RIGHT VERTICAL LABEL (Desktop only) ────────────────────────── */}
       <div
         className="absolute right-0 top-1/2 -translate-y-1/2 hidden xl:flex flex-col items-center gap-2"
         style={{ zIndex: 20, padding: '0 10px' }}

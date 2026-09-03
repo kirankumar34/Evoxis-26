@@ -19,32 +19,32 @@ export interface OfficeBearer {
 
 export const OFFICE_BEARERS: OfficeBearer[] = [
   // ── CSE (Computer Science & Engineering) ───────────────────────────
-  // {
-  //   id: 'cse-pres',
-  //   name: 'LINGESHWARAN G',
-  //   deptId: 'cse',
-  //   deptName: 'Computer Science and Engineering',
-  //   deptShort: 'CSE',
-  //   position: 'President',
-  //   badge: 'Flagship Captain',
-  //   accentColor: '#38BDF8',
-  //   avatarPool: [
-  //     'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&h=600&fit=crop&auto=format',
-  //   ],
-  // },
-  // {
-  //   id: 'cse-vp',
-  //   name: 'BOOMIKA M',
-  //   deptId: 'cse',
-  //   deptName: 'Computer Science and Engineering',
-  //   deptShort: 'CSE',
-  //   position: 'Vice President',
-  //   badge: 'First Mate',
-  //   accentColor: '#38BDF8',
-  //   avatarPool: [
-  //     'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=600&h=600&fit=crop&auto=format',
-  //   ],
-  // },
+  {
+    id: 'cse-pres',
+    name: 'LINGESHWARAN G',
+    deptId: 'cse',
+    deptName: 'Computer Science and Engineering',
+    deptShort: 'CSE',
+    position: 'President',
+    badge: 'Flagship Captain',
+    accentColor: '#38BDF8',
+    avatarPool: [
+      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&h=600&fit=crop&auto=format',
+    ],
+  },
+  {
+    id: 'cse-vp',
+    name: 'BOOMIKA M',
+    deptId: 'cse',
+    deptName: 'Computer Science and Engineering',
+    deptShort: 'CSE',
+    position: 'Vice President',
+    badge: 'First Mate',
+    accentColor: '#38BDF8',
+    avatarPool: [
+      'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=600&h=600&fit=crop&auto=format',
+    ],
+  },
   {
     id: 'cse-sec',
     name: 'MOHAMMED RAIYAN E',
@@ -58,19 +58,19 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
       'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_auto,g_auto/CseSeceratory.jpg',
     ],
   },
-  // {
-  //   id: 'cse-jsec',
-  //   name: 'TAMIZ AZHAGI R',
-  //   deptId: 'cse',
-  //   deptName: 'Computer Science and Engineering',
-  //   deptShort: 'CSE',
-  //   position: 'Joint Secretary',
-  //   badge: 'Tactical Logkeeper',
-  //   accentColor: '#38BDF8',
-  //   avatarPool: [
-  //     'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=600&h=600&fit=crop&auto=format',
-  //   ],
-  // },
+  {
+    id: 'cse-jsec',
+    name: 'TAMIZ AZHAGI R',
+    deptId: 'cse',
+    deptName: 'Computer Science and Engineering',
+    deptShort: 'CSE',
+    position: 'Joint Secretary',
+    badge: 'Tactical Logkeeper',
+    accentColor: '#38BDF8',
+    avatarPool: [
+      'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=600&h=600&fit=crop&auto=format',
+    ],
+  },
   {
     id: 'cse-treas',
     name: 'SARAN B' ,
@@ -84,19 +84,19 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
       'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,x_35,y_70/CseTreasurer.jpg',
     ],
   },
-  // {
-  //   id: 'cse-tech',
-  //   name: 'Karthikeyan M',
-  //   deptId: 'cse',
-  //   deptName: 'Computer Science and Engineering',
-  //   deptShort: 'CSE',
-  //   position: 'Technical Head',
-  //   badge: 'Code Helmsman',
-  //   accentColor: '#38BDF8',
-  //   avatarPool: [
-  //     'https://images.unsplash.com/photo-1463453091185-61582044d556?q=80&w=600&h=600&fit=crop&auto=format',
-  //   ],
-  // },
+  {
+    id: 'cse-tech',
+    name: 'Karthikeyan M',
+    deptId: 'cse',
+    deptName: 'Computer Science and Engineering',
+    deptShort: 'CSE',
+    position: 'Technical Head',
+    badge: 'Code Helmsman',
+    accentColor: '#38BDF8',
+    avatarPool: [
+      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_auto,g_north_west/f_auto/q_auto/samples/canvas.jpg',
+    ],
+  },
   {
     id: 'cse-nontech',
     name: 'Chandru',
@@ -153,19 +153,19 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
 
     ],
   },
-  // {
-  //   id: 'aids-jsec',
-  //   name: 'GOWTHAM BABU S',
-  //   deptId: 'aids',
-  //   deptName: 'Artificial Intelligence & Data Science',
-  //   deptShort: 'AI&DS',
-  //   position: 'Joint Secretary',
-  //   badge: 'Insight Keeper',
-  //   accentColor: '#A855F7',
-  //   avatarPool: [
-  //     'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&h=600&fit=crop&auto=format',
-  //   ],
-  // },
+  {
+    id: 'aids-jsec',
+    name: 'GOWTHAM BABU S',
+    deptId: 'aids',
+    deptName: 'Artificial Intelligence & Data Science',
+    deptShort: 'AI&DS',
+    position: 'Joint Secretary',
+    badge: 'Insight Keeper',
+    accentColor: '#A855F7',
+    avatarPool: [
+      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&h=600&fit=crop&auto=format',
+    ],
+  },
   {
     id: 'aids-treas',
     name: 'ABINAYA V',
@@ -221,62 +221,62 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
       'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_576,w_569,x_7,y_287/AimlPresident.jpg',
     ],
   },
-  // {
-  //   id: 'aiml-vp',
-  //   name: 'BHARGAVI A',
-  //   deptId: 'aiml',
-  //   deptName: 'Artificial Intelligence & Machine Learning',
-  //   deptShort: 'AIML',
-  //   position: 'Vice President',
-  //   badge: 'Vision Strategist',
-  //   accentColor: '#EC4899',
-  //   avatarPool: [
-  //     'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&h=600&fit=crop&auto=format',
+  {
+    id: 'aiml-vp',
+    name: 'BHARGAVI A',
+    deptId: 'aiml',
+    deptName: 'Artificial Intelligence & Machine Learning',
+    deptShort: 'AIML',
+    position: 'Vice President',
+    badge: 'Vision Strategist',
+    accentColor: '#EC4899',
+    avatarPool: [
+      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&h=600&fit=crop&auto=format',
 
-  //   ],
-  // },
-  // {
-  //   id: 'aiml-sec',
-  //   name: 'MOHAMMED AREEF A',
-  //   deptId: 'aiml',
-  //   deptName: 'Artificial Intelligence & Machine Learning',
-  //   deptShort: 'AIML',
-  //   position: 'Secretary',
-  //   badge: 'Algorithm Master',
-  //   accentColor: '#EC4899',
-  //   avatarPool: [
-  //     'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?q=80&w=600&h=600&fit=crop&auto=format',
+    ],
+  },
+  {
+    id: 'aiml-sec',
+    name: 'MOHAMMED AREEF A',
+    deptId: 'aiml',
+    deptName: 'Artificial Intelligence & Machine Learning',
+    deptShort: 'AIML',
+    position: 'Secretary',
+    badge: 'Algorithm Master',
+    accentColor: '#EC4899',
+    avatarPool: [
+      'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?q=80&w=600&h=600&fit=crop&auto=format',
 
-  //   ],
-  // },
-  // {
-  //   id: 'aiml-jsec',
-  //   name: 'LOKESH P',
-  //   deptId: 'aiml',
-  //   deptName: 'Artificial Intelligence & Machine Learning',
-  //   deptShort: 'AIML',
-  //   position: 'Joint Secretary',
-  //   badge: 'Neural Coordinator',
-  //   accentColor: '#EC4899',
-  //   avatarPool: [
-  //     'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_877,w_877,x_76,y_10/f_auto/q_auto/samples/canvas.jpg',
+    ],
+  },
+  {
+    id: 'aiml-jsec',
+    name: 'LOKESH P',
+    deptId: 'aiml',
+    deptName: 'Artificial Intelligence & Machine Learning',
+    deptShort: 'AIML',
+    position: 'Joint Secretary',
+    badge: 'Neural Coordinator',
+    accentColor: '#EC4899',
+    avatarPool: [
+      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_877,w_877,x_76,y_10/f_auto/q_auto/samples/canvas.jpg',
 
-  //   ],
-  // },
-  // {
-  //   id: 'aiml-treas',
-  //   name: 'SUGANESH S S',
-  //   deptId: 'aiml',
-  //   deptName: 'Artificial Intelligence & Machine Learning',
-  //   deptShort: 'AIML',
-  //   position: 'Treasurer',
-  //   badge: 'Compute Chancellor',
-  //   accentColor: '#EC4899',
-  //   avatarPool: [
-  //     'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_877,w_877,x_76,y_10/f_auto/q_auto/samples/canvas.jpg',
+    ],
+  },
+  {
+    id: 'aiml-treas',
+    name: 'SUGANESH S S',
+    deptId: 'aiml',
+    deptName: 'Artificial Intelligence & Machine Learning',
+    deptShort: 'AIML',
+    position: 'Treasurer',
+    badge: 'Compute Chancellor',
+    accentColor: '#EC4899',
+    avatarPool: [
+      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_877,w_877,x_76,y_10/f_auto/q_auto/samples/canvas.jpg',
 
-  //   ],
-  // },
+    ],
+  },
   // ── CYBER SECURITY (Department of Cyber Security) ─────────────────
   {
     id: 'cyber-pres',
@@ -405,17 +405,17 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
 
     ],
   },
-  // {
-  //   id: 'csbs-treas',
-  //   name: 'MOHAN KUMAR A',
-  //   deptId: 'csbs',
-  //   deptName: 'Computer Science and Business Systems',
-  //   deptShort: 'CSBS',
-  //   position: 'Treasurer',
-  //   badge: 'Fiscal Director',
-  //   accentColor: '#00F2FE',
-  //   avatarPool: [
-  //     'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=600&h=600&fit=crop&auto=format',
-  //   ],
-  // },
+  {
+    id: 'csbs-treas',
+    name: 'MOHAN KUMAR A',
+    deptId: 'csbs',
+    deptName: 'Computer Science and Business Systems',
+    deptShort: 'CSBS',
+    position: 'Treasurer',
+    badge: 'Fiscal Director',
+    accentColor: '#00F2FE',
+    avatarPool: [
+      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=600&h=600&fit=crop&auto=format',
+    ],
+  },
 ];

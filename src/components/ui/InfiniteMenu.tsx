@@ -665,6 +665,9 @@ class InfiniteGridMenu {
   private tex: WebGLTexture | null = null;
   private control!: ArcballControl;
 
+  private autoTargetDirection: vec3 | null = null;
+private autoTargetItemIndex: number | null = null;
+
   private discLocations!: {
     aModelPosition: number;
     aModelUvs: number;
@@ -1007,15 +1010,37 @@ class InfiniteGridMenu {
     }
 
     if (!this.control.isPointerDown) {
-      const nearestVertexIndex = this.findNearestVertexIndex();
-      const itemIndex = nearestVertexIndex % Math.max(1, this.items.length);
-      this.onActiveItemChange(itemIndex);
-      const snapDirection = vec3.normalize(vec3.create(), this.getVertexWorldPosition(nearestVertexIndex));
-      this.control.snapTargetDirection = snapDirection;
+      if (this.autoTargetDirection) {
+        // Automatic rotation
+        this.control.snapTargetDirection = this.autoTargetDirection;
+
+        if (this.autoTargetItemIndex !== null) {
+          this.onActiveItemChange(this.autoTargetItemIndex);
+        }
+      } else {
+        // Normal mouse/touch rotation
+        const nearestVertexIndex = this.findNearestVertexIndex();
+        const itemIndex =
+          nearestVertexIndex % Math.max(1, this.items.length);
+
+        this.onActiveItemChange(itemIndex);
+
+        const snapDirection = vec3.normalize(
+          vec3.create(),
+          this.getVertexWorldPosition(nearestVertexIndex)
+        );
+
+        this.control.snapTargetDirection = snapDirection;
+      }
     } else {
+      // User is manually dragging
+      this.autoTargetDirection = null;
+      this.autoTargetItemIndex = null;
+
       cameraTargetZ += this.control.rotationVelocity * 80 + 2.5;
       damping = 7 / timeScale;
     }
+
 
     this.camera.position[2] += (cameraTargetZ - this.camera.position[2]) / damping;
     this.updateCameraMatrix();
@@ -1042,6 +1067,59 @@ class InfiniteGridMenu {
     const nearestVertexPos = this.instancePositions[index];
     return vec3.transformQuat(vec3.create(), nearestVertexPos, this.control.orientation);
   }
+public goToIndex(itemIndex: number): void {
+  if (!this.items.length) return;
+
+  const targetItemIndex =
+    ((itemIndex % this.items.length) + this.items.length) %
+    this.items.length;
+
+  const vertexIndex = this.instancePositions.findIndex(
+    (_, index) => index % this.items.length === targetItemIndex
+  );
+
+  if (vertexIndex === -1) return;
+
+  // Current world position of the selected person
+  const currentDirection = vec3.normalize(
+    vec3.create(),
+    this.getVertexWorldPosition(vertexIndex)
+  );
+
+  // The direction that should face the camera
+  const targetDirection = vec3.clone(this.control.snapDirection);
+
+  // Calculate the rotation needed to move the person directly to the front
+  const jumpRotation = quat.create();
+
+  quat.rotationTo(
+    jumpRotation,
+    currentDirection,
+    targetDirection
+  );
+
+  // Apply the rotation INSTANTLY
+  quat.multiply(
+    this.control.orientation,
+    jumpRotation,
+    this.control.orientation
+  );
+
+  quat.normalize(
+    this.control.orientation,
+    this.control.orientation
+  );
+
+  // Disable smooth snapping/animation
+  this.control.snapTargetDirection = null;
+  this.control.pointerRotation = quat.create();
+
+  this.autoTargetDirection = null;
+  this.autoTargetItemIndex = null;
+
+  // Immediately update the active person
+  this.onActiveItemChange(targetItemIndex);
+}
 }
 
 const defaultItems: MenuItem[] = [
@@ -1064,6 +1142,8 @@ export interface InfiniteMenuProps {
 
 const InfiniteMenu: FC<InfiniteMenuProps> = ({ items = [], scale = 1.0, backgroundColor = '#000000', onActiveItemChange }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null) as MutableRefObject<HTMLCanvasElement | null>;
+  const sketchRef = useRef<InfiniteGridMenu | null>(null);
+  const autoIndexRef = useRef(0);
   const [, setActiveItem] = useState<MenuItem | null>(null);
 
   useEffect(() => {
@@ -1088,6 +1168,8 @@ const InfiniteMenu: FC<InfiniteMenuProps> = ({ items = [], scale = 1.0, backgrou
         sk => sk.run(),
         scale
       );
+
+      sketchRef.current = sketch;
     }
 
     const handleResize = () => {
@@ -1103,6 +1185,24 @@ const InfiniteMenu: FC<InfiniteMenuProps> = ({ items = [], scale = 1.0, backgrou
       window.removeEventListener('resize', handleResize);
     };
   }, [items, scale, onActiveItemChange]);
+
+  
+  useEffect(() => {
+  if (!items.length) return;
+
+  autoIndexRef.current = 0;
+
+  const timer = setInterval(() => {
+    autoIndexRef.current =
+      (autoIndexRef.current + 1) % items.length;
+
+    sketchRef.current?.goToIndex(autoIndexRef.current);
+  }, 4000);
+
+  return () => {
+    clearInterval(timer);
+  };
+}, [items.length]);
 
   return (
     <div className="relative h-full w-full" style={{ backgroundColor }}>
