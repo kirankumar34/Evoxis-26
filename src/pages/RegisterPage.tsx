@@ -19,7 +19,6 @@ import { EVENTS } from '@/data/events';
 import { REGISTRATION_FORM_URL } from '@/constants';
 import { EventId, EventCategory, RegistrationFormData, TeamMember } from '@/types';
 import { api } from '@/services/api';
-import mangaPanelImg from '@/assets/MangaPanel.jpg';
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();

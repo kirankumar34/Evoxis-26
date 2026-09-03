@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import BgImg from '../../assets/HeroSection_Background.png';
 import BgImg2 from '../../assets/HeroSection_Background1.png';
-import ClgLogo from '../../assets/ClgLogo.png';
 import { sound } from '../../utils/audio';
 
 /* ─── colour tokens ──────────────────────────────────────────────────────── */
