@@ -10,11 +10,6 @@ const SPONSOR_1_LOGO_URL =
 const SPONSOR_2_ZENVY_URL =
   'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_1000,w_1000,x_722,y_850/f_auto/q_auto/zenvyLogo.png';
 
-const CLG_LOGO_URL =
-  'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_760,w_760,x_1020,y_949/f_auto/q_auto/ClgLogo.png';
-
-const SYMPO_LOGO_URL =
-  'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_1079,w_1079/f_auto/q_auto/SympoLogo.png';
 
 export const SponsorsSection: React.FC = () => {
   // Pure sponsor & partner logo items for the infinite LogoLoop inside the circle
