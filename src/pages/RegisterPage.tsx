@@ -408,11 +408,7 @@ export const RegisterPage: React.FC = () => {
                 {/* Framed Manga Art */}
                 <div className="w-72 sm:w-80 overflow-hidden border-3 border-[#FFC928] bg-black shadow-[6px_6px_0px_0px_#000] transition-transform duration-300 group-hover:scale-[1.02]">
                   <div className="relative aspect-[3/4] bg-black">
-                    <img
-                      src={mangaPanelImg}
-                      alt="One Piece Gear 5 Manga Panel"
-                      className="w-full h-full object-cover object-top filter contrast-125 brightness-105"
-                    />
+
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent pointer-events-none" />
                     <div className="absolute bottom-2 left-3 right-3 text-center">
                       <p

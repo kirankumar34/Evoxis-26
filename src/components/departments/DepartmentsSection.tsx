@@ -1,6 +1,46 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { DEPARTMENTS } from '@/data/departments';
+import { LogoLoop, LogoItem } from '@/components/ui/LogoLoop';
+
+// Build logo items for the infinite loop matching the card design in the reference
+const DEPT_LOGOS: LogoItem[] = DEPARTMENTS.map((dept) => ({
+  node: (
+    <div
+      className="w-[260px] sm:w-[280px] bg-white border-2 border-black flex flex-col items-center overflow-hidden select-none transition-transform duration-200"
+      style={{ boxShadow: '4px 4px 0px #000' }}
+    >
+      {/* Accent Top Strip */}
+      <div
+        className="h-2.5 w-full flex-shrink-0"
+        style={{ background: dept.accentColor || '#E2231A' }}
+      />
+
+      {/* Card Content */}
+      <div className="p-3.5 sm:p-4 w-full flex flex-col items-center">
+        {/* Inner Framed Logo Container */}
+        <div className="w-full aspect-square rounded-2xl border border-black flex items-center justify-center p-4 bg-white overflow-hidden">
+          <img
+            src={dept.logoUrl}
+            alt={`${dept.fullName} Logo`}
+            className="w-full h-full object-contain filter contrast-105"
+            draggable={false}
+          />
+        </div>
+
+        {/* Department Name at Bottom */}
+        <div className="pt-4 pb-2 w-full flex items-center justify-center min-h-[56px]">
+          <span
+            className="text-base sm:text-lg text-black uppercase tracking-wider text-center leading-tight font-bold"
+            style={{ fontFamily: "'Anton', sans-serif" }}
+          >
+            {dept.fullName}
+          </span>
+        </div>
+      </div>
+    </div>
+  ),
+  title: dept.fullName,
+}));
 
 export const DepartmentsSection: React.FC = () => {
   return (
@@ -20,8 +60,7 @@ export const DepartmentsSection: React.FC = () => {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
         {/* ── Section Header ─────────────────────────────────────────── */}
-        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-16">
-
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-14">
           <h2
             className="text-3xl sm:text-5xl md:text-6xl text-black uppercase leading-none tracking-tight mb-3"
             style={{ fontFamily: "'Anton', sans-serif" }}
@@ -36,59 +75,24 @@ export const DepartmentsSection: React.FC = () => {
             EVOXIS&apos;26 is steered by five premier technology divisions at Sriram Engineering College.
           </p>
         </div>
+      </div>
 
-        {/* ── Departments Grid ──────────────────────────────────────── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3  gap-5 sm:gap-6">
-          {DEPARTMENTS.map((dept, idx) => {
-            return (
-              <motion.div
-                key={dept.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.35, delay: idx * 0.06 }}
-                className="relative group bg-white border-2 border-black hover:-translate-y-1.5 transition-all duration-200 flex flex-col items-center text-center overflow-hidden"
-                style={{
-                  boxShadow: '4px 4px 0px #000',
-                }}
-              >
-                {/* Accent Top Strip */}
-                <div
-                  className="h-2 w-full flex-shrink-0"
-                  style={{ background: dept.accentColor || '#E2231A' }}
-                />
-
-                <div className="p-6 flex flex-col items-center justify-between flex-1 w-full gap-4">
-                  {/* Department Logo Container */}
-                  <div
-                    className="  rounded-xl border border-black flex items-center justify-center overflow-hidden  "
-                  >
-                    <img
-                      src={dept.logoUrl}  
-                      alt={`${dept.fullName} Logo`}
-                      className="w-full h-full object-contain filter contrast-105"
-                      loading="lazy"
-                    />
-                  </div>
-
-                  {/* Department Name */}
-                  <div className="flex-1 flex items-center justify-center">
-                    <h3
-                      className="text-base sm:text-lg text-black uppercase tracking-wider"
-                      style={{ fontFamily: "'Anton', sans-serif" }}
-                    >
-                      {dept.fullName}
-                    </h3>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
+      {/* ── Infinite Scrolling Department Logos ─────────────────────── */}
+      <div className="relative z-10 py-2">
+        <LogoLoop
+          logos={DEPT_LOGOS}
+          speed={55}
+          direction="left"
+          logoHeight={370}
+          gap={32}
+          pauseOnHover={true}
+          fadeOut={true}
+          fadeOutColor="#F7ECD4"
+          ariaLabel="Hosting departments"
+        />
       </div>
     </section>
   );
 };
 
 export default DepartmentsSection;
-
