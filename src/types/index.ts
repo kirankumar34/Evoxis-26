@@ -50,9 +50,7 @@ export interface EventItem {
   rules: string[];
   judgingCriteria: string[];
   prizes: {
-    first: string;
-    second: string;
-    third?: string;
+    Prize: string;
     allParticipants?: string;
   };
   coordinators: CoordinatorContact[];

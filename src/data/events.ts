@@ -40,10 +40,8 @@ export const EVENTS: EventItem[] = [
       'Q&A Response',
     ],
     prizes: {
-      first: '₹5,000 Cash Prize + Certificate of Excellence',
-      second: '₹3,000 Cash Prize + Certificate of Excellence',
-      third: '₹1,500 Cash Prize + Certificate of Merit',
-      allParticipants: 'Certificate of National Participation',
+      Prize: '₹1500 Cash Prize + Certificate of Excellence',
+      allParticipants: 'Certificate ',
     },
     coordinators: [
 
@@ -121,10 +119,8 @@ export const EVENTS: EventItem[] = [
       'Presentation & Teamwork',
     ],
     prizes: {
-      first: '₹5,000 Cash Prize + Trophy',
-      second: '₹3,000 Cash Prize + Certificate of Excellence',
-      third: '₹1,500 Cash Prize + Certificate of Merit',
-      allParticipants: 'Certificate of National Participation',
+      Prize: '₹1500 Cash Prize + Certificate of Excellence',
+      allParticipants: 'Certificate ',
     },
     coordinators: [
       {
@@ -153,10 +149,10 @@ export const EVENTS: EventItem[] = [
     accentColor: '#E6CA65',
   },
   {
-    id: 'lego-ai-challenge',
+    id: 'lego-leviathon',
     eventId: 'TE03',
-    sheetSlug: 'lego-ai-challenge',
-    title: 'LEGO AI Challenge',
+    sheetSlug: 'lego-leviathon',
+    title: 'LEGO LEVIATHAN',
     category: 'Technical',
     tagline: 'Design and develop AI-powered smart prototype solutions.',
     shortDescription: 'Solve pressing global themes across Climate, Healthcare, and Smart Cities by architecting UI/UX designs and rapid AI prototypes.',
@@ -196,10 +192,8 @@ export const EVENTS: EventItem[] = [
       'Presentation & Pitch',
     ],
     prizes: {
-      first: '₹600 Cash Prize + Certificate of Excellence',
-      second: '₹3,000 Cash Prize + Certificate of Excellence',
-      third: '₹1,500 Cash Prize + Certificate of Merit',
-      allParticipants: 'Certificate of National Participation',
+      Prize: '₹1500 Cash Prize + Certificate of Excellence',
+      allParticipants: 'Certificate ',
     },
     coordinators: [
       {
@@ -208,27 +202,6 @@ export const EVENTS: EventItem[] = [
         department: 'Final Year AD',
         phone: '+91 99410 54740',
         whatsapp: '919941054740',
-      },
-      {
-        name: 'Ganesh K',
-        role: 'Coordinator',
-        department: 'Final Year CSE',
-        phone: '+91 89395 17847',
-        whatsapp: '918939517847',
-      },
-      {
-        name: 'Nithya B',
-        role: 'Coordinator',
-        department: 'Final Year AD',
-        phone: '+91 79048 85546',
-        whatsapp: '917904885546',
-      },
-      {
-        name: 'Lakshania',
-        role: 'Co-Coordinator',
-        department: '3rd Year AD',
-        phone: '+91 97107 36868',
-        whatsapp: '919710736868',
       },
       {
         name: 'Sarath Babu',
@@ -246,6 +219,72 @@ export const EVENTS: EventItem[] = [
     featuredTag: 'AI & UI/UX',
     iconName: 'Cpu',
     accentColor: '#9333EA',
+  },
+    {
+    id: 'editomania',
+    eventId: 'TE06',
+    sheetSlug: 'editomania',
+    title: 'Editomania',
+    category: 'Technical',
+    tagline: 'High-octane video editing, storytelling & audio sync sprint.',
+    shortDescription: 'Craft a cinematic masterpiece from raw footage provided on the spot. Showcase pacing, VFX, color grading, and sound design.',
+    fullDescription: 'Evaluate your creativity, pacing, and video editing mastery under strict deadlines. Raw video and audio assets will be provided by organizers. Edit, grade, synchronize, and export your video before the clock expires.',
+    teamSize: {
+      min: 1,
+      max: 3,
+      description: '1 - 3 Participants per Team',
+    },
+    rounds: [
+      {
+        roundNumber: 1,
+        title: 'Video Editing Challenge',
+        description: 'Teams receive raw video footage and music tracks. Create a compelling story, apply color grading, sound design, transitions, and export within the deadline.',
+        duration: '90 Mins',
+      },
+    ],
+    rules: [
+      'Participants shall report 15 minutes before the event.',
+      'All participants must carry a valid College ID card.',
+      'Participants must bring their own laptops with their preferred editing software installed (Premiere Pro, DaVinci Resolve, After Effects, CapCut, etc.).',
+      'No pre-made project templates, pre-edited clips, or outside downloaded media allowed.',
+      'Late submissions will strictly not be accepted.',
+      'The decision of the judges shall be final and binding.',
+    ],
+    judgingCriteria: [
+      'Creativity & Concept',
+      'Visual Storytelling & Pacing',
+      'Editing Quality & Transitions',
+      'Audio Synchronization & Sound Design',
+      'Overall Visual Presentation',
+    ],
+    prizes: {
+      Prize: '₹1500 Cash Prize + Certificate of Excellence',
+      allParticipants: 'Certificate ',
+    },
+    coordinators: [
+
+      {
+        name: 'Adithiya',
+        role: 'Coordinator',
+        department: 'IV AIDS',
+        phone: '+91 94873 33870',
+        whatsapp: '919487333870',
+      },
+      {
+        name: 'Manikandan',
+        role: 'Coordinator',
+        department: 'IV CSE',
+        phone: '+91 98401 00030',
+      }
+    ],
+    schedule: {
+      date: 'September 26, 2026',
+      timeSlot: '11:00 AM - 01:00 PM',
+      venue: 'Media & Digital Design Studio',
+    },
+    featuredTag: 'Video Editing',
+    iconName: 'Video',
+    accentColor: '#EC4899',
   },
   {
     id: 'cyber-investigation',
@@ -288,10 +327,8 @@ export const EVENTS: EventItem[] = [
       'Completion Time & Speed',
     ],
     prizes: {
-      first: '₹5,000 Cash Prize + Certificate of Excellence',
-      second: '₹3,000 Cash Prize + Certificate of Excellence',
-      third: '₹1,500 Cash Prize + Certificate of Merit',
-      allParticipants: 'Certificate of National Participation',
+      Prize: '₹1500 Cash Prize + Certificate of Excellence',
+      allParticipants: 'Certificate ',
     },
     coordinators: [
       {
@@ -365,10 +402,8 @@ export const EVENTS: EventItem[] = [
       'Number of Correct Words / Logos Identified',
     ],
     prizes: {
-      first: '₹5,000 Cash Prize + Trophy',
-      second: '₹3,000 Cash Prize + Certificate of Excellence',
-      third: '₹1,500 Cash Prize + Certificate of Merit',
-      allParticipants: 'Certificate of National Participation',
+      Prize: '₹1500 Cash Prize + Certificate of Excellence',
+      allParticipants: 'Certificate ',
     },
     coordinators: [
       {
@@ -393,74 +428,7 @@ export const EVENTS: EventItem[] = [
     iconName: 'Zap',
     accentColor: '#00F2FE',
   },
-  {
-    id: 'editomania',
-    eventId: 'TE06',
-    sheetSlug: 'editomania',
-    title: 'Editomania',
-    category: 'Technical',
-    tagline: 'High-octane video editing, storytelling & audio sync sprint.',
-    shortDescription: 'Craft a cinematic masterpiece from raw footage provided on the spot. Showcase pacing, VFX, color grading, and sound design.',
-    fullDescription: 'Evaluate your creativity, pacing, and video editing mastery under strict deadlines. Raw video and audio assets will be provided by organizers. Edit, grade, synchronize, and export your video before the clock expires.',
-    teamSize: {
-      min: 1,
-      max: 3,
-      description: '1 - 3 Participants per Team',
-    },
-    rounds: [
-      {
-        roundNumber: 1,
-        title: 'Video Editing Challenge',
-        description: 'Teams receive raw video footage and music tracks. Create a compelling story, apply color grading, sound design, transitions, and export within the deadline.',
-        duration: '90 Mins',
-      },
-    ],
-    rules: [
-      'Participants shall report 15 minutes before the event.',
-      'All participants must carry a valid College ID card.',
-      'Participants must bring their own laptops with their preferred editing software installed (Premiere Pro, DaVinci Resolve, After Effects, CapCut, etc.).',
-      'No pre-made project templates, pre-edited clips, or outside downloaded media allowed.',
-      'Late submissions will strictly not be accepted.',
-      'The decision of the judges shall be final and binding.',
-    ],
-    judgingCriteria: [
-      'Creativity & Concept',
-      'Visual Storytelling & Pacing',
-      'Editing Quality & Transitions',
-      'Audio Synchronization & Sound Design',
-      'Overall Visual Presentation',
-    ],
-    prizes: {
-      first: '₹5,000 Cash Prize + Trophy',
-      second: '₹3,000 Cash Prize + Certificate of Excellence',
-      third: '₹1,500 Cash Prize + Certificate of Merit',
-      allParticipants: 'Certificate of National Participation',
-    },
-    coordinators: [
 
-      {
-        name: 'Adithiya',
-        role: 'Coordinator',
-        department: 'IV AIDS',
-        phone: '+91 94873 33870',
-        whatsapp: '919487333870',
-      },
-      {
-        name: 'Manikandan',
-        role: 'Coordinator',
-        department: 'IV CSE',
-        phone: '+91 98401 00030',
-      }
-    ],
-    schedule: {
-      date: 'September 26, 2026',
-      timeSlot: '11:00 AM - 01:00 PM',
-      venue: 'Media & Digital Design Studio',
-    },
-    featuredTag: 'Video Editing',
-    iconName: 'Video',
-    accentColor: '#EC4899',
-  },
 
   // ==========================================
   // NON-TECHNICAL & SPECIAL EVENTS (9)
@@ -501,10 +469,8 @@ export const EVENTS: EventItem[] = [
       'Trivia & Song Accuracy',
     ],
     prizes: {
-      first: 'Certificate of Excellence + Winner Trophy',
-      second: 'Certificate of Merit + Runner-up Trophy',
-      third: 'Certificate of Merit',
-      allParticipants: 'Certificate of National Participation',
+      Prize: '₹1500 Cash Prize + Certificate of Excellence',
+      allParticipants: 'Certificate ',
     },
     coordinators: [
       {
@@ -576,10 +542,8 @@ export const EVENTS: EventItem[] = [
       'Strategic Utilization of RTM Cards',
     ],
     prizes: {
-      first: 'Certificate of Excellence + IPL Winner Trophy',
-      second: 'Certificate of Merit + Runner-up Trophy',
-      third: 'Certificate of Merit',
-      allParticipants: 'Certificate of National Participation',
+      Prize: '₹1500 Cash Prize + Certificate of Excellence',
+      allParticipants: 'Certificate ',
     },
     coordinators: [
       {
@@ -599,71 +563,7 @@ export const EVENTS: EventItem[] = [
     iconName: 'Trophy',
     accentColor: '#FFC928',
   },
-  {
-    id: 'kick-arena',
-    eventId: 'NT03',
-    sheetSlug: 'kick-arena',
-    title: 'Kick Arena',
-    category: 'Special Event',
-    tagline: '3v3 Street Football Tournament & Sudden Death Shootouts.',
-    shortDescription: 'Lace up your boots for intense 3v3 mini-football knockout matches. Fast-paced halves, tactical substitutions, and halfway-line penalty trials.',
-    fullDescription: 'High-intensity 3v3 mini-football knockout championship. Fast-paced halves, precise passing, tactical substitutions, yellow card suspension rules, and dramatic sudden-death penalty shootouts from the halfway line.',
-    teamSize: {
-      min: 3,
-      max: 4,
-      description: '3 Players on field (+ 1 Substitute)',
-    },
-    rounds: [
-      {
-        roundNumber: 1,
-        title: 'Knockout Round',
-        description: '3v3 knockout matches consisting of two halves of 7 minutes each. Winners advance to the Final. Ties decided via sudden-death halfway-line penalty shootouts.',
-        duration: '7 Mins / Half',
-      },
-      {
-        roundNumber: 2,
-        title: 'Grand Final',
-        description: 'Championship final consisting of two halves of 10 minutes each. Highest goal-scoring team crowned Champions.',
-        duration: '10 Mins / Half',
-      },
-    ],
-    rules: [
-      'Each match is played in a 3v3 format with 3 active field players.',
-      'Sliding tackles are strictly prohibited to prevent injuries.',
-      'Fouls (pushing, tripping, holding, dangerous play, handball) result in an indirect free kick (opponents 3m away).',
-      'Yellow card results in a 4-minute temporary suspension (team must substitute in another player).',
-      'Red card results in immediate match ejection and suspension from the subsequent match.',
-      'No penalty kicks during normal match play; penalty shootouts conducted from the halfway line without run-up if tied.',
-      'Decisions of the referee are final and binding.',
-    ],
-    judgingCriteria: [
-      'Goals Scored in Regulation Time',
-      'Penalty Shootout Performance',
-      'Fair Play & Disciplinary Record',
-    ],
-    prizes: {
-      first: 'Certificate of Excellence + Champion Trophy + Medals',
-      second: 'Certificate of Merit + Runner-up Trophy + Medals',
-      allParticipants: 'Certificate of National Participation',
-    },
-    coordinators: [
-      {
-        name: 'Sports & Football Guild',
-        role: 'Head Referee',
-        department: 'Physical Education / SEC',
-        phone: '+91 98401 23458',
-        whatsapp: '919840123458',
-      },
-    ],
-    schedule: {
-      date: 'September 26, 2026',
-      timeSlot: '10:00 AM - 02:00 PM',
-      venue: 'Campus Football Turf / Sports Arena',
-    },
-    featuredTag: '3v3 Football',
-    iconName: 'Activity',
-    accentColor: '#10B981',
-  },
+
   {
     id: 'clash-of-minds',
     eventId: 'NT04',
@@ -713,10 +613,8 @@ export const EVENTS: EventItem[] = [
       'Melody Identification & Recognition',
     ],
     prizes: {
-      first: 'Certificate of Excellence + Trophy',
-      second: 'Certificate of Merit + Trophy',
-      third: 'Certificate of Merit',
-      allParticipants: 'Certificate of National Participation',
+      Prize: '₹1500 Cash Prize + Certificate of Excellence',
+      allParticipants: 'Certificate ',
     },
     coordinators: [
       {
@@ -736,72 +634,7 @@ export const EVENTS: EventItem[] = [
     iconName: 'Gamepad',
     accentColor: '#38BDF8',
   },
-  {
-    id: 'box-cricket',
-    eventId: 'NT05',
-    sheetSlug: 'box-cricket',
-    title: 'Box Cricket',
-    category: 'Special Event',
-    tagline: '4-over fast-paced indoor turf cricket championship.',
-    shortDescription: 'Experience rapid 4-over box cricket. 5 fielders + 1 sub, thrilling rules, super overs, and high-energy boundary hitting.',
-    fullDescription: 'High-intensity 4-over indoor box cricket championship! 5 main players + 1 substitute per squad. Fast-paced overs, running between wickets, no LBW, super over tiebreakers, strictly limited to 20 teams on first-come basis.',
-    teamSize: {
-      min: 5,
-      max: 6,
-      description: '5 Main Players + 1 Substitute',
-    },
-    rounds: [
-      {
-        roundNumber: 1,
-        title: '4-Over Knockout Matches',
-        description: 'Knockout fixtures of 4 overs per innings. In case of a tie, a Super Over will be played.',
-        duration: '20 Mins / Match',
-      },
-      {
-        roundNumber: 2,
-        title: 'Championship Semi-Finals & Finals',
-        description: 'Top qualifying teams battle in the semi-finals and championship finals for the Box Cricket Trophy.',
-        duration: '25 Mins / Match',
-      },
-    ],
-    rules: [
-      '4-over cricket matches (5 main players + 1 substitute).',
-      'No LBW rule in effect.',
-      "Umpire's decisions are strictly final and binding.",
-      'A player who has played in one team is not allowed to represent other teams.',
-      'In case of a tie, a Super Over will determine the winner.',
-      'Limited entry: Only 20 teams accepted on a strict first-come, first-served basis.',
-      'Teams coming late after 3 official calls will be disqualified.',
-      'Any violence, arguing with umpires, or misbehavior leads to immediate disqualification.',
-    ],
-    judgingCriteria: [
-      'Runs Scored in 4 Overs',
-      'Wickets Taken & Economy',
-      'Super Over Victory in Ties',
-    ],
-    prizes: {
-      first: 'Certificate of Excellence + Box Cricket Cup + Medals',
-      second: 'Certificate of Merit + Runner-up Trophy',
-      allParticipants: 'Certificate of National Participation',
-    },
-    coordinators: [
-      {
-        name: 'Cricket Organizing Council',
-        role: 'Chief Umpire',
-        department: 'Sports Board',
-        phone: '+91 98401 23460',
-        whatsapp: '919840123460',
-      },
-    ],
-    schedule: {
-      date: 'September 26, 2026',
-      timeSlot: '09:30 AM - 02:30 PM',
-      venue: 'Enclosed Box Cricket Ground / Quadrangle',
-    },
-    featuredTag: 'Box Cricket',
-    iconName: 'Award',
-    accentColor: '#FFC928',
-  },
+
   {
     id: 'reel-rush',
     eventId: 'NT06',
@@ -840,9 +673,8 @@ export const EVENTS: EventItem[] = [
       'Overall Storytelling Impact',
     ],
     prizes: {
-      first: 'Certificate of Excellence + Trophy',
-      second: 'Certificate of Merit + Trophy',
-      allParticipants: 'Certificate of National Participation',
+      Prize: '₹1500 Cash Prize + Certificate of Excellence',
+      allParticipants: 'Certificate ',
     },
     coordinators: [
       {
@@ -913,10 +745,8 @@ export const EVENTS: EventItem[] = [
       'Strict Adherence to Weapon & Fairplay Guidelines',
     ],
     prizes: {
-      first: 'Certificate of Excellence + eSports Champion Trophy',
-      second: 'Certificate of Merit + Runner-up Trophy',
-      third: 'Certificate of Merit',
-      allParticipants: 'Certificate of National Participation',
+      Prize: '₹1500 Cash Prize + Certificate of Excellence',
+      allParticipants: 'Certificate ',
     },
     coordinators: [
       {
@@ -936,7 +766,65 @@ export const EVENTS: EventItem[] = [
     iconName: 'Gamepad2',
     accentColor: '#E11D48',
   },
+
   {
+    id: 'start-music',
+    eventId: 'NT09',
+    sheetSlug: 'start-music',
+    title: 'Start Music',
+    category: 'Non-Technical',
+    tagline: 'Guess the song, lyric continuation & musical trivia frenzy.',
+    shortDescription: 'Tune into rapid melody cues, identify missing song lyrics, recognize classic tracks, and dominate the musical buzzer.',
+    fullDescription: 'The ultimate musical battle of tunes and tracks! Teams of 2 test their song memory, background score identification, lyric continuity, and music trivia across multiple interactive buzzer rounds.',
+    teamSize: {
+      min: 2,
+      max: 2,
+      description: 'Exactly 2 Members per Team',
+    },
+    rounds: [
+      {
+        roundNumber: 1,
+        title: 'Tune & Lyric Recognition Arena',
+        description: 'Identify songs from short instrumental snippets, complete lyric lines from where the track pauses, and buzz in for rapid music trivia.',
+        duration: '45 Mins',
+      },
+    ],
+    rules: [
+      'Team size: Strictly 2 members per team.',
+      'Mobile phones and smart devices are strictly prohibited during the event.',
+      'No communication with other teams or members in the audience.',
+      'No arguments with coordinators or quizmasters.',
+      'Rules will be strictly enforced; rule violations lead to immediate elimination.',
+      "Coordinator's decision will be final and binding.",
+    ],
+    judgingCriteria: [
+      'Buzzer Speed & Reaction Time',
+      'Accuracy of Song Identification',
+      'Lyric Continuation Precision',
+    ],
+    prizes: {
+      Prize: '₹1500 Cash Prize + Certificate of Excellence',
+      allParticipants: 'Certificate ',
+    },
+    coordinators: [
+      {
+        name: 'Music & Fine Arts Club',
+        role: 'Event Lead',
+        department: 'Cultural Guild',
+        phone: '+91 98401 23464',
+        whatsapp: '919840123464',
+      },
+    ],
+    schedule: {
+      date: 'September 26, 2026',
+      timeSlot: '01:00 PM - 03:00 PM',
+      venue: 'Mini Seminar Hall 2',
+    },
+    featuredTag: 'Music Arena',
+    iconName: 'Music',
+    accentColor: '#FFC928',
+  },
+    {
     id: 'elite-walk',
     eventId: 'NT08',
     sheetSlug: 'elite-walk',
@@ -976,9 +864,8 @@ export const EVENTS: EventItem[] = [
       'Overall Stage Presentation (20 Marks) — Total 100 Marks',
     ],
     prizes: {
-      first: 'Rs 600 Cash Prize +  Trophy',
-      second: 'Rs 400 Cash Prize +  Trophy',
-      allParticipants: 'ECertificate',
+      Prize: '₹1500 Cash Prize + Certificate of Excellence',
+      allParticipants: 'Certificate ',
     },
     coordinators: [
       {
@@ -998,63 +885,133 @@ export const EVENTS: EventItem[] = [
     iconName: 'Crown',
     accentColor: '#9333EA',
   },
-  {
-    id: 'start-music',
-    eventId: 'NT09',
-    sheetSlug: 'start-music',
-    title: 'Start Music',
-    category: 'Non-Technical',
-    tagline: 'Guess the song, lyric continuation & musical trivia frenzy.',
-    shortDescription: 'Tune into rapid melody cues, identify missing song lyrics, recognize classic tracks, and dominate the musical buzzer.',
-    fullDescription: 'The ultimate musical battle of tunes and tracks! Teams of 2 test their song memory, background score identification, lyric continuity, and music trivia across multiple interactive buzzer rounds.',
+    {
+    id: 'box-cricket',
+    eventId: 'NT05',
+    sheetSlug: 'box-cricket',
+    title: 'Box Cricket',
+    category: 'Special Event',
+    tagline: '4-over fast-paced indoor turf cricket championship.',
+    shortDescription: 'Experience rapid 4-over box cricket. 5 fielders + 1 sub, thrilling rules, super overs, and high-energy boundary hitting.',
+    fullDescription: 'High-intensity 4-over indoor box cricket championship! 5 main players + 1 substitute per squad. Fast-paced overs, running between wickets, no LBW, super over tiebreakers, strictly limited to 20 teams on first-come basis.',
     teamSize: {
-      min: 2,
-      max: 2,
-      description: 'Exactly 2 Members per Team',
+      min: 5,
+      max: 6,
+      description: '5 Main Players + 1 Substitute',
     },
     rounds: [
       {
         roundNumber: 1,
-        title: 'Tune & Lyric Recognition Arena',
-        description: 'Identify songs from short instrumental snippets, complete lyric lines from where the track pauses, and buzz in for rapid music trivia.',
-        duration: '45 Mins',
+        title: '4-Over Knockout Matches',
+        description: 'Knockout fixtures of 4 overs per innings. In case of a tie, a Super Over will be played.',
+        duration: '20 Mins / Match',
+      },
+      {
+        roundNumber: 2,
+        title: 'Championship Semi-Finals & Finals',
+        description: 'Top qualifying teams battle in the semi-finals and championship finals for the Box Cricket Trophy.',
+        duration: '25 Mins / Match',
       },
     ],
     rules: [
-      'Team size: Strictly 2 members per team.',
-      'Mobile phones and smart devices are strictly prohibited during the event.',
-      'No communication with other teams or members in the audience.',
-      'No arguments with coordinators or quizmasters.',
-      'Rules will be strictly enforced; rule violations lead to immediate elimination.',
-      "Coordinator's decision will be final and binding.",
+      '4-over cricket matches (5 main players + 1 substitute).',
+      'No LBW rule in effect.',
+      "Umpire's decisions are strictly final and binding.",
+      'A player who has played in one team is not allowed to represent other teams.',
+      'In case of a tie, a Super Over will determine the winner.',
+      'Limited entry: Only 20 teams accepted on a strict first-come, first-served basis.',
+      'Teams coming late after 3 official calls will be disqualified.',
+      'Any violence, arguing with umpires, or misbehavior leads to immediate disqualification.',
     ],
     judgingCriteria: [
-      'Buzzer Speed & Reaction Time',
-      'Accuracy of Song Identification',
-      'Lyric Continuation Precision',
+      'Runs Scored in 4 Overs',
+      'Wickets Taken & Economy',
+      'Super Over Victory in Ties',
     ],
     prizes: {
-      first: 'Certificate of Excellence + Trophy',
-      second: 'Certificate of Merit + Trophy',
-      third: 'Certificate of Merit',
-      allParticipants: 'Certificate of National Participation',
+      Prize: '₹1500 Cash Prize + Certificate of Excellence',
+      allParticipants: 'Certificate ',
     },
     coordinators: [
       {
-        name: 'Music & Fine Arts Club',
-        role: 'Event Lead',
-        department: 'Cultural Guild',
-        phone: '+91 98401 23464',
-        whatsapp: '919840123464',
+        name: 'Cricket Organizing Council',
+        role: 'Chief Umpire',
+        department: 'Sports Board',
+        phone: '+91 98401 23460',
+        whatsapp: '919840123460',
       },
     ],
     schedule: {
       date: 'September 26, 2026',
-      timeSlot: '01:00 PM - 03:00 PM',
-      venue: 'Mini Seminar Hall 2',
+      timeSlot: '09:30 AM - 02:30 PM',
+      venue: 'Enclosed Box Cricket Ground / Quadrangle',
     },
-    featuredTag: 'Music Arena',
-    iconName: 'Music',
+    featuredTag: 'Box Cricket',
+    iconName: 'Award',
     accentColor: '#FFC928',
   },
+    {
+    id: 'kick-arena',
+    eventId: 'NT03',
+    sheetSlug: 'kick-arena',
+    title: 'Kick Arena',
+    category: 'Special Event',
+    tagline: '3v3 Street Football Tournament & Sudden Death Shootouts.',
+    shortDescription: 'Lace up your boots for intense 3v3 mini-football knockout matches. Fast-paced halves, tactical substitutions, and halfway-line penalty trials.',
+    fullDescription: 'High-intensity 3v3 mini-football knockout championship. Fast-paced halves, precise passing, tactical substitutions, yellow card suspension rules, and dramatic sudden-death penalty shootouts from the halfway line.',
+    teamSize: {
+      min: 3,
+      max: 4,
+      description: '3 Players on field (+ 1 Substitute)',
+    },
+    rounds: [
+      {
+        roundNumber: 1,
+        title: 'Knockout Round',
+        description: '3v3 knockout matches consisting of two halves of 7 minutes each. Winners advance to the Final. Ties decided via sudden-death halfway-line penalty shootouts.',
+        duration: '7 Mins / Half',
+      },
+      {
+        roundNumber: 2,
+        title: 'Grand Final',
+        description: 'Championship final consisting of two halves of 10 minutes each. Highest goal-scoring team crowned Champions.',
+        duration: '10 Mins / Half',
+      },
+    ],
+    rules: [
+      'Each match is played in a 3v3 format with 3 active field players.',
+      'Sliding tackles are strictly prohibited to prevent injuries.',
+      'Fouls (pushing, tripping, holding, dangerous play, handball) result in an indirect free kick (opponents 3m away).',
+      'Yellow card results in a 4-minute temporary suspension (team must substitute in another player).',
+      'Red card results in immediate match ejection and suspension from the subsequent match.',
+      'No penalty kicks during normal match play; penalty shootouts conducted from the halfway line without run-up if tied.',
+      'Decisions of the referee are final and binding.',
+    ],
+    judgingCriteria: [
+      'Goals Scored in Regulation Time',
+      'Penalty Shootout Performance',
+      'Fair Play & Disciplinary Record',
+    ],
+    prizes: {
+      Prize: '₹1500 Cash Prize + Certificate of Excellence',
+      allParticipants: 'Certificate ',
+    },
+    coordinators: [
+      {
+        name: 'Sports & Football Guild',
+        role: 'Head Referee',
+        department: 'Physical Education / SEC',
+        phone: '+91 98401 23458',
+        whatsapp: '919840123458',
+      },
+    ],
+    schedule: {
+      date: 'September 26, 2026',
+      timeSlot: '10:00 AM - 02:00 PM',
+      venue: 'Campus Football Turf / Sports Arena',
+    },
+    featuredTag: '3v3 Football',
+    iconName: 'Activity',
+    accentColor: '#10B981',
+  }
 ];

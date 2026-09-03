@@ -31,7 +31,7 @@ export const EventModal: React.FC<EventModalProps> = ({
   };
 
   // Format Bounty / Award amount
-  const bountyMatch = event.prizes.first.match(/₹[\d,]+/);
+  const bountyMatch = event.prizes.Prize.match(/₹[\d,]+/);
   const isCash = Boolean(bountyMatch);
   const bountyText = isCash ? bountyMatch![0] : 'CERTIFICATE';
 
@@ -203,8 +203,8 @@ export const EventModal: React.FC<EventModalProps> = ({
                 </div>
 
                 <div className="flex items-center justify-between p-2 rounded-sm bg-[#FFC928]/20 border border-black/30">
-                  <span className="font-extrabold text-[#9A1410] uppercase">1ST PRIZE:</span>
-                  <span className="font-black text-black">{event.prizes.first}</span>
+                  <span className="font-extrabold text-[#9A1410] uppercase">PRIZE:</span>
+                  <span className="font-black text-black">{event.prizes.Prize}</span>
                 </div>
               </div>
 

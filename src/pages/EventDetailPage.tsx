@@ -68,7 +68,7 @@ export const EventDetailPage: React.FC = () => {
       <Gamepad2 className="w-4 h-4 text-[#E11D48]" />
     );
 
-  const isCash = Boolean(event.prizes.first.match(/₹[\d,]+/));
+  const isCash = Boolean(event.prizes.Prize.match(/₹[\d,]+/));
 
   return (
     <div className="min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-[#02050E] via-[#040814] to-[#0A1128] text-slate-100 selection:bg-[#E6CA65] selection:text-[#040814]">
@@ -145,7 +145,7 @@ export const EventDetailPage: React.FC = () => {
                   {isCash ? 'Top Bounty Prize' : 'Winner Accolade'}
                 </span>
                 <span className="font-mono font-bold text-[#FCE79C] text-sm">
-                  {event.prizes.first.split('+')[0]?.trim() || event.prizes.first}
+                  {event.prizes.Prize.split('+')[0]?.trim() || event.prizes.Prize}
                 </span>
               </div>
 
@@ -255,20 +255,11 @@ export const EventDetailPage: React.FC = () => {
               <div className="space-y-3 relative z-10 font-sans">
                 <div className="p-3.5 rounded-xl bg-gradient-to-r from-[#E6CA65]/15 to-transparent border border-[#E6CA65]/35 flex items-center justify-between">
                   <span className="text-xs font-mono font-bold text-[#FCE79C]">🥇 1st Place Bounty</span>
-                  <span className="text-xs font-semibold text-white">{event.prizes.first}</span>
+                  <span className="text-xs font-semibold text-white">{event.prizes.Prize}</span>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-gradient-to-r from-slate-400/10 to-transparent border border-slate-600/30 flex items-center justify-between">
-                  <span className="text-xs font-mono font-bold text-slate-300">🥈 2nd Place Bounty</span>
-                  <span className="text-xs font-semibold text-white">{event.prizes.second}</span>
-                </div>
 
-                {event.prizes.third && (
-                  <div className="p-3.5 rounded-xl bg-gradient-to-r from-amber-700/10 to-transparent border border-amber-800/30 flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-amber-500">🥉 3rd Place Bounty</span>
-                    <span className="text-xs font-semibold text-white">{event.prizes.third}</span>
-                  </div>
-                )}
+    
 
                 <div className="p-3 rounded-xl bg-[#040814]/80 border border-[#E6CA65]/20 text-center">
                   <span className="text-xs text-slate-300 font-mono">
