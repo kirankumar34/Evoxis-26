@@ -58,19 +58,14 @@ export const HomePage: React.FC = () => {
       {/* 2.1 Department Associate Office Bearers 3D Infinite Showcase */}
       <DepartmentShowcaseSection />
 
+      <SponsorsSection />
+
+
       {/* 4. Interactive Master Day Schedule */}
       <ScheduleSection />
 
       {/* 5. Campus Venue Locator & Transit */}
       <VenueSection />
-
-      {/* <Lanyard position={[0, 0, 20]} gravity={[0, -40, 0]} /> */}
-
-      {/* 6. Photo Highlights Gallery */}
-      {/* <GallerySection /> */}
-
-      {/* 7. Corporate & Tech Partners */}
-      <SponsorsSection />
 
       {/* 8. Frequently Asked Questions */}
       <FAQSection />
