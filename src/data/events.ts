@@ -76,10 +76,10 @@ export const EVENTS: EventItem[] = [
     accentColor: '#00F2FE',
   },
   {
-    id: 'business-crisis',
+    id: 'Bizz Storm',
     eventId: 'TE02',
-    sheetSlug: 'business-crisis',
-    title: 'Business Crisis',
+    sheetSlug: 'bizz-Storm',
+    title: 'Bizz Storm',
     category: 'Technical',
     tagline: 'Strategic thinking & entrepreneurial problem-solving under pressure.',
     shortDescription: 'Analyze high-stakes real-world corporate crisis scenarios and formulate tactical turnaround strategies under strict time limits.',
@@ -303,13 +303,13 @@ export const EVENTS: EventItem[] = [
     rounds: [
       {
         roundNumber: 1,
-        title: 'Cyber Puzzle',
+        title: 'Shadow Hunting ',
         description: 'Solve cryptographic challenges, decipher hidden encoded payloads, and bypass logic traps within the allocated time.',
         duration: '30 Mins',
       },
       {
         roundNumber: 2,
-        title: 'Cyber Detective (Forensic Investigation)',
+        title: 'Mystery Trace',
         description: 'Conduct forensic log analysis, trace network packets, extract digital evidence, and present an incident response report.',
         duration: '45 Mins',
       },
@@ -342,7 +342,8 @@ export const EVENTS: EventItem[] = [
         name: 'Magisha N',
         role: 'Coordinator',
         department: 'IV CYS',
-        phone: '+91 98401 00011',
+        phone: '+91 95001 69239',
+        whatsapp: '919500169239',
       },
 
     ],
