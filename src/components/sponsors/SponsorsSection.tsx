@@ -16,7 +16,7 @@ export const SponsorsSection: React.FC = () => {
   const sponsorLogos: LogoItem[] = [
     {
       node: (
-        <div className="w-52 h-52 sm:w-64 sm:h-64 md:w-[320px] md:h-[320px] bg-white flex items-center justify-center overflow-hidden shrink-0 p-3">
+        <div className="w-[280px] h-[280px] sm:w-[300px] sm:h-[300px] md:w-[430px] md:h-[430px] bg-white rounded-full flex items-center justify-center overflow-hidden sm:-mt-12 md:-mt-5">
           <img
             src={SPONSOR_1_LOGO_URL}
             alt="Sri Ayyappa Enterprises - Official Sponsor"
@@ -29,7 +29,7 @@ export const SponsorsSection: React.FC = () => {
     },
     {
       node: (
-        <div className="w-52 h-52 sm:w-64 sm:h-64 md:w-[320px] md:h-[320px] bg-white flex items-center justify-center overflow-hidden shrink-0 p-3">
+        <div className="w-[240px] h-[240px] sm:w-[245px] sm:h-[245px] md:w-[360px] md:h-[360px]  border-[10px] border-black rounded-full bg-black flex items-center justify-center md:-mt-5">
           <img
             src={SPONSOR_2_ZENVY_URL}
             alt="Zenvy - Official Sponsor"
@@ -106,7 +106,7 @@ export const SponsorsSection: React.FC = () => {
 
             {/* Circular Medallion matching reference artwork */}
             <div
-              className="relative w-72 h-72 sm:w-88 sm:h-88 md:w-[410px] md:h-[410px] rounded-full border-4 border-black p-1 flex flex-col items-center justify-center  overflow-hidden"
+              className="relative w-72 h-72 sm:w-88 sm:h-88 md:w-[410px] md:h-[410px] rounded-full border-4 border-black flex flex-col items-center justify-center "
               style={{
                 background: 'white',
               }}
@@ -117,10 +117,9 @@ export const SponsorsSection: React.FC = () => {
               <div className="relative z-10 w-full overflow-hidden rounded-full ">
                 <LogoLoop
                   logos={sponsorLogos}
-                  speed={50}
+                  speed={100}
                   direction="left"
-                  logoHeight={280}
-                  gap={32}
+                  gap={10}
                   pauseOnHover={true}
                   scaleOnHover={true}
                   fadeOut={false}

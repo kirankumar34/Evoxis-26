@@ -392,19 +392,19 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
 
     ],
   },
-  {
-    id: 'csbs-treas',
-    name: 'MOHAN KUMAR A',
-    deptId: 'csbs',
-    deptName: 'Computer Science and Business Systems',
-    deptShort: 'CSBS',
-    position: 'Treasurer',
-    badge: 'Fiscal Director',
-    accentColor: '#00F2FE',
-    avatarPool: [
-      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=600&h=600&fit=crop&auto=format',
-    ],
-  },
+  // {
+  //   id: 'csbs-treas',
+  //   name: 'MOHAN KUMAR A',
+  //   deptId: 'csbs',
+  //   deptName: 'Computer Science and Business Systems',
+  //   deptShort: 'CSBS',
+  //   position: 'Treasurer',
+  //   badge: 'Fiscal Director',
+  //   accentColor: '#00F2FE',
+  //   avatarPool: [
+  //     'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=600&h=600&fit=crop&auto=format',
+  //   ],
+  // },
   {
     id: 'event-org',
     name: 'Bhavana Shree J',

@@ -6,7 +6,7 @@ import { LogoLoop, LogoItem } from '@/components/ui/LogoLoop';
 const DEPT_LOGOS: LogoItem[] = DEPARTMENTS.map((dept) => ({
   node: (
     <div
-      className="w-[260px] sm:w-[380px] h-[470px] bg-white border-2 border-black flex flex-col items-center overflow-hidden select-none transition-transform duration-200"
+      className="w-[300px] h-full  bg-white border-2 border-black flex flex-col items-center overflow-hidden select-none transition-transform duration-200"
       style={{ boxShadow: '4px 4px 0px #000' }}
     >
       {/* Accent Top Strip */}
@@ -75,8 +75,8 @@ export const DepartmentsSection: React.FC = () => {
           logos={DEPT_LOGOS}
           speed={55}
           direction="left"
-
           gap={32}
+          logoHeight={80}
           pauseOnHover={true}
           fadeOut={true}
           fadeOutColor="#F7ECD4"
