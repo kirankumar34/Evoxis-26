@@ -516,20 +516,20 @@ export const EVENTS: EventItem[] = [
       {
         roundNumber: 1,
         title: 'Cricket Quiz Round',
-        description: 'Open to all teams. 10-minute rapid cricket quiz. The top 10 highest-scoring teams qualify for Round 2 (Live Auction).',
+        description: 'Open to all teams. 10-minute rapid cricket quiz. The top 8 highest-scoring teams qualify for Round 2 (Live Auction).',
         duration: '10 Mins',
       },
       {
         roundNumber: 2,
         title: 'Live Grand Auction & Squad Formation',
-        description: 'Each of the 10 teams gets an IPL franchise. Retain 4 players (or receive RTM cards), bid in live player auctions to reach a 16-player squad, and finalize a Playing XI of 11 players.',
+        description: 'Each of the 8 teams gets an IPL franchise. Retain 4 players (or receive RTM cards), bid in live player auctions to reach a 16-player squad, and finalize a Playing XI of 11 players.',
         duration: '90 Mins',
       },
     ],
     rules: [
       'The use of mobile phones is strictly prohibited during all rounds.',
       'Participants must not seek assistance from the audience or volunteers.',
-      'Only the top 10 teams from Round 1 will qualify for Round 2.',
+      'Only the top 8 teams from Round 1 will qualify for Round 2.',
       'Each team must retain exactly 4 players from their allotted IPL squad before auction commences.',
       'RTM Rules: Retain 2 players -> 2 RTM cards; Retain 3 players -> 1 RTM card; Retain 4 players -> 0 RTM card.',
       'RTM card allows a team to match the highest bid placed by another team on an eligible player from their original franchise.',
@@ -548,11 +548,18 @@ export const EVENTS: EventItem[] = [
     },
     coordinators: [
       {
-        name: 'IPL Auction Committee',
-        role: 'Auctioneer Head',
-        department: 'CSE / AIDS',
-        phone: '+91 91234 56789',
-        whatsapp: '919123456789',
+        name: 'Nandhini',
+        role: 'Organizer',
+        department: 'VI CSE',
+        phone: '+91 9086075418',
+        whatsapp: '919086075418',
+      },
+      {
+        name: 'Lavanya ',
+        role: 'Coordinator',
+        department: 'CSE',
+        phone: '+91 93611 32317',
+        whatsapp: '919361132317',
       },
     ],
     schedule: {
