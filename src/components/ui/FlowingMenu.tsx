@@ -39,8 +39,7 @@ const DesktopMenuItem: React.FC<ItemProps> = ({
   textColor,
   marqueeBgColor,
   marqueeTextColor,
-  borderColor,
-  isFirst,
+
 }) => {
   const itemRef = useRef<HTMLDivElement>(null);
   const revealRef = useRef<HTMLDivElement>(null);
@@ -81,11 +80,10 @@ const DesktopMenuItem: React.FC<ItemProps> = ({
       ref={itemRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      style={{ borderTop: isFirst ? 'none' : `1px solid ${borderColor}` }}
     >
       {/* Default Label */}
       <a
-        className="flex items-center justify-center h-full relative cursor-pointer uppercase no-underline font-extrabold text-2xl md:text-4xl tracking-wider transition-colors duration-300"
+        className="flex items-center justify-center h-full relative cursor-pointer uppercase no-underline font-bold  text-7xl md:text-5xl tracking-wider transition-colors duration-300"
         href={link}
         style={{ color: textColor, fontFamily: "'Bebas Neue', sans-serif" }}
       >
@@ -106,13 +104,13 @@ const DesktopMenuItem: React.FC<ItemProps> = ({
               style={{ color: marqueeTextColor }}
             >
               <span
-                className="whitespace-nowrap uppercase font-black text-2xl md:text-4xl leading-none tracking-tight"
-                style={{ fontFamily: "'Anton', sans-serif" }}
+                className="whitespace-nowrap uppercase font-black text-2xl md:text-4xl leading-tighter tracking-tight"
+                style={{ fontFamily: "'jetbrains mono', monospace" }}
               >
                 {text}
               </span>
               <div
-                className="w-[160px] h-[48px] rounded-full bg-cover bg-center shadow-md flex-shrink-0 border-2 border-black/20"
+                className="w-[190px] h-[90px] rounded-full bg-contain bg-no-repeat bg-center  flex-shrink-0 "
                 style={{ backgroundImage: `url(${image})` }}
               />
             </div>
@@ -132,8 +130,7 @@ const MobileMenuItem: React.FC<ItemProps> = ({
   textColor,
   marqueeBgColor,
   marqueeTextColor,
-  borderColor,
-  isFirst,
+
 }) => {
   const itemRef = useRef<HTMLDivElement>(null);
   const revealRef = useRef<HTMLDivElement>(null);
@@ -206,10 +203,10 @@ const MobileMenuItem: React.FC<ItemProps> = ({
       className="flex-1 relative overflow-hidden text-center min-h-[50px] flex items-center justify-center select-none"
       ref={itemRef}
       onClick={handleTap}
-      style={{ borderTop: isFirst ? 'none' : `1px solid ${borderColor}` }}
+      
     >
       <span
-        className="flex items-center justify-center h-full cursor-pointer uppercase font-extrabold text-xl sm:text-2xl tracking-wider px-4"
+        className="flex items-center justify-center h-full cursor-pointer uppercase font-extrabold text-3xl sm:text-2xl tracking-wider px-6"
         style={{ color: textColor, fontFamily: "'Bebas Neue', sans-serif" }}
       >
         {text}
@@ -228,13 +225,13 @@ const MobileMenuItem: React.FC<ItemProps> = ({
               style={{ color: marqueeTextColor }}
             >
               <span
-                className="whitespace-nowrap uppercase  text-xl sm:text-2xl leading-none tracking-wider"
-                style={{ fontFamily: "'Anton', sans-serif" }}
+                className="whitespace-nowrap uppercase  text-2xl sm:text-2xl leading-tighter tracking-tight"
+                style={{ fontFamily: "'jetbrains mono', monospace" }}
               >
                 {text}
               </span>
               <div
-                className="w-[120px] h-[38px] rounded-full bg-cover bg-center shadow-md flex-shrink-0 border-2 border-black/20"
+                className="w-[190px] h-[90px] rounded-full bg-contain bg-no-repeat bg-center  flex-shrink-0"
                 style={{ backgroundImage: `url(${image})` }}
               />
             </div>

@@ -14,19 +14,7 @@ const SPONSOR_2_ZENVY_URL =
 export const SponsorsSection: React.FC = () => {
   // Pure sponsor & partner logo items for the infinite LogoLoop inside the circle
   const sponsorLogos: LogoItem[] = [
-    {
-      node: (
-        <div className="w-[280px] h-[280px] sm:w-[300px] sm:h-[300px] md:w-[430px] md:h-[430px] bg-white rounded-full flex items-center justify-center overflow-hidden sm:-mt-12 md:-mt-5">
-          <img
-            src={SPONSOR_1_LOGO_URL}
-            alt="Sri Ayyappa Enterprises - Official Sponsor"
-            className="w-full h-full object-contain"
-            draggable={false}
-          />
-        </div>
-      ),
-      title: 'Sri Ayyappa Enterprises',
-    },
+
     {
       node: (
         <div className="w-[240px] h-[240px] sm:w-[245px] sm:h-[245px] md:w-[360px] md:h-[360px]  border-[10px] border-black rounded-full bg-black flex items-center justify-center md:-mt-5">
@@ -41,7 +29,19 @@ export const SponsorsSection: React.FC = () => {
       title: 'Zenvy',
     },
 
-
+    {
+      node: (
+        <div className="w-[280px] h-[280px] sm:w-[300px] sm:h-[300px] md:w-[430px] md:h-[430px] bg-white rounded-full flex items-center justify-center overflow-hidden sm:-mt-12 md:-mt-5">
+          <img
+            src={SPONSOR_1_LOGO_URL}
+            alt="Sri Ayyappa Enterprises - Official Sponsor"
+            className="w-full h-full object-contain"
+            draggable={false}
+          />
+        </div>
+      ),
+      title: 'Sri Ayyappa Enterprises',
+    },
   ];
 
   return (
@@ -120,8 +120,8 @@ export const SponsorsSection: React.FC = () => {
                   speed={100}
                   direction="left"
                   gap={10}
-                  pauseOnHover={true}
-                  scaleOnHover={true}
+                  pauseOnHover={false}
+                  scaleOnHover={false}
                   fadeOut={false}
                   ariaLabel="Official Sponsors"
                 />
