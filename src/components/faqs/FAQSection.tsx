@@ -7,22 +7,15 @@ import {
   MessageSquare
 } from 'lucide-react';
 import faqBgImg from '@/assets/faqSectionBackground.png';
-import luffyImg from '@/assets/faqSectionForeGround1.png';
-import sanjiImg from '@/assets/faqSectionForeGround2.png';
-import zoroImg from '@/assets/faqSectionForeGround3.png';
-
 
 export const FAQSection: React.FC = () => {
   const [openFaqId, setOpenFaqId] = useState<string | null>(FAQS[0].id);
-  const [activeCategory, setActiveCategory] = useState<string>('All');
 
   const toggleFaq = (id: string) => {
     setOpenFaqId(openFaqId === id ? null : id);
   };
 
-  const filteredFaqs = activeCategory === 'All'
-    ? FAQS
-    : FAQS.filter((f) => f.category === activeCategory || (activeCategory === 'General' && !f.category));
+  const filteredFaqs = FAQS;
 
   return (
     <section
