@@ -37,15 +37,15 @@ export const HomePage: React.FC = () => {
           {
             link: "#events",
             text: "15 GRAND CHALLENGES",
-            image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=600&h=400&fit=crop&auto=format"
+            image: "https://res.cloudinary.com/zqpxemhd/image/upload/f_auto/q_auto/infinteMenuLogo.png"
           }
         ]}
         speed={15}
-        textColor="#FFC928"
-        bgColor="#070D1E"
-        marqueeBgColor="#E2231A"
-        marqueeTextColor="#FFFFFF"
-        borderColor="#ffffff25"
+        textColor="#d0ff00ff"
+        bgColor="#000000"
+        marqueeBgColor="#ffffffff"
+        marqueeTextColor="#000000ff"
+        borderColor="#e5ff00ff"
       />
 
       {/* 3. Filterable 16 Events Catalog */}
