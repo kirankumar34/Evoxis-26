@@ -39,8 +39,7 @@ const DesktopMenuItem: React.FC<ItemProps> = ({
   textColor,
   marqueeBgColor,
   marqueeTextColor,
-  borderColor,
-  isFirst,
+
 }) => {
   const itemRef = useRef<HTMLDivElement>(null);
   const revealRef = useRef<HTMLDivElement>(null);
@@ -131,8 +130,7 @@ const MobileMenuItem: React.FC<ItemProps> = ({
   textColor,
   marqueeBgColor,
   marqueeTextColor,
-  borderColor,
-  isFirst,
+
 }) => {
   const itemRef = useRef<HTMLDivElement>(null);
   const revealRef = useRef<HTMLDivElement>(null);
@@ -205,7 +203,7 @@ const MobileMenuItem: React.FC<ItemProps> = ({
       className="flex-1 relative overflow-hidden text-center min-h-[50px] flex items-center justify-center select-none"
       ref={itemRef}
       onClick={handleTap}
-      style={{ borderTop: isFirst ? 'none' : `4px solid ${borderColor}` }}
+      
     >
       <span
         className="flex items-center justify-center h-full cursor-pointer uppercase font-extrabold text-3xl sm:text-2xl tracking-wider px-6"
