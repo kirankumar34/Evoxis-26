@@ -408,17 +408,19 @@ export const EVENTS: EventItem[] = [
     },
     coordinators: [
       {
-        name: 'Nandini',
+        name: 'Nandhini',
         role: 'Organizer',
-        department: 'IV CSE',
-        phone: '+91 98401 00020',
+        department: 'VI CSE',
+        phone: '+91 9086075418',
+        whatsapp: '919086075418',
       },
       {
-        name: 'Lavanya',
+        name: 'Lavanya ',
         role: 'Coordinator',
-        department: 'IV CSE',
-        phone: '+91 98401 00021',
-      }
+        department: 'CSE',
+        phone: '+91 93611 32317',
+        whatsapp: '919361132317',
+      },
     ],
     schedule: {
       date: 'September 26, 2026',
@@ -548,19 +550,20 @@ export const EVENTS: EventItem[] = [
     },
     coordinators: [
       {
-        name: 'Nandhini',
+        name: 'Balaganesh E',
         role: 'Organizer',
         department: 'VI CSE',
-        phone: '+91 9086075418',
-        whatsapp: '919086075418',
+        phone: '+91 8925337665',
+        whatsapp: '918925337665',
       },
       {
-        name: 'Lavanya ',
+        name: 'Hemanth  B',
         role: 'Coordinator',
         department: 'CSE',
-        phone: '+91 93611 32317',
-        whatsapp: '919361132317',
+        phone: '+91 91760 66900',
+        whatsapp: '919176066900',
       },
+
     ],
     schedule: {
       date: 'September 26, 2026',
