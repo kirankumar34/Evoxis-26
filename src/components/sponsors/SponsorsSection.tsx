@@ -10,6 +10,13 @@ const SPONSOR_1_LOGO_URL =
 const SPONSOR_2_ZENVY_URL =
   'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_1000,w_1000,x_722,y_850/f_auto/q_auto/zenvyLogo.png';
 
+  const SPONSOR_3_Logo_URL =
+  'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,x_1,y_51/f_auto/q_auto/Sponsor3.png';
+
+const SPONSOR_4_Logo_URL =
+  'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,x_1,y_51/f_auto/q_auto/sponsorLogo3.png';
+
+  
 
 export const SponsorsSection: React.FC = () => {
   // Pure sponsor & partner logo items for the infinite LogoLoop inside the circle
@@ -34,6 +41,84 @@ export const SponsorsSection: React.FC = () => {
         <div className="w-[280px] h-[280px] sm:w-[300px] sm:h-[300px] md:w-[430px] md:h-[430px] bg-white rounded-full flex items-center justify-center overflow-hidden sm:-mt-12 md:-mt-5">
           <img
             src={SPONSOR_1_LOGO_URL}
+            alt="Sri Ayyappa Enterprises - Official Sponsor"
+            className="w-full h-full object-contain"
+            draggable={false}
+          />
+        </div>
+      ),
+      title: 'Sri Ayyappa Enterprises',
+    },
+    {
+      node: (
+        <div className="w-[250px] h-[250px] sm:w-[270px] sm:h-[270px] md:w-[400px] md:h-[400px] bg-white border-2 border-green-700 rounded-full flex items-center justify-center overflow-hidden sm:-mt-12 md:-mt-5">
+          <img
+            src={SPONSOR_3_Logo_URL}
+            alt="Sri Ayyappa Enterprises - Official Sponsor"
+            className="w-full h-full object-contain"
+            draggable={false}
+          />
+        </div>
+      ),
+      title: 'Eraggu',
+    },
+    {
+      node: (
+        <div className="w-[250px] h-[250px] sm:w-[270px] sm:h-[270px] md:w-[400px] md:h-[400px] bg-white border-[5px] border-blue-500 rounded-full flex items-center justify-center overflow-hidden sm:-mt-12 md:-mt-5">
+          <img
+            src={SPONSOR_4_Logo_URL}
+            alt="ASM"
+            className="w-full h-full object-contain"
+            draggable={false}
+          />
+        </div>
+      ),
+      title: 'ASM',
+    },
+    {
+      node: (
+        <div className="w-[240px] h-[240px] sm:w-[245px] sm:h-[245px] md:w-[360px] md:h-[360px]  border-[10px] border-black rounded-full bg-black flex items-center justify-center md:-mt-5">
+          <img
+            src={SPONSOR_2_ZENVY_URL}
+            alt="Zenvy - Official Sponsor"
+            className="w-full h-full object-contain"
+            draggable={false}
+          />
+        </div>
+      ),
+      title: 'Zenvy',
+    },
+    {
+      node: (
+        <div className="w-[280px] h-[280px] sm:w-[300px] sm:h-[300px] md:w-[430px] md:h-[430px] bg-white rounded-full flex items-center justify-center overflow-hidden sm:-mt-12 md:-mt-5">
+          <img
+            src={SPONSOR_1_LOGO_URL}
+            alt="Sri Ayyappa Enterprises - Official Sponsor"
+            className="w-full h-full object-contain"
+            draggable={false}
+          />
+        </div>
+      ),
+      title: 'Sri Ayyappa Enterprises',
+    },
+    {
+      node: (
+        <div className="w-[250px] h-[250px] sm:w-[270px] sm:h-[270px] md:w-[400px] md:h-[400px] bg-white border-2 border-green-700 rounded-full flex items-center justify-center overflow-hidden sm:-mt-12 md:-mt-5">
+          <img
+            src={SPONSOR_3_Logo_URL}
+            alt="Sri Ayyappa Enterprises - Official Sponsor"
+            className="w-full h-full object-contain"
+            draggable={false}
+          />
+        </div>
+      ),
+      title: 'Sri Ayyappa Enterprises',
+    },
+    {
+      node: (
+        <div className="w-[250px] h-[250px] sm:w-[270px] sm:h-[270px] md:w-[400px] md:h-[400px] bg-white border-[5px] border-blue-500 rounded-full flex items-center justify-center overflow-hidden sm:-mt-12 md:-mt-5">
+          <img
+            src={SPONSOR_4_Logo_URL}
             alt="Sri Ayyappa Enterprises - Official Sponsor"
             className="w-full h-full object-contain"
             draggable={false}
@@ -117,9 +202,9 @@ export const SponsorsSection: React.FC = () => {
               <div className="relative z-10 w-full overflow-hidden rounded-full ">
                 <LogoLoop
                   logos={sponsorLogos}
-                  speed={100}
+                  speed={70}
                   direction="left"
-                  gap={10}
+                  gap={40}
                   pauseOnHover={false}
                   scaleOnHover={false}
                   fadeOut={false}
