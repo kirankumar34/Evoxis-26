@@ -22,7 +22,7 @@ export const FAQS: FAQItem[] = [
   {
     id: 'faq-4',
     category: 'Hospitality',
-    question: 'Will food, refreshments, and transport be provided?',
+    question: 'Will food, refreshment?',
     answer: 'Yes! A delicious hot lunch will be provided to all registered participants.'
   },
   {
