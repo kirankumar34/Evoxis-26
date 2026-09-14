@@ -204,11 +204,11 @@ export const EVENTS: EventItem[] = [
         whatsapp: '919941054740',
       },
       {
-        name: 'Sarath Babu',
+        name: 'Yasir Ahamed',
         role: 'Co-Coordinator',
-        department: '3rd Year CYS',
-        phone: '+91 63831 64851',
-        whatsapp: '916383164851',
+        department: '4th Year AIDS',
+        phone: '+91 94447 50292',
+        whatsapp: '919444750292',
       },
     ],
     schedule: {
