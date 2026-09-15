@@ -23,7 +23,7 @@ export const FAQS: FAQItem[] = [
     id: 'faq-4',
     category: 'Hospitality',
     question: 'Will food, refreshments, and transport be provided?',
-    answer: 'Yes! Complimentary morning refreshments, a delicious hot vegetarian/non-vegetarian lunch, and evening snacks will be provided to all registered participants. Free college bus transport is available from major railway stations and bus terminuses (Veppampattu, Avadi, Poonamallee, Tiruvallur).'
+    answer: 'Yes! A delicious hot lunch will be provided to all registered participants.'
   },
   {
     id: 'faq-5',
