@@ -141,41 +141,11 @@ export const VenueSection: React.FC = () => {
               </div>
               <p className="text-xs sm:text-sm text-black/75 leading-relaxed">
                 Alight at <strong className="text-[#E2231A]">Veppampattu Railway Station</strong> (Frequent
-                EMU trains from Chennai Central, Moore Market Complex, and Avadi every 15 mins).
-                Campus is just 1.5 km from the station.
+                EMU trains from Chennai Central and Arakkonam).
+                Campus is just 900 meter from the station.
               </p>
             </div>
 
-            {/* Shuttle Bus card */}
-            <div
-              className="bg-white border-2 border-black p-4 sm:p-5 hover:-translate-y-0.5 transition-transform duration-150"
-              style={{ boxShadow: '4px 4px 0px #FFC928' }}
-            >
-              <div className="flex items-center gap-3 mb-2.5">
-                <div className="w-10 h-10 border-2 border-black bg-[#FFC928] flex items-center justify-center"
-                  style={{ boxShadow: '2px 2px 0px #000' }}>
-                  <Bus className="w-5 h-5 text-black" />
-                </div>
-                <div>
-                  <h3
-                    className="text-base text-black uppercase tracking-tight"
-                    style={{ fontFamily: "'Anton', sans-serif" }}
-                  >
-                    Free Fleet Shuttle Buses
-                  </h3>
-                  <p
-                    className="text-[11px] text-[#9A1410] font-bold"
-                    style={{ fontFamily: "'JetBrains Mono', monospace" }}
-                  >
-                    From 08:00 AM to 10:00 AM
-                  </p>
-                </div>
-              </div>
-              <p className="text-xs sm:text-sm text-black/75 leading-relaxed">
-                Free college fleet shuttles will run continuously between Veppampattu Railway Station
-                and the symposium registration gates to welcome all crew &amp; delegates.
-              </p>
-            </div>
 
             {/* Helpline card */}
             <div
