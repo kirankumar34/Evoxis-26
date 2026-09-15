@@ -368,7 +368,7 @@ export const ScheduleSection: React.FC = () => {
             }}
           >
             <Compass className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-cyan-400 animate-spin" style={{ animationDuration: '15s' }} />
-            <span>1-DAY VOYAGE SCHEDULE // SEP 26, 2026</span>
+            <span>VOYAGE SCHEDULE // SEP 25, 2026</span>
           </div>
 
           {/* Heading */}
