@@ -417,7 +417,7 @@ export const EVENTS: EventItem[] = [
       {
         name: 'Lavanya ',
         role: 'Coordinator',
-        department: 'CSE',
+        department: 'VI CSE',
         phone: '+91 93611 32317',
         whatsapp: '919361132317',
       },
