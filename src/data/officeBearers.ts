@@ -246,7 +246,7 @@ export const OFFICE_BEARERS: OfficeBearer[] = [
     badge: 'Neural Coordinator',
     accentColor: '#EC4899',
     avatarPool: [
-      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_575,w_575,y_108/f_auto/q_auto/CseTreasurer.jpg',
+      'https://res.cloudinary.com/zqpxemhd/image/upload/ar_1:1,c_crop,g_north_west,h_1203,w_1203,x_51/f_auto/q_auto/AimlJointSecretary.jpg',
 
     ],
   },
