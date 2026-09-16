@@ -2,20 +2,18 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Navbar } from '@/components/common/Navbar';
 import { Footer } from '@/components/common/Footer';
-import { RegistrationModalProvider } from '@/context/RegistrationModalContext';
+
 
 // Participant Pages
 import { HomePage } from '@/pages/HomePage';
 import { EventsPage } from '@/pages/EventsPage';
 import { EventDetailPage } from '@/pages/EventDetailPage';
-import { RegisterPage } from '@/pages/RegisterPage';
-import { RegistrationSuccessPage } from '@/pages/RegistrationSuccessPage';
-import { MyRegistrationPage } from '@/pages/MyRegistrationPage';
+
 
 export const App: React.FC = () => {
   return (
     <BrowserRouter>
-      <RegistrationModalProvider>
+
         <div className="w-full max-w-full min-h-screen bg-cyber-dark text-slate-100 selection:bg-cyber-cyan selection:text-black flex flex-col justify-between overflow-x-hidden">
           {/* Sticky Frosted Navbar */}
           <Navbar />
@@ -27,10 +25,6 @@ export const App: React.FC = () => {
               <Route path="/" element={<HomePage />} />
               <Route path="/events" element={<EventsPage />} />
               <Route path="/events/:id" element={<EventDetailPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/registration-success" element={<RegistrationSuccessPage />} />
-              <Route path="/my-registration" element={<MyRegistrationPage />} />
-              <Route path="/qr" element={<MyRegistrationPage />} />
 
               {/* Fallback to Home */}
               <Route path="*" element={<Navigate to="/" replace />} />
@@ -40,7 +34,6 @@ export const App: React.FC = () => {
           {/* Global Footer */}
           <Footer />
         </div>
-      </RegistrationModalProvider>
     </BrowserRouter>
   );
 };
