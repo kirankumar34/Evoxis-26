@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Mail, Phone, Heart, Instagram, Linkedin, Youtube, Compass, Anchor } from 'lucide-react';
+import { MapPin, Mail, Phone, Heart, Instagram, Compass, Anchor } from 'lucide-react';
 import { REGISTRATION_FORM_URL } from '@/constants';
 
 export const Footer: React.FC = () => {
