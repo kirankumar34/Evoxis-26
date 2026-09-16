@@ -66,9 +66,7 @@ export const Footer: React.FC = () => {
             {/* Social Icons */}
             <div className="flex items-center gap-2.5 pt-1">
               {[
-                { href: 'https://instagram.com', Icon: Instagram, label: 'Instagram' },
-                { href: 'https://linkedin.com', Icon: Linkedin, label: 'LinkedIn' },
-                { href: 'https://youtube.com', Icon: Youtube, label: 'YouTube' },
+                { href: 'https://www.instagram.com/evoxis_26?stkn=MXMxaXk2dmJvdzVvYg==', Icon: Instagram, label: 'Instagram' },
               ].map(({ href, Icon, label }) => (
                 <a
                   key={label}
@@ -123,8 +121,7 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2 text-xs text-white/55">
               {[
                 { href: REGISTRATION_FORM_URL, label: '⚔️ Multi-Challenge Registration Form', accent: true, external: true },
-                { href: '/events', label: '🏆 16 Grand Challenges', accent: true },
-                { href: '/my-registration', label: '🎫 Voyage Pass & Check-In QR', accent: false },
+                { href: '/events', label: '🏆 15 Grand Challenges', accent: true },
                 { href: '/#schedule', label: '📅 Voyage Itinerary', accent: false },
                 { href: '/#venue', label: '📍 Flagship Port & Transit', accent: false },
               ].map(({ href, label, accent, external }) => (
@@ -154,19 +151,19 @@ export const Footer: React.FC = () => {
             <div className="space-y-2.5 text-xs text-white/55">
               <div className="flex items-center gap-2">
                 <Phone className="w-3.5 h-3.5 text-[#FFC928] shrink-0" />
-                <a href="tel:+919840123456" className="hover:text-[#FFC928] transition-colors">
-                  +91 98401 23456
+                <a href="tel:+919444750292" className="hover:text-[#FFC928] transition-colors">
+                  +91  94447 50292
                 </a>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-3.5 h-3.5 text-[#38BDF8] shrink-0" />
-                <a href="mailto:evoxis26@sriram.edu.in" className="hover:text-[#38BDF8] transition-colors">
-                  evoxis26@sriram.edu.in
+                <a href="mailto:evoxis26enquiry@gmail.com" className="hover:text-[#38BDF8] transition-colors">
+                  evoxis26enquiry@gmail.com
                 </a>
               </div>
               <div className="flex items-start gap-2 pt-1">
                 <MapPin className="w-3.5 h-3.5 text-[#E2231A] shrink-0 mt-0.5" />
-                <span>Veppampattu R.S., Tiruvallur Dt.</span>
+                <span>Veppampattu R,S</span>
               </div>
             </div>
           </div>
@@ -177,9 +174,9 @@ export const Footer: React.FC = () => {
         <div className="mt-10 sm:mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/40">
           <p>© 2026 EvoXis'26 • Sriram Engineering College. All rights reserved.</p>
           <p className="flex items-center gap-1.5">
-            <span>Navigated with</span>
+            <span>Created BY</span>
             <Heart className="w-3.5 h-3.5 text-[#E2231A] fill-[#E2231A]" />
-            <span>by EvoXis Student Tech Council</span>
+            <span>Evoxis Prodution Committee</span>
           </p>
         </div>
       </div>
