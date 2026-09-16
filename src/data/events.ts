@@ -695,6 +695,13 @@ export const EVENTS: EventItem[] = [
         phone: '+91 90255 01837',
         whatsapp: '919025501837',
       },
+      {
+        name: 'Boomika',
+        role: 'coordinator',
+        department: 'CSE IV YR',
+        phone: '+91 74181 52605',
+        whatsapp: '917418152605',
+      },
     ],
     schedule: {
       date: 'September 26, 2026',
