@@ -410,14 +410,14 @@ export const EVENTS: EventItem[] = [
       {
         name: 'Nandhini',
         role: 'Organizer',
-        department: 'VI CSE',
+        department: 'IV CSE',
         phone: '+91 9086075418',
         whatsapp: '919086075418',
       },
       {
         name: 'Lavanya ',
         role: 'Coordinator',
-        department: 'VI CSE',
+        department: 'IV CSE',
         phone: '+91 93611 32317',
         whatsapp: '919361132317',
       },
@@ -552,14 +552,14 @@ export const EVENTS: EventItem[] = [
       {
         name: 'Balaganesh E',
         role: 'Organizer',
-        department: 'VI CSE',
+        department: 'IV CSE',
         phone: '+91 8925337665',
         whatsapp: '918925337665',
       },
       {
         name: 'Hemanth  B',
         role: 'Coordinator',
-        department: 'CSE',
+        department: 'IV CSE',
         phone: '+91 91760 66900',
         whatsapp: '919176066900',
       },
@@ -689,11 +689,18 @@ export const EVENTS: EventItem[] = [
     },
     coordinators: [
       {
-        name: 'Media & Socials Crew',
-        role: 'Event Lead',
-        department: 'Media Club / SEC',
-        phone: '+91 98401 23461',
-        whatsapp: '919840123461',
+        name: 'Swetha',
+        role: 'Organiser',
+        department: 'CSE IV YR',
+        phone: '+91 90255 01837',
+        whatsapp: '919025501837',
+      },
+      {
+        name: 'Boomika',
+        role: 'coordinator',
+        department: 'CSE IV YR',
+        phone: '+91 74181 52605',
+        whatsapp: '917418152605',
       },
     ],
     schedule: {
