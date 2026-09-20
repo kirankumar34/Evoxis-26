@@ -1197,7 +1197,7 @@ const InfiniteMenu: FC<InfiniteMenuProps> = ({ items = [], scale = 1.0, backgrou
       (autoIndexRef.current + 1) % items.length;
 
     sketchRef.current?.goToIndex(autoIndexRef.current);
-  }, 4000);
+  }, 10000);
 
   return () => {
     clearInterval(timer);
